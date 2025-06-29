@@ -1,0 +1,18 @@
+{
+  "name": "frontend-fotos",
+  "description": "Frontend React para sistema de fotos de ballet",
+  "type": "service",
+  "image": "nginx:alpine",
+  "ports": [
+    {
+      "port": 80,
+      "protocol": "http"
+    }
+  ],
+  "environment": [
+    "NODE_ENV=production"
+  ],
+  "volumes": [],
+  "networks": [],
+  "restart": "unless-stopped"
+} 

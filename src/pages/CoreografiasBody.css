@@ -1,0 +1,65 @@
+.body {
+    background-color: var(--cole-o-1-cores-black01);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 16px 12px;
+    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+.body .coreografia-instance {
+    flex: 1 1 100%;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    box-sizing: border-box;
+    margin: auto;
+}
+
+.body .imagem-instance {
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 118px !important;
+    object-fit: cover;
+    border-radius: 10px !important;
+}
+
+@media (min-width: 700px) {
+    .body {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        padding: 24px 24px;
+    }
+}
+@media (min-width: 1024px) {
+    .body {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 32px;
+        padding: 32px 32px;
+    }
+}
+
+/* Exemplo de como aplicar imagens diferentes por classe, se desejar:
+.body .coreografia-1 .imagem-instance { background-image: url(./image-01.png) !important; }
+.body .coreografia-2 .imagem-instance { background-image: url(./image-02.png) !important; }
+*/
+
+:root {
+    --cole-o-1-cores-black01: rgba(0, 0, 0, 1);
+    --cole-o-1-cores-black02: rgba(19, 19, 19, 1);
+    --cole-o-1-cores-white01: rgba(255, 255, 255, 1);
+    --cole-o-1-cores-white02: rgba(249, 249, 249, 1);
+    --cole-o-1-cores-yellow01: rgba(255, 224, 1, 1);
+    --cole-o-1-cores-yellow02: rgba(250, 247, 130, 1);
+    --cole-o-1-fontsizes-2xl: 38px;
+    --cole-o-1-fontsizes-3xl: 51px;
+    --cole-o-1-fontsizes-lg: 21px;
+    --cole-o-1-fontsizes-md: 16px;
+    --cole-o-1-fontsizes-sm: 12px;
+    --cole-o-1-fontsizes-xl: 28px;
+    --cole-o-1-fontsizes-xs: 9px;
+} 

@@ -1,0 +1,21 @@
+.cart-btn {
+    align-items: center;
+    border: 1px solid;
+    border-color: var(--cole-o-1-cores-yellow01);
+    border-radius: 10px;
+    display: flex;
+    gap: 8px;
+    height: 40px;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    width: 44px;
+    background: transparent;
+}
+
+.cart-btn .shopping-cart-line {
+    height: 24px !important;
+    width: 24px !important;
+    position: relative !important;
+    display: block;
+} 

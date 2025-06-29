@@ -1,0 +1,208 @@
+:root {
+    --cole-o-1-cores-black01: rgba(0, 0, 0, 1);
+    --cole-o-1-cores-black02: rgba(19, 19, 19, 1);
+    --cole-o-1-cores-white01: rgba(255, 255, 255, 1);
+    --cole-o-1-cores-white02: rgba(249, 249, 249, 1);
+    --cole-o-1-cores-yellow01: rgba(255, 224, 1, 1);
+    --cole-o-1-cores-yellow02: rgba(250, 247, 130, 1);
+    --cole-o-1-fontsizes-2xl: 38px;
+    --cole-o-1-fontsizes-3xl: 51px;
+    --cole-o-1-fontsizes-lg: 21px;
+    --cole-o-1-fontsizes-md: 16px;
+    --cole-o-1-fontsizes-sm: 12px;
+    --cole-o-1-fontsizes-xl: 28px;
+    --cole-o-1-fontsizes-xs: 9px;
+}
+
+.coreografia {
+    border: 3px solid var(--cole-o-1-cores-black02);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 12px;
+    position: relative;
+    background-color: var(--cole-o-1-cores-black02);
+    transition: background 0.2s;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    min-height: 180px;
+}
+.coreografia.padr-o {
+    background-color: var(--cole-o-1-cores-black02);
+}
+.coreografia.hover {
+    background-color: var(--cole-o-1-cores-black01);
+}
+.coreografia .frame {
+    align-items: flex-start;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+}
+.coreografia .h {
+    align-self: stretch;
+    font-family: "Inter-Medium", Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: normal;
+    position: relative;
+    font-size: 16px;
+    color: #c0c0c0;
+}
+.coreografia .line {
+    height: 1px;
+    object-fit: cover;
+    position: relative;
+    width: 100%;
+}
+.coreografia .info {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 4px;
+    justify-content: center;
+    position: relative;
+}
+.coreografia .camera-instance {
+    height: 16px !important;
+    position: relative !important;
+    width: 16px !important;
+}
+.coreografia .text-wrapper {
+    color: #a0a0a0;
+    font-family: "Inter-Regular", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: normal;
+    margin-top: -0.50px;
+    position: relative;
+    text-align: center;
+    width: fit-content;
+}
+
+/* Desktop: .two */
+.coreografia.two {
+    align-items: center;
+    gap: 24px;
+    height: 180px;
+    width: 519px;
+    flex-direction: row;
+}
+.coreografia.two .frame {
+    flex: 1;
+    flex-grow: 1;
+    gap: 24px;
+    justify-content: center;
+}
+.coreografia.two .h {
+    font-size: 21px;
+    color: #c0c0c0;
+}
+
+/* Mobile: .one */
+.coreografia.one {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    height: 241px;
+    min-width: 200px;
+    width: 100%;
+    max-width: 100vw;
+}
+.coreografia.one .frame {
+    flex: 0 0 auto;
+    gap: 16px;
+    width: 100%;
+}
+.coreografia.one .h {
+    font-size: 16px;
+    margin-top: -1.00px;
+    color: #c0c0c0;
+}
+
+/* Imagem */
+.coreografia .imagem-instance {
+    width: 100% !important;
+    height: 164px !important;
+    background-position: 50% 50% !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    border-radius: 10px !important;
+    flex-shrink: 0;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+@media (min-width: 700px) {
+    .coreografia {
+        flex-direction: row;
+        align-items: center;
+        gap: 32px;
+        min-height: 180px;
+        height: 180px;
+    }
+    .coreografia .imagem-instance {
+        width: 260px !important;
+        height: 164px !important;
+        margin-bottom: 0;
+        margin-right: 0;
+    }
+    .coreografia .frame {
+        width: auto;
+        flex: 1 1 0;
+        gap: 24px;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    .coreografia .h {
+        font-size: 28px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .coreografia {
+        gap: 40px;
+        height: 200px;
+        min-height: 200px;
+    }
+    .coreografia .imagem-instance {
+        width: 300px !important;
+        height: 180px !important;
+    }
+    .coreografia .h {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 700px) {
+    .coreografia {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        height: 241px !important;
+        min-width: 200px !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+    .coreografia .frame {
+        flex: 0 0 auto !important;
+        gap: 16px !important;
+        width: 100% !important;
+    }
+    .coreografia .h {
+        font-size: 16px !important;
+        margin-top: -1.00px !important;
+    }
+    .coreografia .imagem-instance {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: 164px !important;
+    }
+} 

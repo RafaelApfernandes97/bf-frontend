@@ -1,0 +1,141 @@
+.coreografia-top {
+  width: 100%;
+  background: var(--colors-candlelight-100, #FFFEC7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 32px;
+  box-sizing: border-box;
+  margin-top: 72px;
+  margin-bottom: 40px;
+}
+.coreografia-top-bg {
+  width: 100%;
+  background: var(--cole-o-1-cores-black01, #1b1b1b);
+  border-bottom-left-radius: 120px;
+  border-bottom-right-radius: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 120px;
+  padding: 32px 0 24px 0;
+  box-sizing: border-box;
+}
+.coreografia-top-title {
+  color: #fff;
+  font-family: "JustCosmic-Regular", Helvetica;
+  font-size: 2.5rem;
+  font-weight: 400;
+  text-align: center;
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+.coreografia-top-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 24px;
+  gap: 16px;
+}
+.coreografia-top-icon {
+  margin-bottom: 8px;
+}
+.coreografia-top-desc {
+  text-align: center;
+  color: #181818;
+  font-family: 'Inter', Arial, sans-serif;
+}
+.coreografia-top-desc strong {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.coreografia-top-desc span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #181818;
+}
+.coreografia-top-btn {
+  margin-top: 16px;
+  padding: 16px 32px;
+  background: linear-gradient(146deg, #FAF782 0%, #FFE001 100%);
+  color: #181818;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: background 0.2s;
+  visibility: hidden;
+}
+@media (max-width: 700px) {
+  .coreografia-top-bg {
+    border-bottom-left-radius: 60px;
+    border-bottom-right-radius: 60px;
+    min-height: 80px;
+    padding: 24px 0 16px 0;
+  }
+  .coreografia-top-title {
+    font-size: 1.5rem;
+  }
+  .coreografia-top-content {
+    margin-top: 16px;
+    gap: 10px;
+  }
+  .coreografia-top {
+    margin-top: 56px;
+    margin-bottom: 24px;
+  }
+}
+.coreografia-top-children {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+.coreografia-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  color: #000000;
+}
+.nav-btn {
+  background: transparent;
+  border: 2px solid #000000;
+  color: #000000;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+}
+.nav-btn:hover {
+  background: #ffe600;
+  color: #181818;
+  border-color: #ffe600;
+}
+.coreografia-nav-nome {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #000000;
+  margin: 0 8px;
+}
+.coreografia-top-coreografia {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 0;
+  font-size: 1.5rem;
+  color: #fff;
+  font-family: 'Inter', Helvetica, Arial, sans-serif;
+  font-weight: 500;
+} 
