@@ -26,4 +26,5 @@ export const API_ENDPOINTS = {
   COREOGRAFIAS: (eventoId) => `${API_BASE_URL}/api/photos/eventos/${eventoId}/coreografias`,
 };
 
+export { API_BASE_URL };
 export default API_ENDPOINTS; 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './PedidosModal.css';
 import { useCart } from './CartContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 export default function PedidosModal({ onClose }) {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ export default function PedidosModal({ onClose }) {
       setErro('');
       try {
         const token = localStorage.getItem('user_token');
-        const res = await fetch('http://localhost:3001/api/usuarios/meus-pedidos', {
+        const res = await fetch(`${API_URL}/api/usuarios/meus-pedidos`, {
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!res.ok) throw new Error('Erro ao buscar pedidos');

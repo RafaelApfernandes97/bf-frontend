@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './LoginModal.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 function maskCpfCnpj(value) {
   value = value.replace(/\D/g, '');
   if (value.length <= 11) {
@@ -84,7 +86,7 @@ export default function EditUserModal({ onClose }) {
       setErro('');
       try {
         const token = localStorage.getItem('user_token');
-        const res = await fetch('http://localhost:3001/api/usuarios/me', {
+        const res = await fetch(`${API_URL}/api/usuarios/me`, {
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
@@ -129,7 +131,7 @@ export default function EditUserModal({ onClose }) {
     setSucesso(false);
     try {
       const token = localStorage.getItem('user_token');
-      const res = await fetch('http://localhost:3001/api/usuarios/me', {
+      const res = await fetch(`${API_URL}/api/usuarios/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

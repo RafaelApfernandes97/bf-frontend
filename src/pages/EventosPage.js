@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 function EventosPage() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -8,7 +10,7 @@ function EventosPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/eventos')
+    fetch(`${API_URL}/api/eventos`)
       .then(res => res.json())
       .then(data => {
         setEventos(data.eventos || []);
