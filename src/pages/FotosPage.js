@@ -4,10 +4,14 @@ import CoreografiaTop from '../components/CoreografiaTop';
 import './FotosPage.css';
 import { useCart } from '../components/CartContext';
 import CartBtn from '../components/CartBtn';
+import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
+import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
+import LeftFill from '../assets/icons/left_fill.svg';
+import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 
 const BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
 
-function FotosPage() {
+function FotosPage({ setShowCart }) {
   const { eventoId, coreografiaId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -128,13 +132,13 @@ function FotosPage() {
         <div className="coreografia-nav">
           {coreografiaAnterior && (
             <button className="nav-btn" onClick={() => navigate(`/eventos/${eventoId}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`)}>
-              &#8592;
+              <img src={SquareArrowLeft} alt="Anterior" width={24} height={24} />
             </button>
           )}
           <span className="coreografia-nav-nome">{coreografiaId}</span>
           {coreografiaProxima && (
             <button className="nav-btn" onClick={() => navigate(`/eventos/${eventoId}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`)}>
-              &#8594;
+              <img src={SquareArrowRight} alt="Próxima" width={24} height={24} />
             </button>
           )}
         </div>
@@ -152,7 +156,6 @@ function FotosPage() {
             fontWeight: 500,
             cursor: 'pointer',
             padding: 0,
-            
           }}
         >
           <span style={{
@@ -165,17 +168,18 @@ function FotosPage() {
             border: '2px solid #888',
             marginRight: 8,
           }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="9" cy="9" r="8" stroke="#888" strokeWidth="2" fill="none"/>
-              <path d="M10.5 6L7.5 9L10.5 12" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img src={LeftFill} alt="Voltar" width={18} height={18} />
           </span>
           Voltar a página anterior
         </button>
         <div style={{ position: 'absolute', top: 16, right: 16 }}>
           <div style={{ position: 'relative' }}>
             <div style={{ cursor: 'pointer' }}>
-              <CartBtn />
+              <CartBtn
+                onClick={() => setShowCart(true)}
+                style={{ marginLeft: 16, background: 'none', border: 'none', boxShadow: 'none', padding: 0 }}
+                icon={<img src={ShoppingCart2Line} alt="Carrinho" width={24} height={24} />}
+              />
               {cart.length > 0 && (
                 <span style={{
                   position: 'absolute',

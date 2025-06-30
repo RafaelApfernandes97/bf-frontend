@@ -6,10 +6,10 @@ export default function CoreografiaTop({ nome, coreografia, children }) {
     <div className="coreografia-top">
       <div className="coreografia-top-bg">
         <span className="coreografia-top-title">{nome}</span>
+        {coreografia && Array.isArray(children) && children[0] && (
+          <div className="coreografia-top-coreografia-inline">{children[0]}</div>
+        )}
       </div>
-      {coreografia && Array.isArray(children) && children[0] && (
-        <div className="coreografia-top-coreografia">{children[0]}</div>
-      )}
       {!coreografia && children && <div className="coreografia-top-children">{children}</div>}
       <div className="coreografia-top-content">
         {/* <div className="coreografia-top-icon"> */}
@@ -21,11 +21,11 @@ export default function CoreografiaTop({ nome, coreografia, children }) {
             <circle cx="38" cy="28" r="2" fill="#181818"/>
           </svg>
         </div> */}
-        <div className="coreografia-top-desc">
+        {/* <div className="coreografia-top-desc">
           <strong>Encontre suas fotos por reconhecimento facial</strong>
           <span>Envie uma foto sua de rosto ou tire uma selfie</span>
-        </div>
-        <button className="coreografia-top-btn" style={{visibility: 'hidden'}}>Procurar minhas fotos</button>
+        </div> */}
+        {/* <button className="coreografia-top-btn" style={{visibility: 'hidden'}}>Procurar minhas fotos</button> */}
       </div>
       {/* Novo slot para children extras na parte de baixo do topo */}
       {coreografia && Array.isArray(children) && children[1] && (

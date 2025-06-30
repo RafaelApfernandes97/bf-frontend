@@ -23,7 +23,7 @@
 .body .imagem-instance {
     width: 100% !important;
     max-width: 100vw !important;
-    height: 118px !important;
+    height: 220px !important;
     object-fit: cover;
     border-radius: 10px !important;
 }
