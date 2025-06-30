@@ -2,12 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import CoreografiaTop from '../components/CoreografiaTop';
 import './FotosPage.css';
+import '../CoreografiasBody.css';
 import { useCart } from '../components/CartContext';
 import CartBtn from '../components/CartBtn';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
 import LeftFill from '../assets/icons/left_fill.svg';
 import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
+import CalendarIcon from '../assets/icons/calendar_fill.svg';
+import LocationIcon from '../assets/icons/location_on.svg';
+import CameraIcon from '../assets/icons/Camera.svg';
 
 const BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
 
@@ -126,6 +130,12 @@ function FotosPage({ setShowCart }) {
   if (loading) return <div>Carregando fotos...</div>;
   if (error) return <div>{error}</div>;
 
+  // Formatar dados do evento
+  const eventoFormatado = evento ? {
+    ...evento,
+    data: evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : null
+  } : null;
+
   return (
     <>
       <CoreografiaTop nome={eventoId.replace(/%20/g, ' ')} coreografia={coreografiaId}>
@@ -202,6 +212,27 @@ function FotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
+      
+      {/* Barra de informações do evento */}
+      <div className="evento-info-bar">
+        {eventoFormatado && eventoFormatado.data && (
+          <span className="evento-info-item">
+            <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+            {eventoFormatado.data}
+          </span>
+        )}
+        {eventoFormatado && eventoFormatado.local && (
+          <span className="evento-info-item">
+            <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+            {eventoFormatado.local}
+          </span>
+        )}
+        <span className="evento-info-item">
+          <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+          {fotos.length} fotos
+        </span>
+      </div>
+      
       <div className="fotos-grid">
         {fotos.map(foto => (
           <div

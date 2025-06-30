@@ -3,13 +3,34 @@ body {
   font-family: 'Inter', 'Montserrat', Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
 }
+
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#root {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 @font-face {
   font-family: 'JustCosmic-Regular';
   src: url('./assets/fonts/JustCosmic-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -21,4 +42,23 @@ code {
 
 .font-montserrat {
   font-family: 'Montserrat', Arial, Helvetica, sans-serif !important;
+}
+
+/* Regras globais para responsividade */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevenir overflow em containers flex */
+.flex-container {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Melhorar scroll em dispositivos móveis */
+@media (max-width: 768px) {
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
 }

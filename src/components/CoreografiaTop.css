@@ -7,30 +7,34 @@
   padding-bottom: 32px;
   box-sizing: border-box;
   margin-top: 72px;
-  
+  max-width: 100%;
+  overflow-x: hidden;
 }
 .coreografia-top-bg {
   width: 100%;
   background: var(--cole-o-1-cores-black01, #1b1b1b);
   border-bottom-left-radius: 120px;
   border-bottom-right-radius: 120px;
-  display: flex
-;
+  display: flex;
   justify-content: center;
   align-items: center;
   min-height: 120px;
   padding: 32px 0 24px 0;
   box-sizing: border-box;
   flex-direction: column;
+  max-width: 100%;
 }
 .coreografia-top-title {
   color: #fff;
   font-family: "JustCosmic-Regular", Helvetica;
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 400;
   text-align: center;
   letter-spacing: 1px;
   line-height: 1.1;
+  max-width: 100%;
+  padding: 0 16px;
+  word-wrap: break-word;
 }
 .coreografia-top-content {
   display: flex;
@@ -38,6 +42,8 @@
   align-items: center;
   margin-top: 24px;
   gap: 16px;
+  max-width: 100%;
+  padding: 0 16px;
 }
 .coreografia-top-icon {
   margin-bottom: 8px;
@@ -46,15 +52,16 @@
   text-align: center;
   color: #181818;
   font-family: 'Inter', Arial, sans-serif;
+  max-width: 100%;
 }
 .coreografia-top-desc strong {
   display: block;
-  font-size: 1.3rem;
+  font-size: clamp(1rem, 3vw, 1.3rem);
   font-weight: 700;
   margin-bottom: 4px;
 }
 .coreografia-top-desc span {
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
   font-weight: 400;
   color: #181818;
 }
@@ -63,7 +70,7 @@
   padding: 16px 32px;
   background: linear-gradient(146deg, #FAF782 0%, #FFE001 100%);
   color: #181818;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2.8vw, 1.2rem);
   font-weight: 500;
   border: none;
   border-radius: 16px;
@@ -71,24 +78,65 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   transition: background 0.2s;
   visibility: hidden;
+  white-space: nowrap;
 }
-@media (max-width: 700px) {
+@media (max-width: 768px) {
+  .coreografia-top {
+    margin-top: 60px;
+    padding-bottom: 24px;
+  }
+  .coreografia-top-bg {
+    border-bottom-left-radius: 80px;
+    border-bottom-right-radius: 80px;
+    min-height: 100px;
+    padding: 24px 0 16px 0;
+  }
+  .coreografia-top-content {
+    margin-top: 16px;
+    gap: 12px;
+    padding: 0 12px;
+  }
+  .coreografia-top-children {
+    gap: 8px;
+    padding: 0 12px;
+  }
+  .coreografia-nav {
+    gap: 6px;
+  }
+  .coreografia-top-bg-row {
+    gap: 12px;
+    padding: 0 12px;
+  }
+}
+@media (max-width: 480px) {
+  .coreografia-top {
+    margin-top: 56px;
+    padding-bottom: 20px;
+  }
   .coreografia-top-bg {
     border-bottom-left-radius: 60px;
     border-bottom-right-radius: 60px;
     min-height: 80px;
-    padding: 24px 0 16px 0;
-  }
-  .coreografia-top-title {
-    font-size: 1.5rem;
+    padding: 20px 0 12px 0;
   }
   .coreografia-top-content {
-    margin-top: 16px;
-    gap: 10px;
+    margin-top: 12px;
+    gap: 8px;
+    padding: 0 8px;
   }
-  .coreografia-top {
-    margin-top: 56px;
-    
+  .coreografia-top-children {
+    gap: 6px;
+    padding: 0 8px;
+  }
+  .coreografia-nav {
+    gap: 4px;
+  }
+  .coreografia-top-bg-row {
+    gap: 8px;
+    padding: 0 8px;
+  }
+  .coreografia-top-coreografia-inline {
+    gap: 6px;
   }
 }
 .coreografia-top-children {
@@ -98,13 +146,18 @@
   gap: 12px;
   margin-top: 12px;
   margin-bottom: 0;
+  max-width: 100%;
+  padding: 0 16px;
+  flex-wrap: wrap;
 }
 .coreografia-nav {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
   color: #ffffff;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 .nav-btn {
   background: transparent;
@@ -112,11 +165,12 @@
   color: #ffffff;
   border-radius: 6px;
   padding: 4px 4px;
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 2.2vw, 1rem);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 .nav-btn:hover {
   background: #ffe600;
@@ -124,10 +178,13 @@
   border-color: #ffe600;
 }
 .coreografia-nav-nome {
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 2.2vw, 1rem);
   font-weight: 500;
   color: #ffffff;
   margin: 0 8px;
+  text-align: center;
+  word-wrap: break-word;
+  max-width: 100%;
 }
 .coreografia-top-coreografia {
   display: flex;
@@ -136,10 +193,14 @@
   gap: 12px;
   margin-top: 12px;
   margin-bottom: 0;
-  font-size: 1.5rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
   color: #fff;
   font-family: 'Inter', Helvetica, Arial, sans-serif;
   font-weight: 500;
+  max-width: 100%;
+  padding: 0 16px;
+  text-align: center;
+  word-wrap: break-word;
 }
 .coreografia-top-bg-row {
   display: flex;
@@ -148,6 +209,9 @@
   justify-content: center;
   gap: 16px;
   width: 100%;
+  max-width: 100%;
+  flex-wrap: wrap;
+  padding: 0 16px;
 }
 .coreografia-top-coreografia-inline {
   display: flex;
@@ -156,4 +220,6 @@
   margin: 18px auto 0 auto;
   gap: 8px;
   width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
 } 

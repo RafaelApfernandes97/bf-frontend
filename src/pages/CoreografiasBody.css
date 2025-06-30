@@ -6,23 +6,25 @@
     padding: 16px 12px;
     position: relative;
     width: 100%;
-    max-width: 100vw;
+    max-width: 100%;
     box-sizing: border-box;
     margin: 0 auto;
+    overflow-x: hidden;
 }
 
 .body .coreografia-instance {
     flex: 1 1 100%;
     height: auto !important;
     min-width: 0 !important;
-    max-width: 100vw !important;
+    max-width: 100% !important;
     box-sizing: border-box;
     margin: auto;
+    width: 100%;
 }
 
 .body .imagem-instance {
     width: 100% !important;
-    max-width: 100vw !important;
+    max-width: 100% !important;
     height: 220px !important;
     object-fit: cover;
     border-radius: 10px !important;
@@ -32,14 +34,37 @@
     .body {
         grid-template-columns: 1fr 1fr;
         gap: 24px;
-        padding: 24px 24px;
+        padding: 24px 20px;
     }
 }
+
 @media (min-width: 1024px) {
     .body {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 32px;
-        padding: 32px 32px;
+        padding: 32px 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .body {
+        gap: 16px;
+        padding: 12px 8px;
+    }
+    
+    .body .imagem-instance {
+        height: 180px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .body {
+        gap: 12px;
+        padding: 8px 6px;
+    }
+    
+    .body .imagem-instance {
+        height: 160px !important;
     }
 }
 

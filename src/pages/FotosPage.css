@@ -3,6 +3,8 @@
   justify-content: flex-start;
   margin: 24px 0 12px 0;
   padding-left: 12px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .voltar-btn {
@@ -10,14 +12,16 @@
   border: 2px solid #bdbdbd;
   color: #444;
   border-radius: 32px;
-  padding: 10px 24px;
-  font-size: 1.2rem;
+  padding: 10px 20px;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
   transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+  max-width: 100%;
 }
 .voltar-btn:hover {
   background: #ffe600;
@@ -27,11 +31,13 @@
 
 .fotos-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
   padding: 0 12px;
   margin-bottom: 32px;
   padding-bottom: 80px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .foto-card {
   position: relative;
@@ -42,6 +48,8 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  width: 100%;
+  box-sizing: border-box;
 }
 .foto-card img {
   width: 100%;
@@ -53,26 +61,73 @@
   background: #181818;
   margin: auto;
 }
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .fotos-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 12px;
     padding: 0 8px;
     padding-bottom: 100px;
   }
-  .foto-card img {
-    max-height: 100%;
+  .voltar-wrapper {
+    padding-left: 8px;
+    margin: 16px 0 8px 0;
+  }
+  .voltar-btn {
+    padding: 8px 16px;
+  }
+  .foto-card-selected .foto-check {
+    width: 36px;
+    height: 36px;
+    right: 8px;
+    bottom: 8px;
+  }
+  .foto-nome-overlay {
+    top: 4px;
+    left: 6px;
+    max-width: 85%;
+  }
+}
+@media (max-width: 480px) {
+  .fotos-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 0 6px;
+    padding-bottom: 100px;
+  }
+  .voltar-wrapper {
+    padding-left: 6px;
+    margin: 12px 0 6px 0;
+  }
+  .voltar-btn {
+    padding: 6px 12px;
+    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+  }
+  .fotos-footer {
+    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+    padding: 12px 0;
+    gap: 8px;
+  }
+  .foto-card-selected .foto-check {
+    width: 32px;
+    height: 32px;
+    right: 6px;
+    bottom: 6px;
+  }
+  .foto-nome-overlay {
+    top: 3px;
+    left: 4px;
+    max-width: 90%;
   }
 }
 
 .fotos-footer {
-  width: 100vw;
+  width: 100%;
   background: #181818;
   color: #ffe600;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   font-weight: 500;
   padding: 16px 0;
   position: fixed;
@@ -80,19 +135,15 @@
   bottom: 0;
   z-index: 100;
   gap: 12px;
-}
-@media (max-width: 700px) {
-  .fotos-footer {
-    font-size: 0.98rem;
-    padding: 10px 0;
-    gap: 6px;
-  }
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .foto-select-btn {
   outline: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
 }
 .foto-select-btn.selected {
   background: #ffe001 !important;
@@ -125,7 +176,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: bold;
   box-shadow: 0 2px 8px rgba(0,0,0,0.10);
   z-index: 3;
@@ -138,7 +189,7 @@
   top: 6px;
   left: 8px;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: clamp(0.8rem, 2.2vw, 0.95rem);
   font-weight: 500;
   padding: 0;
   border-radius: 0;
