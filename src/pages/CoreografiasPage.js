@@ -4,7 +4,7 @@ import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
 import './CoreografiasBody.css';
 
-const BACKEND_URL = process.env.backend_url || 'http://localhost:3001';
+const BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
 
 function CoreografiasPage() {
   const { eventoId } = useParams();

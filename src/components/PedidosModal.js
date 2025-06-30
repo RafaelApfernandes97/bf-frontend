@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './PedidosModal.css';
 import { useCart } from './CartContext';
 
-const BACKEND_URL = process.env.backend_url || 'http://localhost:3001';
+const BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
 
 export default function PedidosModal({ onClose }) {
   const [pedidos, setPedidos] = useState([]);

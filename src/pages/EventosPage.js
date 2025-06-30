@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const BACKEND_URL = process.env.backend_url || 'http://localhost:3001';
+const BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
 
 function EventosPage() {
   const [eventos, setEventos] = useState([]);
