@@ -130,12 +130,6 @@ function FotosPage({ setShowCart }) {
   if (loading) return <div>Carregando fotos...</div>;
   if (error) return <div>{error}</div>;
 
-  // Formatar dados do evento
-  const eventoFormatado = evento ? {
-    ...evento,
-    data: evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : null
-  } : null;
-
   return (
     <>
       <CoreografiaTop nome={eventoId.replace(/%20/g, ' ')} coreografia={coreografiaId}>
@@ -212,27 +206,6 @@ function FotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
-      
-      {/* Barra de informações do evento */}
-      <div className="evento-info-bar">
-        {eventoFormatado && eventoFormatado.data && (
-          <span className="evento-info-item">
-            <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {eventoFormatado.data}
-          </span>
-        )}
-        {eventoFormatado && eventoFormatado.local && (
-          <span className="evento-info-item">
-            <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {eventoFormatado.local}
-          </span>
-        )}
-        <span className="evento-info-item">
-          <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-          {fotos.length} fotos
-        </span>
-      </div>
-      
       <div className="fotos-grid">
         {fotos.map(foto => (
           <div
