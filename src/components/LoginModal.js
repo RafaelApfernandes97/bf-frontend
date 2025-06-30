@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
 
+const BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
+
 export default function LoginModal({ onClose, onRegisterClick, onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -12,7 +14,7 @@ export default function LoginModal({ onClose, onRegisterClick, onLoginSuccess })
     setErro('');
     setLoading(true);
     try {
-      const res = await fetch('/api/usuarios/login', {
+      const res = await fetch(`${BACKEND_URL}/api/usuarios/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha })
