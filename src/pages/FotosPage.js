@@ -5,7 +5,7 @@ import './FotosPage.css';
 import { useCart } from '../components/CartContext';
 import CartBtn from '../components/CartBtn';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.backend_url || 'http://localhost:3001';
 
 function FotosPage() {
   const { eventoId, coreografiaId } = useParams();
@@ -18,10 +18,11 @@ function FotosPage() {
   const { cart, addToCart, removeFromCart } = useCart();
   const [evento, setEvento] = useState(null);
   const [tabelaPreco, setTabelaPreco] = useState(null);
+  const [tabelas, setTabelas] = useState([]);
 
   // Buscar todas as coreografias do evento para navegação
   useEffect(() => {
-    fetch(`${API_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`)
+    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`)
       .then(res => res.json())
       .then(data => {
         setCoreografias(data.coreografias || []);
@@ -31,7 +32,7 @@ function FotosPage() {
   // Buscar fotos da coreografia
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/fotos`)
+    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/fotos`)
       .then(res => res.json())
       .then(data => {
         setFotos(data.fotos || []);
@@ -52,7 +53,7 @@ function FotosPage() {
         .replace(/\s+/g, ' ') // normaliza espaços
         .trim();
     }
-    fetch(`${API_URL}/api/admin/eventos`)
+    fetch(`${BACKEND_URL}/api/admin/eventos`)
       .then(res => res.json())
       .then(async data => {
         // Encontrar o evento pelo nome (ignorando case, acentos e espaços)
@@ -64,11 +65,17 @@ function FotosPage() {
           setTabelaPreco(ev.tabelaPrecoId);
         } else {
           // Buscar tabela default
-          const resTabela = await fetch(`${API_URL}/api/admin/tabelas-preco`);
-          const tabelas = await resTabela.json();
-          const tabelaDefault = Array.isArray(tabelas) ? tabelas.find(t => t.isDefault) : null;
+          const resTabela = await fetch(`${BACKEND_URL}/api/admin/tabelas-preco`);
+          const tabelasData = await resTabela.json();
+          setTabelas(tabelasData);
+          const tabelaDefault = Array.isArray(tabelasData) ? tabelasData.find(t => t.isDefault) : null;
           setTabelaPreco(tabelaDefault || null);
         }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Erro ao carregar dados do evento');
+        setLoading(false);
       });
   }, [eventoId]);
 

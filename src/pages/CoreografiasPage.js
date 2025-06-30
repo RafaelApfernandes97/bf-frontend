@@ -4,7 +4,7 @@ import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
 import './CoreografiasBody.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.backend_url || 'http://localhost:3001';
 
 function CoreografiasPage() {
   const { eventoId } = useParams();
@@ -14,7 +14,7 @@ function CoreografiasPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`)
+    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`)
       .then(res => res.json())
       .then(data => {
         const coreografiasOrdenadas = (data.coreografias || []).slice().sort((a, b) => {

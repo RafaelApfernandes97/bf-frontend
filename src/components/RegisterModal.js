@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.backend_url || 'http://localhost:3001';
 
 function maskCpfCnpj(value) {
   value = value.replace(/\D/g, '');
@@ -93,7 +93,7 @@ export default function RegisterModal({ onClose, onLoginClick }) {
     setErros({});
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/usuarios/register`, {
+      const res = await fetch(`${BACKEND_URL}/api/usuarios/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha, nome, cpfCnpj: cpfCnpj.replace(/\D/g, ''), telefone: telefone.replace(/\D/g, ''), cep, rua, numero, bairro, cidade, estado })
@@ -101,7 +101,7 @@ export default function RegisterModal({ onClose, onLoginClick }) {
       const data = await res.json();
       if (res.ok && data.ok) {
         // Login automático após cadastro
-        const resLogin = await fetch(`${API_URL}/api/usuarios/login`, {
+        const resLogin = await fetch(`${BACKEND_URL}/api/usuarios/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, senha })
