@@ -7,7 +7,38 @@ const MINIO_ENDPOINT = 'https://balletemfoco-minio.ul08ww.easypanel.host';
 const MINIO_BUCKET = 'balletemfoco';
 
 function montarUrlPublica(evento, coreografia, nome) {
-  return `${MINIO_ENDPOINT}/${MINIO_BUCKET}/${encodeURIComponent(evento)}/${encodeURIComponent(coreografia)}/${encodeURIComponent(nome)}`;
+  const url = `${MINIO_ENDPOINT}/${MINIO_BUCKET}/${encodeURIComponent(evento)}/${encodeURIComponent(coreografia)}/${encodeURIComponent(nome)}`;
+  return url;
+}
+
+// Função para criar uma imagem de placeholder
+function criarPlaceholder(nome) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 200;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  
+  // Fundo cinza
+  ctx.fillStyle = '#333';
+  ctx.fillRect(0, 0, 200, 200);
+  
+  // Ícone de câmera
+  ctx.fillStyle = '#666';
+  ctx.font = '48px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('📷', 100, 100);
+  
+  // Nome da foto
+  ctx.fillStyle = '#999';
+  ctx.font = '12px Arial';
+  ctx.fillText(nome || 'Foto', 100, 180);
+  
+  // Texto de erro
+  ctx.fillStyle = '#ff6b6b';
+  ctx.font = '10px Arial';
+  ctx.fillText('Erro ao carregar', 100, 160);
+  
+  return canvas.toDataURL();
 }
 
 export default function PedidosModal({ onClose }) {
@@ -29,19 +60,22 @@ export default function PedidosModal({ onClose }) {
         });
         if (!res.ok) throw new Error('Erro ao buscar pedidos');
         const data = await res.json();
+        
         // Garantir que cada foto tenha uma URL pública
         const pedidosComUrls = (data.pedidos || []).map(pedido => {
           const fotosComUrls = (pedido.fotos || []).map(foto => {
             let url = foto.url;
-            if (!url) {
+            if (!url || url.includes('sem_foto')) {
               url = montarUrlPublica(pedido.evento, foto.coreografia, foto.nome);
             }
             return { ...foto, url };
           });
           return { ...pedido, fotos: fotosComUrls };
         });
+        
         setPedidos(pedidosComUrls);
       } catch (e) {
+        console.error('Erro ao carregar pedidos:', e);
         setErro('Erro ao carregar pedidos');
       }
       setLoading(false);
@@ -88,6 +122,13 @@ export default function PedidosModal({ onClose }) {
 
   function toggleExpand(id) {
     setExpandedId(prevId => (prevId === id ? null : id));
+  }
+
+  function handleImageError(e, foto) {
+    // Criar placeholder quando a imagem falhar
+    e.target.src = criarPlaceholder(foto.nome);
+    e.target.style.objectFit = 'contain';
+    e.target.style.backgroundColor = '#333';
   }
 
   return (
@@ -138,7 +179,11 @@ export default function PedidosModal({ onClose }) {
                     {pedido.fotos.map((foto, idx) => {
                       return (
                         <div key={idx} className="pedido-photo-item" onClick={() => setFotoExpandida(foto)} style={{cursor: 'pointer'}}>
-                          <img src={foto.url || '/img/sem_foto.jpg'} alt={foto.nome} onError={e => e.target.src='/img/sem_foto.jpg'} />
+                          <img 
+                            src={foto.url} 
+                            alt={foto.nome} 
+                            onError={(e) => handleImageError(e, foto)}
+                          />
                           <div className="pedido-photo-info">
                             <div className="pedido-photo-name">{foto.nome}</div>
                             {foto.coreografia && (
@@ -160,9 +205,9 @@ export default function PedidosModal({ onClose }) {
               <div className="foto-expandida-img-wrapper" style={{position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%'}}>
                 <div className="foto-expandida-nome">{fotoExpandida.nome}</div>
                 <img
-                  src={fotoExpandida.url || '/img/sem_foto.jpg'}
+                  src={fotoExpandida.url}
                   alt={fotoExpandida.nome}
-                  onError={e => e.target.src='/img/sem_foto.jpg'}
+                  onError={(e) => handleImageError(e, fotoExpandida)}
                   className="foto-expandida-img"
                   draggable={false}
                 />
