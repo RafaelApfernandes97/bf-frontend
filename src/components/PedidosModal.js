@@ -175,24 +175,26 @@ export default function PedidosModal({ onClose }) {
                   </div>
                 </div>
                 {expandedId === pedido._id && (
-                  <div className="pedido-photos-list">
-                    {pedido.fotos.map((foto, idx) => {
-                      return (
-                        <div key={idx} className="pedido-photo-item" onClick={() => setFotoExpandida(foto)} style={{cursor: 'pointer'}}>
-                          <img 
-                            src={foto.url} 
-                            alt={foto.nome} 
-                            onError={(e) => handleImageError(e, foto)}
-                          />
-                          <div className="pedido-photo-info">
-                            <div className="pedido-photo-name">{foto.nome}</div>
-                            {foto.coreografia && (
-                              <div className="pedido-photo-coreo">{foto.coreografia}</div>
-                            )}
+                  <div className="pedido-photos-list-wrapper">
+                    <div className="pedido-photos-list">
+                      {pedido.fotos.map((foto, idx) => {
+                        return (
+                          <div key={idx} className="pedido-photo-item" onClick={() => setFotoExpandida(foto)} style={{cursor: 'pointer'}}>
+                            <img 
+                              src={foto.url} 
+                              alt={foto.nome} 
+                              onError={(e) => handleImageError(e, foto)}
+                            />
+                            <div className="pedido-photo-info">
+                              <div className="pedido-photo-name">{foto.nome}</div>
+                              {foto.coreografia && (
+                                <div className="pedido-photo-coreo">{foto.coreografia}</div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
