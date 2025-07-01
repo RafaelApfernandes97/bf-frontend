@@ -168,7 +168,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
   margin-top: 8px;
 }
 
@@ -199,7 +199,7 @@
   padding: 6px 18px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
-  margin-left: 4px;
+  margin-left: auto;
 }
 
 .refazer-pedido-btn:hover {
@@ -629,7 +629,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -638,13 +638,15 @@
 }
 
 .modal-content {
-  background: white;
+  background: black;
+  color: white;
   width: 100%;
   max-width: 500px;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 0;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
 }
 
 .close-btn {
@@ -654,4 +656,17 @@
   background: none;
   border: none;
   font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 } 

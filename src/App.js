@@ -6,6 +6,8 @@ import FotosPage from './pages/FotosPage';
 import AdminPage from './pages/AdminPage';
 import Header from './components/Header';
 import CartModal from './components/CartModal';
+import LoginModal from './components/LoginModal';
+import RegisterModal from './components/RegisterModal';
 import { useCart } from './components/CartContext';
 import API_ENDPOINTS from './config/api';
 import './App.css';
@@ -16,6 +18,11 @@ function App() {
   const [valorUnitario, setValorUnitario] = useState(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutMsg, setCheckoutMsg] = useState('');
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+
+  // Verificar se o usuário está logado
+  const isLoggedIn = !!localStorage.getItem('user_token');
 
   // Calcular valor unitário baseado nas regras do admin
   useEffect(() => {
@@ -153,8 +160,9 @@ function App() {
     try {
       const token = localStorage.getItem('user_token');
       if (!token) {
-        setCheckoutMsg('Você precisa estar logado para finalizar a compra.');
         setCheckoutLoading(false);
+        setShowCart(false);
+        setShowLogin(true);
         return;
       }
       // Buscar dados do usuário (opcional, só para garantir que está autenticado)
@@ -162,8 +170,9 @@ function App() {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!resUser.ok) {
-        setCheckoutMsg('Erro ao buscar dados do usuário. Faça login novamente.');
         setCheckoutLoading(false);
+        setShowCart(false);
+        setShowLogin(true);
         return;
       }
       // Montar payload do pedido
@@ -225,6 +234,35 @@ function App() {
           valorUnitario={valorUnitario}
           checkoutLoading={checkoutLoading}
           checkoutMsg={checkoutMsg}
+          isLoggedIn={isLoggedIn}
+          onShowLogin={() => {
+            setShowCart(false);
+            setShowLogin(true);
+          }}
+          onShowRegister={() => {
+            setShowCart(false);
+            setShowRegister(true);
+          }}
+        />
+      )}
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onRegisterClick={() => { setShowLogin(false); setShowRegister(true); }}
+          onLoginSuccess={() => {
+            setShowLogin(false);
+            setShowCart(true); // Reabre o carrinho após login
+          }}
+        />
+      )}
+      {showRegister && (
+        <RegisterModal
+          onClose={() => setShowRegister(false)}
+          onLoginClick={() => { setShowRegister(false); setShowLogin(true); }}
+          onLoginSuccess={() => {
+            setShowRegister(false);
+            setShowCart(true); // Reabre o carrinho após cadastro
+          }}
         />
       )}
     </Router>

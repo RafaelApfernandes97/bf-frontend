@@ -120,30 +120,14 @@
   justify-content: flex-start;
 }
 
-.edit-user-loading,
-.edit-user-error,
-.edit-user-success {
-  color: #ffe001;
-  text-align: center;
-  margin: 40px 0;
-  font-size: 16px;
-}
-
-.edit-user-error {
-  color: #ff5a5a;
-}
-
-.edit-user-success {
-  color: #4caf50;
-}
-
-.edit-user-form {
+/* Estilos específicos para o modal de edição quando usando .modal-content */
+.modal-content .edit-user-form {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.edit-user-label {
+.modal-content .edit-user-label {
   font-weight: 500;
   color: #fff;
   font-size: 18px;
@@ -152,7 +136,7 @@
   gap: 8px;
 }
 
-.edit-user-input {
+.modal-content .edit-user-input {
   font-size: 18px;
   border-radius: 14px;
   border: 2px solid #888;
@@ -164,29 +148,29 @@
   box-sizing: border-box;
 }
 
-.edit-user-input:focus {
+.modal-content .edit-user-input:focus {
   border: 2px solid #ffe001;
 }
 
-.edit-user-input:disabled {
+.modal-content .edit-user-input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.edit-user-error-field {
+.modal-content .edit-user-error-field {
   color: #FF5A5A;
   font-size: 14px;
   margin-top: 4px;
 }
 
-.edit-user-buttons {
+.modal-content .edit-user-buttons {
   display: flex;
   gap: 16px;
   margin-top: 12px;
   flex-direction: row !important;
 }
 
-.edit-user-btn {
+.modal-content .edit-user-btn {
   height: 48px;
   border-radius: 14px;
   font-weight: 600;
@@ -196,109 +180,118 @@
   border: none;
 }
 
-.edit-user-btn:disabled {
+.modal-content .edit-user-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.edit-user-btn-cancel {
+.modal-content .edit-user-btn-cancel {
   flex: 1;
   border: 2px solid #ffe001;
   background: none;
   color: #ffe001;
 }
 
-.edit-user-btn-cancel:hover:not(:disabled) {
+.modal-content .edit-user-btn-cancel:hover:not(:disabled) {
   background: rgba(255, 224, 1, 0.1);
 }
 
-.edit-user-btn-save {
+.modal-content .edit-user-btn-save {
   flex: 2;
   background: linear-gradient(90deg, #faf782 0%, #ffe001 100%);
   color: #222;
 }
 
-.edit-user-btn-save:hover:not(:disabled) {
+.modal-content .edit-user-btn-save:hover:not(:disabled) {
   filter: brightness(1.1);
+}
+
+.modal-content .edit-user-loading,
+.modal-content .edit-user-error,
+.modal-content .edit-user-success {
+  color: #ffe001;
+  text-align: center;
+  margin: 40px 0;
+  font-size: 16px;
+}
+
+.modal-content .edit-user-error {
+  color: #ff5a5a;
+}
+
+.modal-content .edit-user-success {
+  color: #4caf50;
 }
 
 /* Responsividade para o modal de edição */
 @media (max-width: 600px) {
-  .edit-user-modal {
-    min-width: 0;
-    width: 98vw;
-    max-width: 98vw;
-    padding: 20px 8px 16px 8px;
-    border-radius: 16px;
-    margin: 10px;
-    max-height: 94vh;
-  }
-  
-  .edit-user-form {
+  .modal-content .edit-user-form {
     gap: 16px;
   }
   
-  .edit-user-label {
+  .modal-content .edit-user-label {
     font-size: 16px;
     gap: 6px;
   }
   
-  .edit-user-input {
+  .modal-content .edit-user-input {
     font-size: 16px;
     padding: 12px 14px;
     border-radius: 12px;
   }
   
-  .edit-user-buttons {
+  .modal-content .edit-user-buttons {
     flex-direction: row !important;
     gap: 10px;
   }
   
-  .edit-user-btn {
+  .modal-content .edit-user-btn {
     height: 44px;
     font-size: 16px;
     border-radius: 12px;
   }
   
-  .edit-user-error-field {
+  .modal-content .edit-user-error-field {
     font-size: 13px;
   }
   
-  .edit-user-loading,
-  .edit-user-error,
-  .edit-user-success {
+  .modal-content .edit-user-loading,
+  .modal-content .edit-user-error,
+  .modal-content .edit-user-success {
     font-size: 14px;
     margin: 30px 0;
   }
 }
 
 @media (max-width: 480px) {
-  .edit-user-modal {
-    padding: 12px 2vw 12px 2vw;
-    max-height: 98vh;
-  }
-  
-  .edit-user-form {
+  .modal-content .edit-user-form {
     gap: 14px;
   }
   
-  .edit-user-label {
+  .modal-content .edit-user-label {
     font-size: 15px;
   }
   
-  .edit-user-input {
+  .modal-content .edit-user-input {
     font-size: 15px;
     padding: 10px 12px;
   }
   
-  .edit-user-btn {
+  .modal-content .edit-user-btn {
     height: 40px;
     font-size: 15px;
   }
   
-  .edit-user-buttons {
+  .modal-content .edit-user-buttons {
     flex-direction: row !important;
     gap: 8px;
+  }
+  
+  .modal-content .edit-user-loading,
+  .modal-content .edit-user-error,
+  .modal-content .edit-user-success {
+    font-size: 13px;
+    margin: 20px 0;
   }
 }
 
@@ -441,7 +434,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -450,13 +443,15 @@
 }
 
 .modal-content {
-  background: white;
+  background: black;
+  color: white;
   width: 100%;
   max-width: 500px;
   border-radius: 8px;
   padding: 1.5rem;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
 }
 
 .close-btn {
@@ -466,4 +461,279 @@
   background: none;
   border: none;
   font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-content .login-modal-container label {
+  font-weight: 500;
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.modal-content .login-modal-container input[type="email"],
+.modal-content .login-modal-container input[type="password"] {
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  padding: 18px 20px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+  font-family: inherit;
+  min-height: 56px;
+}
+
+.modal-content .login-modal-container input[type="email"]:focus,
+.modal-content .login-modal-container input[type="password"]:focus {
+  border: 2px solid #ffe001;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 224, 1, 0.1);
+}
+
+.modal-content .login-modal-container input[type="email"]::placeholder,
+.modal-content .login-modal-container input[type="password"]::placeholder {
+  color: #888;
+  opacity: 0.8;
+}
+
+.modal-content .login-modal-container h2 {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.modal-content .login-modal-btn {
+  background: linear-gradient(90deg, #faf782 0%, #ffe001 100%);
+  color: #222;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 18px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-height: 56px;
+  width: 100%;
+}
+
+.modal-content .login-modal-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 224, 1, 0.3);
+  filter: brightness(1.1);
+}
+
+.modal-content .login-modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.modal-content .login-modal-links {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.modal-content .login-modal-link {
+  background: none;
+  border: none;
+  color: #ffe001;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.modal-content .login-modal-link:hover {
+  color: #fff;
+  background: rgba(255, 224, 1, 0.1);
+}
+
+.modal-content .login-modal-erro {
+  color: #ff5a5a;
+  background: rgba(255, 90, 90, 0.1);
+  border: 1px solid rgba(255, 90, 90, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Estilos específicos para o modal de registro */
+.modal-content .register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-content .register-form label {
+  font-weight: 500;
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-content .register-form input[type="text"],
+.modal-content .register-form input[type="email"],
+.modal-content .register-form input[type="password"] {
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  padding: 18px 20px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+  font-family: inherit;
+  min-height: 56px;
+}
+
+.modal-content .register-form input[type="text"]:focus,
+.modal-content .register-form input[type="email"]:focus,
+.modal-content .register-form input[type="password"]:focus {
+  border: 2px solid #ffe001;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 224, 1, 0.1);
+}
+
+.modal-content .register-form input[type="text"]::placeholder,
+.modal-content .register-form input[type="email"]::placeholder,
+.modal-content .register-form input[type="password"]::placeholder {
+  color: #888;
+  opacity: 0.8;
+}
+
+.modal-content .register-hint {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.modal-content .register-link-text {
+  color: #fff;
+  font-size: 14px;
+}
+
+.modal-content .register-success {
+  color: #4caf50;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.modal-content .register-error-field {
+  color: #ff5a5a;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* Responsividade para os modais */
+@media (max-width: 600px) {
+  .modal-content .login-modal-container label,
+  .modal-content .register-form label {
+    font-size: 15px;
+  }
+  
+  .modal-content .login-modal-container input[type="email"],
+  .modal-content .login-modal-container input[type="password"],
+  .modal-content .register-form input[type="email"],
+  .modal-content .register-form input[type="password"],
+  .modal-content .register-form input[type="text"] {
+    font-size: 15px;
+    padding: 14px 16px;
+  }
+  
+  .modal-content .login-modal-container h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .modal-content .login-modal-btn {
+    font-size: 15px;
+    padding: 14px 20px;
+  }
+  
+  .modal-content .register-form {
+    gap: 16px;
+  }
+}
+
+.login-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-modal-form label {
+  font-weight: 500;
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-modal-form input[type="email"],
+.login-modal-form input[type="password"] {
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  padding: 18px 20px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+  font-family: inherit;
+  min-height: 56px;
+}
+
+.login-modal-form input[type="email"]:focus,
+.login-modal-form input[type="password"]:focus {
+  border: 2px solid #ffe001;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 224, 1, 0.1);
+}
+
+.login-modal-form input[type="email"]::placeholder,
+.login-modal-form input[type="password"]::placeholder {
+  color: #888;
+  opacity: 0.8;
 } 

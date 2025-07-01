@@ -1,7 +1,7 @@
 import React from 'react';
 import './CartModal.css';
 
-export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorUnitario, checkoutLoading = false, checkoutMsg = '' }) {
+export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorUnitario, checkoutLoading = false, checkoutMsg = '', isLoggedIn = true, onShowLogin, onShowRegister }) {
   const total = fotos.length * (Number(valorUnitario) || 0);
 
   return (
@@ -47,13 +47,71 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
             <span>R${(Number(total) || 0).toFixed(2).replace('.', ',')}</span>
           </div>
         </div>
+        {!isLoggedIn && (
+          <div style={{ 
+            color: '#ffe001', 
+            textAlign: 'center', 
+            margin: '10px 0', 
+            fontWeight: 600, 
+            fontSize: 14,
+            background: 'rgba(255, 224, 1, 0.1)',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 224, 1, 0.3)'
+          }}>
+            Atenção: Para continuar com a compra, é necessário estar logado em sua conta.<br/>
+            <button 
+              onClick={onShowLogin}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ffe001',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                fontSize: 'inherit',
+                fontWeight: 'inherit',
+                padding: '0',
+                margin: '0 4px'
+              }}
+            >
+              Faça login
+            </button>
+            ou
+            <button 
+              onClick={onShowRegister}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ffe001',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                fontSize: 'inherit',
+                fontWeight: 'inherit',
+                padding: '0',
+                margin: '0 4px'
+              }}
+            >
+              crie uma conta
+            </button>
+            para prosseguir.
+          </div>
+        )}
         {checkoutMsg && (
           <div style={{ color: checkoutMsg.includes('sucesso') ? '#4caf50' : '#FF5A5A', textAlign: 'center', margin: '10px 0', fontWeight: 600, fontSize: 15 }}>
             {checkoutMsg}
           </div>
         )}
-        <button className="cart-checkout-btn" onClick={onCheckout} disabled={checkoutLoading || fotos.length === 0}>
-          {checkoutLoading ? 'Enviando pedido...' : 'Finalizar compra'} <span className="cart-checkout-arrow">→</span>
+        <button
+          className="cart-checkout-btn"
+          onClick={isLoggedIn ? onCheckout : onShowLogin}
+          disabled={checkoutLoading || fotos.length === 0}
+        >
+          {checkoutLoading
+            ? 'Enviando pedido...'
+            : isLoggedIn
+              ? 'Finalizar compra'
+              : 'Fazer login'}
+          <span className="cart-checkout-arrow">→</span>
         </button>
       </div>
     </div>

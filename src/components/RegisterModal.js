@@ -40,7 +40,7 @@ function maskCep(value) {
   return value.replace(/\D/g, '').replace(/(\d{5})(\d)/, '$1-$2').slice(0,9);
 }
 
-export default function RegisterModal({ onClose, onLoginClick }) {
+export default function RegisterModal({ onClose, onLoginClick, onLoginSuccess }) {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -112,6 +112,7 @@ export default function RegisterModal({ onClose, onLoginClick }) {
           localStorage.setItem('user_nome', dataLogin.nome || '');
           if (onLoginClick) onLoginClick(); // fecha modal de login se aberto
           if (onClose) onClose(); // fecha modal de cadastro
+          if (onLoginSuccess) onLoginSuccess();
         } else {
           setSucesso(true); // fallback: mostra mensagem de sucesso
           setTimeout(() => {
@@ -145,9 +146,9 @@ export default function RegisterModal({ onClose, onLoginClick }) {
   }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <button className="close-btn" onClick={onClose}>&times;</button>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="close-btn" onClick={onClose}>✕</button>
         {sucesso ? (
           <h2 className="register-success">Cadastro realizado!<br/>Faça login para continuar.</h2>
         ) : (
