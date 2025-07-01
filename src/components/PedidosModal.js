@@ -91,9 +91,9 @@ export default function PedidosModal({ onClose }) {
   }
 
   return (
-    <div className="pedidos-modal-overlay">
-      <div className="pedidos-modal-container">
-        <button className="pedidos-modal-close" onClick={onClose}>&times;</button>
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <button className="close-btn" onClick={onClose}>&times;</button>
         <div className="pedidos-modal-title-left">Meus Pedidos</div>
         
         {loading ? (

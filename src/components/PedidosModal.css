@@ -6,10 +6,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: max(20px, env(safe-area-inset-top));
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
-  padding-left: max(20px, env(safe-area-inset-left));
-  padding-right: max(20px, env(safe-area-inset-right));
+  padding: 20px;
 }
 
 .pedidos-modal-container {
@@ -21,8 +18,6 @@
   overflow-y: auto;
   position: relative;
   box-shadow: 0 8px 32px rgba(0,0,0,0.32);
-  display: flex;
-  flex-direction: column;
 }
 
 .pedidos-modal-close {
@@ -74,7 +69,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  flex: 1 1 auto;
 }
 
 .pedido-item {
@@ -630,4 +624,34 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5vh 1rem;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
 } 

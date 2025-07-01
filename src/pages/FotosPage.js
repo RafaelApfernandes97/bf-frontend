@@ -206,24 +206,6 @@ function FotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
-      <div className="evento-info-bar">
-        {evento && evento.data && (
-          <span className="evento-info-item">
-            <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : ''}
-          </span>
-        )}
-        {evento && evento.local && (
-          <span className="evento-info-item">
-            <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {evento.local}
-          </span>
-        )}
-        <span className="evento-info-item">
-          <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-          {fotos.length} fotos
-        </span>
-      </div>
       <div className="fotos-grid">
         {fotos.map(foto => (
           <div

@@ -35,9 +35,9 @@ export default function LoginModal({ onClose, onRegisterClick, onLoginSuccess })
   }
 
   return (
-    <div className="login-modal-overlay">
-      <div className="login-modal-container">
-        <button className="login-modal-close" onClick={onClose}>&times;</button>
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <button className="close-btn" onClick={onClose}>&times;</button>
         <h2>Entrar</h2>
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <label>Email

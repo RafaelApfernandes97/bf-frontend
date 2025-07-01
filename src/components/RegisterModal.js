@@ -145,9 +145,9 @@ export default function RegisterModal({ onClose, onLoginClick }) {
   }
 
   return (
-    <div className="login-modal-overlay">
-      <div className="login-modal-container register-modal">
-        <button className="login-modal-close" onClick={onClose}>&times;</button>
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <button className="close-btn" onClick={onClose}>&times;</button>
         {sucesso ? (
           <h2 className="register-success">Cadastro realizado!<br/>Faça login para continuar.</h2>
         ) : (
