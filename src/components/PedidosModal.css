@@ -626,47 +626,28 @@
   to { opacity: 1; }
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 5vh 1rem;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: black;
-  color: white;
-  width: 100%;
-  max-width: 500px;
-  border-radius: 8px;
-  padding: 0;
-  max-height: 90vh;
-  overflow-y: auto;
+.pedidos-modal-content {
   position: relative;
-}
-
-.close-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: white;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
+  background: #181818;
+  border-radius: 16px;
+  max-width: 480px;
+  width: 95%;
+  margin: 40px auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding: 32px 24px 24px 24px;
+  z-index: 11;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.3s;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 120px;
+  animation: modalFadeIn 0.25s;
 }
 
-.close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+@media (max-width: 600px) {
+  .pedidos-modal-content {
+    max-width: 99vw;
+    padding: 0.5rem;
+    margin: 12px auto;
+    border-radius: 10px;
+  }
 } 

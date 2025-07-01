@@ -167,7 +167,7 @@ export default function PedidosModal({ onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}>✕</button>
         <div className="pedidos-modal-title-left">Meus Pedidos</div>
         

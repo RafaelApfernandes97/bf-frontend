@@ -192,9 +192,9 @@ export default function EditUserModal({ onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content edit-user-modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '0.5rem' }}>
         <button className="close-btn" onClick={onClose}>✕</button>
-        <h2>Meus Dados</h2>
+        <div className="pedidos-modal-title-left">Meus Dados</div>
         {loading ? (
           <div className="edit-user-loading">Carregando...</div>
         ) : erro && !sucesso ? (

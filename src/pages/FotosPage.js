@@ -42,8 +42,24 @@ function FotosPage({ setShowCart }) {
     setLoading(true);
     fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/fotos`)
       .then(res => res.json())
-      .then(data => {
-        setFotos(data.fotos || []);
+      .then(async data => {
+        const token = localStorage.getItem('user_token');
+        const fotosComUrls = await Promise.all(
+          (data.fotos || []).map(async (foto) => {
+            try {
+              const res = await fetch(
+                `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/${encodeURIComponent(foto.nome)}`,
+                { headers: { Authorization: 'Bearer ' + token } }
+              );
+              if (res.ok) {
+                const d = await res.json();
+                return { ...foto, url: d.url };
+              }
+            } catch {}
+            return { ...foto, url: '' };
+          })
+        );
+        setFotos(fotosComUrls);
         setLoading(false);
       })
       .catch(err => {
