@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './PedidosModal.css';
 import { useCart } from './CartContext';
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
 const MINIO_ENDPOINT = 'https://balletemfoco-minio.ul08ww.easypanel.host';
 const MINIO_BUCKET = 'balletemfoco';
 

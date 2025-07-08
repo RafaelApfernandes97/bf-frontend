@@ -13,7 +13,7 @@ import CameraIcon from '../assets/icons/Camera.svg';
 import LeftFill from '../assets/icons/left_fill.svg';
 import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
 
 function isDiaFolder(nome) {
   // Regex para detectar formato 'dd-mm DiaSemana' ou 'dd-mm Dia'
