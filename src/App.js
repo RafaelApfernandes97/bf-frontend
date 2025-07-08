@@ -10,6 +10,7 @@ import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
 import { useCart } from './components/CartContext';
 import API_ENDPOINTS from './config/api';
+import NavegadorPastasFotosPage from './pages/NavegadorPastasFotosPage';
 import './App.css';
 
 function App() {
@@ -214,14 +215,21 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <Header onCartClick={() => setShowCart(true)} />
       <div className="main-content">
         <Routes>
           <Route path="/" element={<Navigate to="/eventos" />} />
           <Route path="/eventos" element={<EventosPage />} />
-          <Route path="/eventos/:eventoId" element={<CoreografiasPage />} />
+          <Route path="/eventos/:eventoId" element={<CoreografiasPage setShowCart={setShowCart} />} />
           <Route path="/eventos/:eventoId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
+          <Route path="/eventos/:eventoId/:diaId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
+          <Route path="/eventos/pasta/*" element={<NavegadorPastasFotosPage setShowCart={setShowCart} />} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>

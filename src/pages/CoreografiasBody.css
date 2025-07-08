@@ -1,7 +1,7 @@
 .body {
     background-color: var(--cole-o-1-cores-black01);
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     padding: 16px 12px;
     position: relative;
@@ -59,6 +59,7 @@
 
 @media (max-width: 480px) {
     .body {
+        grid-template-columns: 1fr;
         gap: 12px;
         padding: 8px 6px;
     }

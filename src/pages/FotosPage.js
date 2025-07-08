@@ -13,10 +13,10 @@ import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
 
-const BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
+const BACKEND_URL = 'http://localhost:3001';
 
 function FotosPage({ setShowCart }) {
-  const { eventoId, coreografiaId } = useParams();
+  const { eventoId, coreografiaId, diaId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const [fotos, setFotos] = useState([]);
@@ -30,27 +30,46 @@ function FotosPage({ setShowCart }) {
 
   // Buscar todas as coreografias do evento para navegação
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`)
+    const url = diaId 
+      ? `${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(diaId)}/coreografias`
+      : `${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`;
+    
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setCoreografias(data.coreografias || []);
       });
-  }, [eventoId]);
+  }, [eventoId, diaId]);
 
   // Buscar fotos da coreografia
   useEffect(() => {
     setLoading(true);
-    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/fotos`)
-      .then(res => res.json())
+    console.log('[FotosPage] eventoId:', eventoId);
+    console.log('[FotosPage] diaId:', diaId);
+    console.log('[FotosPage] coreografiaId:', coreografiaId);
+    
+    const url = diaId 
+      ? `${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaId)}/fotos`
+      : `${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/fotos`;
+    
+    console.log('[FotosPage] URL da API:', url);
+    
+    fetch(url)
+      .then(res => {
+        console.log('[FotosPage] Status da resposta:', res.status);
+        return res.json();
+      })
       .then(async data => {
+        console.log('[FotosPage] Dados recebidos:', data);
         const token = localStorage.getItem('user_token');
         const fotosComUrls = await Promise.all(
           (data.fotos || []).map(async (foto) => {
             try {
-              const res = await fetch(
-                `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/${encodeURIComponent(foto.nome)}`,
-                { headers: { Authorization: 'Bearer ' + token } }
-              );
+              const urlFoto = diaId 
+                ? `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(eventoId)}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaId)}/${encodeURIComponent(foto.nome)}`
+                : `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/${encodeURIComponent(foto.nome)}`;
+              
+              const res = await fetch(urlFoto, { headers: { Authorization: 'Bearer ' + token } });
               if (res.ok) {
                 const d = await res.json();
                 return { ...foto, url: d.url };
@@ -59,14 +78,16 @@ function FotosPage({ setShowCart }) {
             return { ...foto, url: '' };
           })
         );
+        console.log('[FotosPage] Fotos processadas:', fotosComUrls);
         setFotos(fotosComUrls);
         setLoading(false);
       })
       .catch(err => {
+        console.error('[FotosPage] Erro ao carregar fotos:', err);
         setError('Erro ao carregar fotos');
         setLoading(false);
       });
-  }, [eventoId, coreografiaId]);
+  }, [eventoId, coreografiaId, diaId]);
 
   // Buscar dados do evento (incluindo tabela de preço)
   useEffect(() => {
@@ -120,7 +141,8 @@ function FotosPage({ setShowCart }) {
       addToCart({
         ...foto,
         evento: eventoId,
-        coreografia: coreografiaId
+        coreografia: coreografiaId,
+        dia: diaId
       });
     }
   }
@@ -151,13 +173,23 @@ function FotosPage({ setShowCart }) {
       <CoreografiaTop nome={eventoId.replace(/%20/g, ' ')} coreografia={coreografiaId}>
         <div className="coreografia-nav">
           {coreografiaAnterior && (
-            <button className="nav-btn" onClick={() => navigate(`/eventos/${eventoId}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`)}>
+            <button className="nav-btn" onClick={() => {
+              const url = diaId 
+                ? `/eventos/${eventoId}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`
+                : `/eventos/${eventoId}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`;
+              navigate(url);
+            }}>
               <img src={SquareArrowLeft} alt="Anterior" width={24} height={24} />
             </button>
           )}
           <span className="coreografia-nav-nome">{coreografiaId}</span>
           {coreografiaProxima && (
-            <button className="nav-btn" onClick={() => navigate(`/eventos/${eventoId}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`)}>
+            <button className="nav-btn" onClick={() => {
+              const url = diaId 
+                ? `/eventos/${eventoId}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`
+                : `/eventos/${eventoId}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`;
+              navigate(url);
+            }}>
               <img src={SquareArrowRight} alt="Próxima" width={24} height={24} />
             </button>
           )}
@@ -222,6 +254,24 @@ function FotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
+      <div className="evento-info-bar">
+        {evento && evento.data && (
+          <span className="evento-info-item">
+            <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+            {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : ''}
+          </span>
+        )}
+        {evento && evento.local && (
+          <span className="evento-info-item">
+            <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+            {evento.local}
+          </span>
+        )}
+        <span className="evento-info-item">
+          <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+          {fotos.length} fotos
+        </span>
+      </div>
       <div className="fotos-grid">
         {fotos.map(foto => (
           <div

@@ -18,4 +18,26 @@
     width: 24px !important;
     position: relative !important;
     display: block;
+}
+
+.cart-btn-counter {
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: #ffe001;
+    color: #131313;
+    border-radius: 50%;
+    min-width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+    box-shadow: none;
+    z-index: 9999;
+    padding: 0;
+    pointer-events: none;
+    line-height: 1;
 } 
