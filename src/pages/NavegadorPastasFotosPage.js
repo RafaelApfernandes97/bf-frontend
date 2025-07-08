@@ -318,7 +318,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
-      <div className="evento-info-bar">
+      <div className="evento-info-bar" style={{ margin: '0 16px', padding: '8px 16px' }}>
         {evento && evento.data && (
           <span className="evento-info-item">
             <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
@@ -338,7 +338,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
       </div>
       {/* Botões de navegação de dias/pastas */}
       {renderBotoesDias && (
-        <div style={{ display: 'flex', gap: 12, margin: '16px 0', overflowX: 'auto' }}>
+        <div className="dias-nav-bar">
           {subpastas.map((pasta, idx) => {
             const nome = pasta.nome || pasta;
             const selecionado = partes[1] === nome;
@@ -349,19 +349,6 @@ function NavegadorPastasFotosPage({ setShowCart }) {
                 onClick={() => {
                   const novoCaminho = partes[0] + '/' + nome;
                   navigate(`/eventos/pasta/${encodeURIComponent(novoCaminho)}`);
-                }}
-                style={{
-                  padding: '10px 18px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: selecionado ? '#ffe001' : '#222',
-                  color: selecionado ? '#222' : '#ffe001',
-                  fontWeight: 600,
-                  fontSize: 15,
-                  cursor: 'pointer',
-                  boxShadow: selecionado ? '0 2px 8px #ffe00144' : 'none',
-                  transition: 'all 0.2s',
-                  minWidth: 120,
                 }}
               >
                 {nome}

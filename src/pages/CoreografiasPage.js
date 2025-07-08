@@ -314,33 +314,10 @@ function CoreografiasPage({ setShowCart }) {
         </span>
       </div>
       
-      {/* Breadcrumb de navegação */}
-      {caminhoAtual && (
-        <div style={{ 
-          padding: '8px 16px', 
-          backgroundColor: '#f5f5f5', 
-          borderRadius: '4px', 
-          margin: '16px 0',
-          fontSize: '14px',
-          color: '#666'
-        }}>
-          <strong>Caminho:</strong> {
-            caminhoAtual
-              .split('/')
-              .filter((parte, index) => {
-                // Remove o dia do breadcrumb (segunda parte se houver dias)
-                if (dias.length > 0 && index === 1) {
-                  return false;
-                }
-                return true;
-              })
-              .join(' > ')
-          }
-        </div>
-      )}
+      
       
       {dias.length > 0 && (
-        <div style={{ display: 'flex', gap: 12, margin: '16px 0', overflowX: 'auto' }}>
+        <div className="dias-nav-bar">
           {dias.map((dia) => (
             <button
               key={dia.nome}
@@ -350,19 +327,6 @@ function CoreografiasPage({ setShowCart }) {
                 // Resetar caminho quando trocar de dia
                 setCaminhoAtual('');
                 setFotos([]);
-              }}
-              style={{
-                padding: '10px 18px',
-                borderRadius: 10,
-                border: 'none',
-                background: diaSelecionado === dia.nome ? '#ffe001' : '#222',
-                color: diaSelecionado === dia.nome ? '#222' : '#ffe001',
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: 'pointer',
-                boxShadow: diaSelecionado === dia.nome ? '0 2px 8px #ffe00144' : 'none',
-                transition: 'all 0.2s',
-                minWidth: 120,
               }}
             >
               {dia.nome}
