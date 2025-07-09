@@ -27,6 +27,64 @@
   gap: 12px;
   flex-shrink: 0;
   min-width: 0;
+  position: relative;
+  height: 48px;
+}
+
+.header-back-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: auto;
+  height: 36px;
+  border-radius: 18px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+  position: relative;
+  top: 0;
+  left: 0;
+  padding: 8px 16px;
+  gap: 8px;
+}
+
+.header-back-btn img {
+  display: inline-block;
+  vertical-align: middle;
+  filter: invert(1);
+}
+
+.header-back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-back-btn-expanded {
+  width: auto;
+  padding: 8px 16px;
+  border-radius: 18px;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.header-back-text {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-logo-img {
+  transition: opacity 0.3s ease;
+}
+
+.header-logo-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 .header-logo img {
   height: 48px;
@@ -96,12 +154,30 @@
     padding: 8px 3vw;
     gap: 12px;
   }
+  .header-logo {
+    height: 40px;
+  }
   .header-logo img {
     height: 40px;
     max-width: 70px;
   }
   .header-actions {
     gap: 12px;
+  }
+  .header-back-btn {
+    width: 32px;
+    height: 32px;
+    margin-left: 8px;
+  }
+
+  .header-back-btn-expanded {
+    padding: 6px 12px;
+    border-radius: 16px;
+  }
+
+  .header-back-text {
+    font-size: 12px;
+    gap: 3px;
   }
   .header-btn {
     font-size: clamp(0.8rem, 2.2vw, 1rem);
@@ -128,12 +204,30 @@
     padding: 8px 2vw;
     gap: 8px;
   }
+  .header-logo {
+    height: 36px;
+  }
   .header-logo img {
     height: 36px;
     max-width: 60px;
   }
   .header-actions {
     gap: 8px;
+  }
+  .header-back-btn {
+    width: 28px;
+    height: 28px;
+    margin-left: 6px;
+  }
+
+  .header-back-btn-expanded {
+    padding: 5px 10px;
+    border-radius: 14px;
+  }
+
+  .header-back-text {
+    font-size: 11px;
+    gap: 2px;
   }
   .header-btn {
     font-size: clamp(0.7rem, 2vw, 0.9rem);
@@ -163,6 +257,9 @@
     height: 52px;
     padding: 6px 1.5vw;
     gap: 6px;
+  }
+  .header-logo {
+    height: 32px;
   }
   .header-logo img {
     height: 32px;
@@ -434,4 +531,21 @@
   outline: 1.33px #FF9696 solid;
   outline-offset: -0.67px;
   margin: 2px 0 0 3.33px;
+} 
+.header-back-icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  margin-right: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.header-back-icon-circle img {
+  width: 20px;
+  height: 20px;
+  filter: invert(0); /* preto */
 } 

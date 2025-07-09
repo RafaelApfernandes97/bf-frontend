@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { useLocation } from 'react-router-dom';
 import './Header.css';
 import CartBtn from './CartBtn';
 import { useCart } from './CartContext';
@@ -7,6 +8,7 @@ import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 import EditUserModal from './EditUserModal';
 import PedidosModal from './PedidosModal';
+import LeftIcon from '../assets/icons/left_fill.svg';
 
 function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedidos }) {
   const menuRef = useRef(null);
@@ -72,13 +74,41 @@ function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedid
 
 function Header({ onCartClick }) {
   const { cart } = useCart();
+  const location = useLocation();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [userNome, setUserNome] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [showPedidosModal, setShowPedidosModal] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const userBtnRef = useRef(null);
+  
+  // Remover: const shouldShowBackButton = hasBackHandler && location.pathname !== '/eventos' && location.pathname !== '/';
+  
+  // Detectar scroll para mostrar/ocultar logo e botão
+  useEffect(() => {
+    const handleScroll = () => {
+      // Detectar se rolou para baixo o suficiente para esconder o CoreografiaTop
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const isPageScrolled = scrollTop > 200; // Ajuste este valor conforme necessário
+      setIsScrolled(isPageScrolled);
+    };
+
+    // Só adicionar listener se estivermos numa página que precisa do botão
+    // Remover: if (shouldShowBackButton) {
+    if (true) { // Sempre mostrar o botão de voltar
+      window.addEventListener('scroll', handleScroll);
+      // Chamar uma vez para definir o estado inicial
+      handleScroll();
+    } else {
+      setIsScrolled(false);
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []); // Remover: [shouldShowBackButton]
 
   useEffect(() => {
     const nome = localStorage.getItem('user_nome') || '';
@@ -119,7 +149,26 @@ function Header({ onCartClick }) {
   return (
     <header className="header header-fixed-no-scroll">
       <div className="header-logo">
-        <img src="/logo.png" alt="Logo" height={40} />
+        {/* Remover: shouldShowBackButton && isScrolled ? ( */}
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            height={40} 
+            className="header-logo-img"
+          />
+        {/* ) : ( */}
+        {/* <button
+            className={`header-back-btn header-back-btn-expanded header-back-btn-scrolled`}
+            onClick={triggerBackButton}
+            title="Voltar à página anterior"
+            style={{ marginRight: 16 }}
+          >
+            <span className="header-back-icon-circle">
+              <img src={LeftIcon} alt="Voltar" style={{ width: 20, height: 20, filter: 'invert(0)' }} />
+            </span>
+            <span className="header-back-text">Voltar à página anterior</span>
+          </button> */}
+        {/* ) */}
       </div>
       <div className="header-actions">
         {userNome ? (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import EventosPage from './pages/EventosPage';
 import CoreografiasPage from './pages/CoreografiasPage';
 import FotosPage from './pages/FotosPage';
@@ -246,46 +246,46 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>
-      {showCart && (
-        <CartModal
-          fotos={cart}
-          onClose={() => setShowCart(false)}
-          onRemove={removeFromCart}
-          onCheckout={handleCheckout}
-          valorUnitario={valorUnitario}
-          checkoutLoading={checkoutLoading}
-          checkoutMsg={checkoutMsg}
-          isLoggedIn={isLoggedIn}
-          onShowLogin={() => {
-            setShowCart(false);
-            setShowLogin(true);
-          }}
-          onShowRegister={() => {
-            setShowCart(false);
-            setShowRegister(true);
-          }}
-        />
-      )}
-      {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onRegisterClick={() => { setShowLogin(false); setShowRegister(true); }}
-          onLoginSuccess={() => {
-            setShowLogin(false);
-            setShowCart(true); // Reabre o carrinho após login
-          }}
-        />
-      )}
-      {showRegister && (
-        <RegisterModal
-          onClose={() => setShowRegister(false)}
-          onLoginClick={() => { setShowRegister(false); setShowLogin(true); }}
-          onLoginSuccess={() => {
-            setShowRegister(false);
-            setShowCart(true); // Reabre o carrinho após cadastro
-          }}
-        />
-      )}
+    {showCart && (
+      <CartModal
+        fotos={cart}
+        onClose={() => setShowCart(false)}
+        onRemove={removeFromCart}
+        onCheckout={handleCheckout}
+        valorUnitario={valorUnitario}
+        checkoutLoading={checkoutLoading}
+        checkoutMsg={checkoutMsg}
+        isLoggedIn={isLoggedIn}
+        onShowLogin={() => {
+          setShowCart(false);
+          setShowLogin(true);
+        }}
+        onShowRegister={() => {
+          setShowCart(false);
+          setShowRegister(true);
+        }}
+      />
+    )}
+    {showLogin && (
+      <LoginModal
+        onClose={() => setShowLogin(false)}
+        onRegisterClick={() => { setShowLogin(false); setShowRegister(true); }}
+        onLoginSuccess={() => {
+          setShowLogin(false);
+          setShowCart(true); // Reabre o carrinho após login
+        }}
+      />
+    )}
+    {showRegister && (
+      <RegisterModal
+        onClose={() => setShowRegister(false)}
+        onLoginClick={() => { setShowRegister(false); setShowLogin(true); }}
+        onLoginSuccess={() => {
+          setShowRegister(false);
+          setShowCart(true); // Reabre o carrinho após cadastro
+        }}
+      />
+    )}
     </Router>
   );
 }
