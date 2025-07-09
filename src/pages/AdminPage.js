@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FinanceiroAdmin from '../components/FinanceiroAdmin';
+import './AdminPage.css';
 
 const API = 'https://backend.rfsolutionbr.com.br/api/admin';
 
@@ -310,50 +311,29 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '40px auto', background: '#181818', padding: 32, borderRadius: 16, color: '#fff' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <div className="admin-container">
+      <div className="admin-header">
         <h2>Painel Administrativo</h2>
-        <button onClick={handleLogout} style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 18px' }}>Sair</button>
+        <button onClick={handleLogout} className="admin-logout-btn">Sair</button>
       </div>
 
       {/* Abas */}
-      <div style={{ display: 'flex', marginBottom: 24, borderBottom: '1px solid #333' }}>
+      <div className="admin-tabs">
         <button
           onClick={() => setActiveTab('eventos')}
-          style={{
-            background: activeTab === 'eventos' ? '#ffe001' : 'transparent',
-            color: activeTab === 'eventos' ? '#222' : '#fff',
-            border: 'none',
-            padding: '12px 24px',
-            cursor: 'pointer',
-            fontWeight: activeTab === 'eventos' ? '700' : '400'
-          }}
+          className={`admin-tab-btn ${activeTab === 'eventos' ? 'active' : ''}`}
         >
           Eventos
         </button>
         <button
           onClick={() => setActiveTab('tabelas')}
-          style={{
-            background: activeTab === 'tabelas' ? '#ffe001' : 'transparent',
-            color: activeTab === 'tabelas' ? '#222' : '#fff',
-            border: 'none',
-            padding: '12px 24px',
-            cursor: 'pointer',
-            fontWeight: activeTab === 'tabelas' ? '700' : '400'
-          }}
+          className={`admin-tab-btn ${activeTab === 'tabelas' ? 'active' : ''}`}
         >
           Tabelas de Preço
         </button>
         <button
           onClick={() => setActiveTab('financeiro')}
-          style={{
-            background: activeTab === 'financeiro' ? '#ffe001' : 'transparent',
-            color: activeTab === 'financeiro' ? '#222' : '#fff',
-            border: 'none',
-            padding: '12px 24px',
-            cursor: 'pointer',
-            fontWeight: activeTab === 'financeiro' ? '700' : '400'
-          }}
+          className={`admin-tab-btn ${activeTab === 'financeiro' ? 'active' : ''}`}
         >
           Financeiro
         </button>

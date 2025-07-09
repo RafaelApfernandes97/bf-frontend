@@ -28,6 +28,7 @@
     max-width: 100vw;
     box-sizing: border-box;
     min-height: 180px;
+    cursor: pointer;
 }
 .coreografia.padr-o {
     background-color: var(--cole-o-1-cores-black02);
@@ -190,6 +191,7 @@
         min-width: 200px !important;
         width: 100% !important;
         max-width: 100vw !important;
+        min-height: 180px !important;
     }
     .coreografia .frame {
         flex: 0 0 auto !important;
@@ -204,5 +206,41 @@
         width: 100% !important;
         max-width: 100vw !important;
         height: 164px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .coreografia {
+        min-height: 160px !important;
+        height: 220px !important;
+        padding: 10px !important;
+        gap: 8px !important;
+    }
+    .coreografia .h {
+        font-size: 15px !important;
+    }
+    .coreografia .imagem-instance {
+        height: 140px !important;
+    }
+    .coreografia .text-wrapper {
+        font-size: 11px !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .coreografia {
+        min-height: 140px !important;
+        height: 200px !important;
+        padding: 8px !important;
+        gap: 6px !important;
+    }
+    .coreografia .h {
+        font-size: 14px !important;
+    }
+    .coreografia .imagem-instance {
+        height: 120px !important;
+    }
+    .coreografia .text-wrapper {
+        font-size: 10px !important;
     }
 } 

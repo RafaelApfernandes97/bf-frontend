@@ -10,11 +10,27 @@ function EventosPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Função para pré-carregar dados em background
+    const preloadData = async () => {
+      try {
+        // Inicia pré-carregamento em background (não aguarda)
+        fetch(`${BACKEND_URL}/api/pre-carregar`, {
+          method: 'POST'
+        }).catch(err => console.log('Pré-carregamento em background:', err));
+      } catch (err) {
+        console.log('Erro no pré-carregamento:', err);
+      }
+    };
+
+    // Carrega eventos
     fetch(`${BACKEND_URL}/api/eventos`)
       .then(res => res.json())
       .then(data => {
         setEventos(data.eventos || []);
         setLoading(false);
+        
+        // Inicia pré-carregamento após carregar eventos
+        preloadData();
       })
       .catch(err => {
         setError('Erro ao carregar eventos');

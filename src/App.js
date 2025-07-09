@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import EventosPage from './pages/EventosPage';
 import CoreografiasPage from './pages/CoreografiasPage';
 import FotosPage from './pages/FotosPage';
@@ -11,7 +11,19 @@ import RegisterModal from './components/RegisterModal';
 import { useCart } from './components/CartContext';
 import API_ENDPOINTS from './config/api';
 import NavegadorPastasFotosPage from './pages/NavegadorPastasFotosPage';
+import { preloader } from './utils/preloader';
 import './App.css';
+
+function AppContent() {
+  const location = useLocation();
+  
+  // Inicia pré-carregamento inteligente quando a rota muda
+  useEffect(() => {
+    preloader.smartPreload(location.pathname);
+  }, [location.pathname]);
+
+  return null;
+}
 
 function App() {
   const { cart, removeFromCart, clearCart } = useCart();
@@ -221,6 +233,7 @@ function App() {
         v7_relativeSplatPath: true
       }}
     >
+      <AppContent />
       <Header onCartClick={() => setShowCart(true)} />
       <div className="main-content">
         <Routes>

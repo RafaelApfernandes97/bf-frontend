@@ -297,39 +297,126 @@
 }
 
 /* Responsividade geral para todos os modais */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .login-modal-container {
     min-width: 0;
-    width: 98vw;
-    max-width: 98vw;
-    padding: 18px 4vw 12px 4vw;
+    width: 95vw;
+    max-width: 95vw;
+    padding: 24px 20px 20px 20px;
     border-radius: 16px;
-    font-size: 0.98rem;
-    gap: 10px;
-    margin: 10px;
+    font-size: 1rem;
+    gap: 16px;
+    margin: 20px;
   }
   .login-modal-close {
-    top: 10px;
-    right: 10px;
-    font-size: 1.6rem;
+    top: 12px;
+    right: 12px;
+    font-size: 1.8rem;
+    width: 36px;
+    height: 36px;
+    min-width: 44px;
+    min-height: 44px;
   }
   .login-modal-container h2 {
-    font-size: 1.3rem;
-    margin-bottom: 10px;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
   }
   .login-modal-container label {
     font-size: 1rem;
-    gap: 3px;
+    gap: 8px;
   }
   .login-modal-btn {
-    height: 40px;
-    font-size: 1.05rem;
-    border-radius: 10px;
-    margin-top: 10px;
+    height: 44px;
+    min-height: 44px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    margin-top: 16px;
   }
   .login-modal-erro {
     font-size: 0.95rem;
-    padding: 6px 6px;
+    padding: 8px 12px;
+  }
+  .login-modal-container input[type="email"],
+  .login-modal-container input[type="password"],
+  .login-modal-container input[type="text"] {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-modal-container {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 20px 16px 16px 16px;
+    border-radius: 12px;
+    margin: 10px;
+    gap: 12px;
+  }
+  .login-modal-close {
+    top: 8px;
+    right: 8px;
+    font-size: 1.6rem;
+    width: 32px;
+    height: 32px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .login-modal-container h2 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+  .login-modal-container label {
+    font-size: 0.95rem;
+    gap: 6px;
+  }
+  .login-modal-btn {
+    height: 44px;
+    font-size: 1rem;
+    border-radius: 10px;
+    margin-top: 12px;
+  }
+  .login-modal-erro {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-modal-container {
+    width: 98vw;
+    padding: 16px 12px 12px 12px;
+    border-radius: 8px;
+    margin: 5px;
+    gap: 10px;
+  }
+  .login-modal-close {
+    font-size: 1.4rem;
+    width: 28px;
+    height: 28px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .login-modal-container h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  .login-modal-container label {
+    font-size: 0.9rem;
+    gap: 4px;
+  }
+  .login-modal-btn {
+    height: 44px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+  .login-modal-container input[type="email"],
+  .login-modal-container input[type="password"],
+  .login-modal-container input[type="text"] {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
   }
 }
 
@@ -373,14 +460,14 @@
 }
 
 /* Responsividade para o modal de cadastro */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .register-modal {
     min-width: 0;
-    width: 98vw;
-    max-width: 98vw;
-    padding: 20px 16px 16px 16px;
+    width: 95vw;
+    max-width: 95vw;
+    padding: 24px 20px 20px 20px;
     border-radius: 16px;
-    margin: 10px;
+    margin: 20px;
   }
   
   .register-form {
@@ -393,7 +480,7 @@
   }
   
   .register-link-text {
-    font-size: 13px;
+    font-size: 14px;
   }
   
   .register-hint {
@@ -407,7 +494,11 @@
 
 @media (max-width: 480px) {
   .register-modal {
-    padding: 16px 12px 12px 12px;
+    width: 98vw;
+    max-width: 98vw;
+    padding: 20px 16px 16px 16px;
+    border-radius: 12px;
+    margin: 10px;
   }
   
   .register-form {
@@ -420,7 +511,7 @@
   }
   
   .register-link-text {
-    font-size: 12px;
+    font-size: 13px;
   }
   
   .register-hint {
@@ -429,6 +520,36 @@
   
   .register-error-field {
     font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .register-modal {
+    width: 98vw;
+    padding: 16px 12px 12px 12px;
+    border-radius: 8px;
+    margin: 5px;
+  }
+  
+  .register-form {
+    gap: 12px;
+  }
+  
+  .register-success {
+    font-size: 14px;
+    margin: 20px 0;
+  }
+  
+  .register-link-text {
+    font-size: 12px;
+  }
+  
+  .register-hint {
+    font-size: 10px;
+  }
+  
+  .register-error-field {
+    font-size: 11px;
   }
 }
 
@@ -665,7 +786,73 @@
 }
 
 /* Responsividade para os modais */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 20px 10px;
+    padding: 24px 20px;
+    border-radius: 16px;
+    max-width: 95vw;
+  }
+  
+  .close-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 1.3rem;
+    top: 12px;
+    right: 12px;
+  }
+  
+  .modal-content .login-modal-container label,
+  .modal-content .register-form label {
+    font-size: 16px;
+  }
+  
+  .modal-content .login-modal-container input[type="email"],
+  .modal-content .login-modal-container input[type="password"],
+  .modal-content .register-form input[type="email"],
+  .modal-content .register-form input[type="password"],
+  .modal-content .register-form input[type="text"] {
+    font-size: 15px;
+    padding: 14px 16px;
+    min-height: 44px;
+  }
+  
+  .modal-content .login-modal-container h2 {
+    font-size: 22px;
+    margin-bottom: 24px;
+  }
+  
+  .modal-content .login-modal-btn {
+    font-size: 15px;
+    padding: 14px 20px;
+    min-height: 44px;
+  }
+  
+  .modal-content .register-form {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    margin: 10px 5px;
+    padding: 20px 16px;
+    border-radius: 12px;
+    max-width: 98vw;
+  }
+  
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 1.2rem;
+    top: 8px;
+    right: 8px;
+  }
+  
   .modal-content .login-modal-container label,
   .modal-content .register-form label {
     font-size: 15px;
@@ -676,8 +863,9 @@
   .modal-content .register-form input[type="email"],
   .modal-content .register-form input[type="password"],
   .modal-content .register-form input[type="text"] {
-    font-size: 15px;
-    padding: 14px 16px;
+    font-size: 14px;
+    padding: 12px 14px;
+    min-height: 44px;
   }
   
   .modal-content .login-modal-container h2 {
@@ -686,12 +874,62 @@
   }
   
   .modal-content .login-modal-btn {
-    font-size: 15px;
-    padding: 14px 20px;
+    font-size: 14px;
+    padding: 12px 16px;
+    min-height: 44px;
   }
   
   .modal-content .register-form {
-    gap: 16px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .modal-content {
+    margin: 5px;
+    padding: 16px 12px;
+    border-radius: 8px;
+    max-width: 98vw;
+  }
+  
+  .close-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 1.1rem;
+    top: 6px;
+    right: 6px;
+  }
+  
+  .modal-content .login-modal-container label,
+  .modal-content .register-form label {
+    font-size: 14px;
+  }
+  
+  .modal-content .login-modal-container input[type="email"],
+  .modal-content .login-modal-container input[type="password"],
+  .modal-content .register-form input[type="email"],
+  .modal-content .register-form input[type="password"],
+  .modal-content .register-form input[type="text"] {
+    font-size: 13px;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+  
+  .modal-content .login-modal-container h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+  
+  .modal-content .login-modal-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+  
+  .modal-content .register-form {
+    gap: 12px;
   }
 }
 

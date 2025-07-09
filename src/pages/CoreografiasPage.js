@@ -43,6 +43,11 @@ function CoreografiasPage({ setShowCart }) {
   useEffect(() => {
     setLoading(true);
     
+    // Aquece cache do evento em background
+    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/aquecer-cache`, {
+      method: 'POST'
+    }).catch(err => console.log('Cache warming:', err));
+    
     // Primeiro verifica se tem dias
     fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`)
       .then(res => res.json())
