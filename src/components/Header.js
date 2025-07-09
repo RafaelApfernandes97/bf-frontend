@@ -92,8 +92,14 @@ function Header({ onCartClick }) {
     setShowUserMenu(false);
   }
 
-  // Nome e sobrenome
-  const nomeSobrenome = userNome.trim().split(' ').slice(0, 2).join(' ');
+  // Exibir apenas o primeiro e o último nome
+  const partesNome = userNome.trim().split(' ').filter(Boolean);
+  let nomeSobrenome = '';
+  if (partesNome.length === 1) {
+    nomeSobrenome = partesNome[0];
+  } else if (partesNome.length > 1) {
+    nomeSobrenome = partesNome[0] + ' ' + partesNome[partesNome.length - 1];
+  }
 
   function handleUserBtnClick() {
     console.log('[Header] Clique no botão do usuário, showUserMenu:', !showUserMenu);

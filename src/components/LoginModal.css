@@ -444,7 +444,7 @@
 }
 
 .modal-content {
-  background: black;
+  background: #2e2e2e;
   color: white;
   width: 100%;
   max-width: 500px;
@@ -452,6 +452,7 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  padding: 1rem;
 }
 
 .close-btn {

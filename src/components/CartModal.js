@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './CartModal.css';
 
 export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorUnitario, checkoutLoading = false, checkoutMsg = '', isLoggedIn = true, onShowLogin, onShowRegister }) {
   const total = fotos.length * (Number(valorUnitario) || 0);
+  const [fotoExpandida, setFotoExpandida] = useState(null);
 
   return (
     <div className="cart-modal-overlay">
@@ -17,7 +18,7 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
           ) : (
             fotos.map((foto, idx) => (
               <div className="cart-item" key={foto.nome + idx}>
-                <div className="cart-thumb">
+                <div className="cart-thumb" onClick={() => setFotoExpandida(foto)} style={{cursor: 'pointer'}}>
                   <img src={foto.url} alt={foto.nome} />
                 </div>
                 <div className="cart-info">
@@ -37,6 +38,22 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
             ))
           )}
         </div>
+        {fotoExpandida && (
+          <div className="foto-expandida-overlay" onClick={() => setFotoExpandida(null)}>
+            <div className="foto-expandida-content" onClick={e => e.stopPropagation()}>
+              <div className="foto-expandida-img-wrapper" style={{position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%'}}>
+                <div className="foto-expandida-nome">{fotoExpandida.nome}</div>
+                <img
+                  src={fotoExpandida.url || '/img/sem_foto.jpg'}
+                  alt={fotoExpandida.nome}
+                  onError={e => e.target.src='/img/sem_foto.jpg'}
+                  className="foto-expandida-img"
+                  draggable={false}
+                />
+              </div>
+            </div>
+          </div>
+        )}
         <div className="cart-summary">
           <div className="cart-summary-row">
             <span>Itens ({fotos.length})</span>
