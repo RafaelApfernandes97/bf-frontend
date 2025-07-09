@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import FinanceiroAdmin from '../components/FinanceiroAdmin';
 
 const API = 'https://backend.rfsolutionbr.com.br/api/admin';
 
@@ -15,7 +16,7 @@ export default function AdminPage() {
   const [valorFixo, setValorFixo] = useState('');
   const [modoFixo, setModoFixo] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('eventos'); // 'eventos' ou 'tabelas'
+  const [activeTab, setActiveTab] = useState('eventos'); // 'eventos', 'tabelas' ou 'financeiro'
   const [editEventoId, setEditEventoId] = useState(null);
   const [editEvento, setEditEvento] = useState({});
   const [editTabelaId, setEditTabelaId] = useState(null);
@@ -343,6 +344,19 @@ export default function AdminPage() {
         >
           Tabelas de Preço
         </button>
+        <button
+          onClick={() => setActiveTab('financeiro')}
+          style={{
+            background: activeTab === 'financeiro' ? '#ffe001' : 'transparent',
+            color: activeTab === 'financeiro' ? '#222' : '#fff',
+            border: 'none',
+            padding: '12px 24px',
+            cursor: 'pointer',
+            fontWeight: activeTab === 'financeiro' ? '700' : '400'
+          }}
+        >
+          Financeiro
+        </button>
       </div>
 
       {activeTab === 'eventos' && (
@@ -516,6 +530,10 @@ export default function AdminPage() {
             ))}
           </ul>
         </>
+      )}
+
+      {activeTab === 'financeiro' && (
+        <FinanceiroAdmin />
       )}
     </div>
   );

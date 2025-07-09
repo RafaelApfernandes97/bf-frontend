@@ -14,8 +14,11 @@ export const API_ENDPOINTS = {
   ORDER_DETAILS: (pedidoId) => `${BACKEND_URL}/api/usuarios/pedido/${pedidoId}`,
   
   // Admin
+  ADMIN_BASE: `${BACKEND_URL}/api/admin`,
   ADMIN_EVENTOS: `${BACKEND_URL}/api/admin/eventos`,
   ADMIN_TABELAS_PRECO: `${BACKEND_URL}/api/admin/tabelas-preco`,
+  ADMIN_PEDIDOS: `${BACKEND_URL}/api/admin/pedidos`,
+  ADMIN_ESTATISTICAS: `${BACKEND_URL}/api/admin/estatisticas`,
   
   // Fotos
   PHOTOS: `${BACKEND_URL}/api/photos`,
