@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API = 'http://localhost:3001/api/admin';
+const API = 'https://backend.rfsolutionbr.com.br/api/admin';
 
 export default function AdminPage() {
   const [logged, setLogged] = useState(false);
