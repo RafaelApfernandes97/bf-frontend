@@ -12,7 +12,7 @@ export default function AdminPage() {
   const [eventos, setEventos] = useState([]);
   const [eventosMinio, setEventosMinio] = useState([]);
   const [tabelasPreco, setTabelasPreco] = useState([]);
-  const [novoEvento, setNovoEvento] = useState({ nome: '', data: '', local: '', tabelaPrecoId: '' });
+  const [novoEvento, setNovoEvento] = useState({ nome: '', data: '', tabelaPrecoId: '' });
   const [novaTabela, setNovaTabela] = useState({ nome: '', descricao: '', faixas: [{ min: '', max: '', valor: '' }], isDefault: false });
   const [valorFixo, setValorFixo] = useState('');
   const [modoFixo, setModoFixo] = useState(false);
@@ -99,7 +99,8 @@ export default function AdminPage() {
     e.preventDefault();
     setLoading(true);
     const body = {
-      ...novoEvento,
+      nome: novoEvento.nome,
+      data: novoEvento.data || undefined,
       valorFixo: modoFixo ? valorFixo : undefined,
       tabelaPrecoId: modoFixo ? undefined : novoEvento.tabelaPrecoId
     };
@@ -112,7 +113,7 @@ export default function AdminPage() {
         },
         body: JSON.stringify(body)
       });
-      setNovoEvento({ nome: '', data: '', local: '', tabelaPrecoId: '' });
+      setNovoEvento({ nome: '', data: '', tabelaPrecoId: '' });
       setValorFixo('');
       fetchEventos();
     } catch {
@@ -209,7 +210,6 @@ export default function AdminPage() {
     setEditEvento({
       nome: ev.nome,
       data: ev.data ? ev.data.slice(0, 10) : '',
-      local: ev.local,
       valorFixo: ev.valorFixo || '',
       tabelaPrecoId: ev.tabelaPrecoId?._id || ev.tabelaPrecoId || '',
     });
@@ -344,14 +344,13 @@ export default function AdminPage() {
           <h3>Cadastro de Evento</h3>
           <form onSubmit={handleAddEvento} style={{ marginBottom: 32 }}>
             <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-              <select value={novoEvento.nome} onChange={e => setNovoEvento(ev => ({ ...ev, nome: e.target.value }))} style={{ flex: 2, padding: 8 }}>
+              <select value={novoEvento.nome} onChange={e => setNovoEvento(ev => ({ ...ev, nome: e.target.value }))} style={{ flex: 2, padding: 8 }} required>
                 <option value="">Selecione um evento do MinIO</option>
                 {eventosMinio.map(ev => (
                   <option key={ev} value={ev}>{ev}</option>
                 ))}
               </select>
-              <input type="date" placeholder="Data" value={novoEvento.data} onChange={e => setNovoEvento(ev => ({ ...ev, data: e.target.value }))} style={{ flex: 1, padding: 8 }} />
-              <input type="text" placeholder="Localização" value={novoEvento.local} onChange={e => setNovoEvento(ev => ({ ...ev, local: e.target.value }))} style={{ flex: 2, padding: 8 }} />
+              <input type="date" placeholder="Data (opcional)" value={novoEvento.data} onChange={e => setNovoEvento(ev => ({ ...ev, data: e.target.value }))} style={{ flex: 1, padding: 8 }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <label>
@@ -381,9 +380,8 @@ export default function AdminPage() {
               <li key={ev._id || idx} style={{ marginBottom: 12, background: '#222', padding: 12, borderRadius: 8 }}>
                 {editEventoId === ev._id ? (
                   <form onSubmit={handleSaveEditEvento} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <input type="text" value={editEvento.nome} onChange={e => setEditEvento(ev2 => ({ ...ev2, nome: e.target.value }))} placeholder="Nome" style={{ padding: 6 }} />
+                    <input type="text" value={editEvento.nome} onChange={e => setEditEvento(ev2 => ({ ...ev2, nome: e.target.value }))} placeholder="Nome" style={{ padding: 6 }} required />
                     <input type="date" value={editEvento.data} onChange={e => setEditEvento(ev2 => ({ ...ev2, data: e.target.value }))} style={{ padding: 6 }} />
-                    <input type="text" value={editEvento.local} onChange={e => setEditEvento(ev2 => ({ ...ev2, local: e.target.value }))} placeholder="Local" style={{ padding: 6 }} />
                     <label><input type="checkbox" checked={!!editEvento.valorFixo} onChange={e => setEditEvento(ev2 => ({ ...ev2, valorFixo: e.target.checked ? (ev.valorFixo || 1) : '' }))} /> Valor fixo</label>
                     {editEvento.valorFixo ? (
                       <input type="number" value={editEvento.valorFixo} onChange={e => setEditEvento(ev2 => ({ ...ev2, valorFixo: e.target.value }))} placeholder="Valor fixo" style={{ padding: 6 }} />
@@ -402,7 +400,7 @@ export default function AdminPage() {
                   </form>
                 ) : (
                   <>
-                    <strong>{ev.nome}</strong> - {ev.data ? new Date(ev.data).toLocaleDateString() : ''} - {ev.local}
+                    <strong>{ev.nome}</strong> - {ev.data ? new Date(ev.data).toLocaleDateString() : ''}
                     <button onClick={() => handleEditEvento(ev)} style={{ float: 'right', background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, marginLeft: 8 }}>Editar</button>
                     <button onClick={() => handleDeleteEvento(ev._id)} style={{ float: 'right', background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, marginLeft: 8 }}>Remover</button>
                     <div>
