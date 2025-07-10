@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host';
+const BACKEND_URL = 'https://backend.oballetemfoco.com';
 
 function EventosPage() {
   const [eventos, setEventos] = useState([]);

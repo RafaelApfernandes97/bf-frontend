@@ -1,5 +1,5 @@
 // Configuração da API
-const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host';
+const BACKEND_URL = 'https://backend.oballetemfoco.com';
 
 export const API_ENDPOINTS = {
   // Usuários

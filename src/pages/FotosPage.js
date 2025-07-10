@@ -13,7 +13,7 @@ import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
 
-const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host';
+const BACKEND_URL = 'https://backend.oballetemfoco.com';
 
 function FotosPage({ setShowCart }) {
   const { eventoId, coreografiaId, diaId } = useParams();

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
 
-const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host';
+const BACKEND_URL = 'https://backend.oballetemfoco.com';
 
 function maskCpfCnpj(value) {
   value = value.replace(/\D/g, '');
