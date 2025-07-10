@@ -82,9 +82,17 @@ export default function RegisterModal({ onClose, onLoginClick, onLoginSuccess })
       if (senha !== senha2) return setErros({ senha2: 'As senhas não coincidem.' });
       setStep(3);
     } else if (step === 3) {
-      if (!nome) return setErros({ nome: 'Digite seu nome completo.' });
-      if (!validarCpfCnpj(cpfCnpj)) return setErros({ cpfCnpj: 'CPF ou CNPJ inválido.' });
-      if (!validarTelefone(telefone)) return setErros({ telefone: 'Telefone/WhatsApp inválido.' });
+      const novosErros = {};
+      if (!nome) novosErros.nome = 'Digite seu nome completo.';
+      if (!validarCpfCnpj(cpfCnpj)) novosErros.cpfCnpj = 'CPF ou CNPJ inválido.';
+      if (!validarTelefone(telefone)) novosErros.telefone = 'Telefone/WhatsApp inválido.';
+      if (!cep) novosErros.cep = 'CEP obrigatório.';
+      if (!rua) novosErros.rua = 'Rua obrigatória.';
+      if (!numero) novosErros.numero = 'Número obrigatório.';
+      if (!bairro) novosErros.bairro = 'Bairro obrigatório.';
+      if (!cidade) novosErros.cidade = 'Cidade obrigatória.';
+      if (!estado) novosErros.estado = 'Estado obrigatório.';
+      if (Object.keys(novosErros).length > 0) return setErros(novosErros);
       handleRegister();
     }
   }
