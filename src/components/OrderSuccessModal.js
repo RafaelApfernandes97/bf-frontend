@@ -25,14 +25,14 @@ function OrderSuccessModal({ isOpen, onClose, pedidoId }) {
             </svg>
           </div>
           
-          <h2 className="order-success-title">Pedido Enviado com Sucesso!</h2>
+          <h2 className="order-success-title">Pedido enviado com sucesso!</h2>
           
           <p className="order-success-message">
             Seu pedido <strong>{pedidoId}</strong> foi enviado com sucesso!
           </p>
           
           <p className="order-success-subtitle">
-            Você receberá um WhatsApp com o resumo do seu pedido.
+            Você receberá uma mensagem no WhatsApp com o resumo do seu pedido.
           </p>
           
           <div className="order-success-actions">
