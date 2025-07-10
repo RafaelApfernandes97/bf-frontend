@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FinanceiroAdmin from '../components/FinanceiroAdmin';
 import './AdminPage.css';
 
-const API = 'https://site-backend.cbltmp.easypanel.host//api/admin';
+const API = 'https://site-backend.cbltmp.easypanel.host/api/admin';
 
 export default function AdminPage() {
   const [logged, setLogged] = useState(false);
