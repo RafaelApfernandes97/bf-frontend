@@ -43,14 +43,8 @@ function NavegadorPastasFotosPage({ setShowCart }) {
     setLoading(true);
     setIsInCoreografia(estaNaCoreografia);
     
-    console.log('[NavegadorPastas] Caminho:', caminho);
-    console.log('[NavegadorPastas] Partes:', partes);
-    console.log('[NavegadorPastas] Última parte:', ultimaParte);
-    console.log('[NavegadorPastas] Está na coreografia:', estaNaCoreografia);
-    
     if (estaNaCoreografia) {
       // Se estiver em uma coreografia, buscar fotos via API de pastas usando caminho completo
-      console.log('[NavegadorPastas] Coreografia detectada, buscando fotos via API pastas');
       
       fetch(`${BACKEND_URL}/api/eventos/pasta`, {
         method: 'POST',
@@ -61,8 +55,6 @@ function NavegadorPastasFotosPage({ setShowCart }) {
       })
         .then(res => res.json())
         .then(async data => {
-          console.log('[NavegadorPastas] Dados recebidos da API pastas:', data);
-          const token = localStorage.getItem('user_token');
           
           // Processar fotos com URLs assinadas
           const fotosComUrls = await Promise.all(
@@ -76,7 +68,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
                 const coreografia = pathParts[3];
                 
                 const urlFoto = `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(evento)}/${encodeURIComponent(dia)}/${encodeURIComponent(pastaIntermediaria)}/${encodeURIComponent(coreografia)}/${encodeURIComponent(foto.nome)}`;
-                
+                const token = localStorage.getItem('user_token');
                 const res = await fetch(urlFoto, { headers: { Authorization: 'Bearer ' + token } });
                 if (res.ok) {
                   const d = await res.json();
@@ -87,7 +79,6 @@ function NavegadorPastasFotosPage({ setShowCart }) {
             })
           );
           
-          console.log('[NavegadorPastas] Fotos processadas:', fotosComUrls);
           setFotos(fotosComUrls);
           setSubpastas([]);
           setLoading(false);
@@ -99,7 +90,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
         });
     } else {
       // Navegação normal entre pastas
-      console.log('[NavegadorPastas] Navegação normal, caminho:', caminho);
+      
       fetch(`${BACKEND_URL}/api/eventos/pasta`, {
         method: 'POST',
         headers: {
@@ -109,7 +100,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
       })
         .then(res => res.json())
         .then(data => {
-          console.log('[NavegadorPastas] Dados pastas:', data);
+          
           setSubpastas(data.subpastas || []);
           setFotos(data.fotos || []);
           setLoading(false);

@@ -4,11 +4,11 @@ import { useLocation } from 'react-router-dom';
 import './Header.css';
 import CartBtn from './CartBtn';
 import { useCart } from './CartContext';
+import { useNavigation } from '../context/NavigationContext';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 import EditUserModal from './EditUserModal';
 import PedidosModal from './PedidosModal';
-import LeftIcon from '../assets/icons/left_fill.svg';
 
 function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedidos }) {
   const menuRef = useRef(null);
@@ -18,7 +18,6 @@ function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedid
     function updatePosition() {
       if (anchorRef.current && menuRef.current) {
         const rect = anchorRef.current.getBoundingClientRect();
-        console.log('[Dropdown] anchor rect:', rect);
         setStyle({
           position: 'fixed',
           top: rect.bottom - 2,
@@ -26,7 +25,6 @@ function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedid
           zIndex: 2001,
         });
       } else {
-        console.log('[Dropdown] anchorRef or menuRef not ready', anchorRef.current, menuRef.current);
       }
     }
     updatePosition();
@@ -48,23 +46,41 @@ function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedid
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose, anchorRef]);
 
-  console.log('[Dropdown] Renderizando dropdown', style);
-
   return ReactDOM.createPortal(
     <div ref={menuRef} className="user-dropdown-menu-custom" style={{width: 179, padding: 8, borderBottomRightRadius: 10, borderBottomLeftRadius: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', ...style}}>
       <div className="user-dropdown-list">
         <button className="user-dropdown-row" onClick={onEditUser}>
-          <span className="user-dropdown-icon-custom user-dropdown-icon-user" />
+          <span className="user-dropdown-icon-custom">
+            {/* Ícone usuário */}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="8" r="4" stroke="#fff" strokeWidth="2"/>
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="#fff" strokeWidth="2"/>
+            </svg>
+          </span>
           <span className="user-dropdown-label">Meus dados</span>
         </button>
         <button className="user-dropdown-row" onClick={onVerPedidos}>
-          <span className="user-dropdown-icon-custom user-dropdown-icon-cart" />
+          <span className="user-dropdown-icon-custom">
+            {/* Ícone pedidos/carrinho */}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="9" cy="21" r="1" stroke="#fff" strokeWidth="2"/>
+              <circle cx="19" cy="21" r="1" stroke="#fff" strokeWidth="2"/>
+              <path d="M1 1h2l3.6 7.59a2 2 0 0 0 1.7 1.18H19a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6" stroke="#fff" strokeWidth="2"/>
+            </svg>
+          </span>
           <span className="user-dropdown-label">Ver pedidos</span>
         </button>
       </div>
       <div className="user-dropdown-divider-custom" />
       <button className="user-dropdown-row user-dropdown-logout-row" onClick={onLogout}>
-        <span className="user-dropdown-icon-custom user-dropdown-icon-logout" />
+        <span className="user-dropdown-icon-custom">
+          {/* Ícone sair/deslogar */}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 17l5-5-5-5" stroke="#ff5a5f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21 12H9" stroke="#ff5a5f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 19a7 7 0 1 1 0-14" stroke="#ff5a5f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
         <span className="user-dropdown-label user-dropdown-label-logout">Sair da conta</span>
       </button>
     </div>,
@@ -74,6 +90,7 @@ function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedid
 
 function Header({ onCartClick }) {
   const { cart } = useCart();
+  const { executeBackButtonHandler, isViewingPhotos } = useNavigation();
   const location = useLocation();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
@@ -83,8 +100,6 @@ function Header({ onCartClick }) {
   const [showPedidosModal, setShowPedidosModal] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const userBtnRef = useRef(null);
-  
-  // Remover: const shouldShowBackButton = hasBackHandler && location.pathname !== '/eventos' && location.pathname !== '/';
   
   // Detectar scroll para mostrar/ocultar logo e botão
   useEffect(() => {
@@ -96,8 +111,7 @@ function Header({ onCartClick }) {
     };
 
     // Só adicionar listener se estivermos numa página que precisa do botão
-    // Remover: if (shouldShowBackButton) {
-    if (true) { // Sempre mostrar o botão de voltar
+    if (location.pathname !== '/eventos' && location.pathname !== '/') {
       window.addEventListener('scroll', handleScroll);
       // Chamar uma vez para definir o estado inicial
       handleScroll();
@@ -108,7 +122,7 @@ function Header({ onCartClick }) {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []); // Remover: [shouldShowBackButton]
+  }, [location.pathname]);
 
   useEffect(() => {
     const nome = localStorage.getItem('user_nome') || '';
@@ -132,7 +146,6 @@ function Header({ onCartClick }) {
   }
 
   function handleUserBtnClick() {
-    console.log('[Header] Clique no botão do usuário, showUserMenu:', !showUserMenu);
     setShowUserMenu(v => !v);
   }
 
@@ -146,29 +159,35 @@ function Header({ onCartClick }) {
     setShowPedidosModal(true);
   }
 
+  // Determinar quando o botão de voltar deve aparecer
+  const shouldShowBackButton = location.pathname !== '/eventos' && 
+                              location.pathname !== '/' && 
+                              isScrolled && 
+                              isViewingPhotos;
+
   return (
     <header className="header header-fixed-no-scroll">
       <div className="header-logo">
-        {/* Remover: shouldShowBackButton && isScrolled ? ( */}
-          <img 
-            src="/logo.png" 
-            alt="Logo" 
-            height={40} 
-            className="header-logo-img"
-          />
-        {/* ) : ( */}
-        {/* <button
-            className={`header-back-btn header-back-btn-expanded header-back-btn-scrolled`}
-            onClick={triggerBackButton}
-            title="Voltar à página anterior"
-            style={{ marginRight: 16 }}
+        <img 
+          src="/logo.png" 
+          alt="Logo" 
+          height={40} 
+          className={`header-logo-img ${shouldShowBackButton ? 'header-logo-hidden' : ''}`}
+        />
+        {shouldShowBackButton && (
+          <button
+            className="header-back-btn header-back-btn-expanded"
+            onClick={executeBackButtonHandler}
+            title="Coreografias"
           >
             <span className="header-back-icon-circle">
-              <img src={LeftIcon} alt="Voltar" style={{ width: 20, height: 20, filter: 'invert(0)' }} />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </span>
-            <span className="header-back-text">Voltar à página anterior</span>
-          </button> */}
-        {/* ) */}
+            <span className="header-back-text">Coreografias</span>
+          </button>
+        )}
       </div>
       <div className="header-actions">
         {userNome ? (
@@ -177,7 +196,7 @@ function Header({ onCartClick }) {
               className="header-user-btn header-user-btn-simple"
               ref={userBtnRef}
               onClick={handleUserBtnClick}
-              style={{ color: '#fff', fontWeight: 600, marginRight: 16, background: 'none', boxShadow: 'none', padding: '8px 18px' }}
+              // style={{ color: '#fff', fontWeight: 600, marginRight: 16, background: 'none', boxShadow: 'none', padding: '8px 18px' }}
             >
               {nomeSobrenome}
             </button>

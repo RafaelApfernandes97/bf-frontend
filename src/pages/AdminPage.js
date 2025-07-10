@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FinanceiroAdmin from '../components/FinanceiroAdmin';
 import './AdminPage.css';
 
-const API = 'https://backend.rfsolutionbr.com.br/api/admin';
+const API = 'http://localhost:3001/api/admin';
 
 export default function AdminPage() {
   const [logged, setLogged] = useState(false);

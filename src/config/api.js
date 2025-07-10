@@ -1,6 +1,6 @@
 // Configuração da API
-// const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
-const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
+// const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
   // Usuários

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
 
-const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
+const BACKEND_URL = 'http://localhost:3001';
 
 export default function LoginModal({ onClose, onRegisterClick, onLoginSuccess }) {
   const [email, setEmail] = useState('');

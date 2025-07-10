@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
 import CartBtn from '../components/CartBtn';
 import { useCart } from '../components/CartContext';
+import { useNavigation } from '../context/NavigationContext';
 import './CoreografiasBody.css';
 import '../CoreografiasBody.css';
 import './FotosPage.css';
@@ -15,7 +16,7 @@ import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
 
-const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
+const BACKEND_URL = 'http://localhost:3001';
 
 function isDiaFolder(nome) {
   // Regex para detectar formato 'dd-mm DiaSemana' ou 'dd-mm Dia'
@@ -40,12 +41,12 @@ function CoreografiasPage({ setShowCart }) {
   const [historicoNavegacao, setHistoricoNavegacao] = useState([]);
   const [coreografiasNivelPai, setCoreografiasNivelPai] = useState([]); // Para guardar as coreografias do nível pai
   const { cart, addToCart, removeFromCart } = useCart();
+  const { registerBackButtonHandler, clearBackButtonHandler, setViewingPhotos } = useNavigation();
   const navigate = useNavigate();
 
   // Função para buscar pastas e fotos via API unificada
   async function buscarPastasEFotos(caminho) {
     try {
-      console.log('[CoreografiasPage] Buscando pastas e fotos para:', caminho);
       setCaminhoAtual(caminho);
       setLoading(true);
       
@@ -57,7 +58,6 @@ function CoreografiasPage({ setShowCart }) {
         body: JSON.stringify({ caminho }),
       });
       const data = await response.json();
-      console.log('[CoreografiasPage] Dados recebidos:', data);
       
       // Ordenar pastas
       const pastasOrdenadas = (data.subpastas || []).slice().sort((a, b) => {
@@ -278,8 +278,8 @@ function CoreografiasPage({ setShowCart }) {
   const listaCoreografias = coreografiasNivelPai.length > 0 ? coreografiasNivelPai : coreografias;
   const mostrarNavegacao = fotos.length > 0 && listaCoreografias.length > 1 && idxCoreografiaAtual >= 0;
 
-  // Função para lidar com o botão voltar
-  const handleBackButton = () => {
+  // Função para lidar com o botão voltar - memoizada com useCallback
+  const handleBackButton = useCallback(() => {
     if (caminhoAtual) {
       // Voltar um nível na navegação
       const partesAtual = caminhoAtual.split('/');
@@ -310,13 +310,21 @@ function CoreografiasPage({ setShowCart }) {
       // Voltar para lista de eventos
       navigate('/eventos');
     }
-  };
+  }, [caminhoAtual, dias, eventoId, diaSelecionado, navigate]);
 
   // Registrar a função no contexto quando o componente monta
   useEffect(() => {
-    // Remover: setBackButtonHandler(handleBackButton);
-    // Remover: return () => clearBackButtonHandler();
-  }, [caminhoAtual, dias, eventoId, diaSelecionado]);
+    registerBackButtonHandler(handleBackButton);
+    return () => {
+      clearBackButtonHandler();
+      setViewingPhotos(false); // Limpar estado quando desmontar
+    };
+  }, [handleBackButton, clearBackButtonHandler, setViewingPhotos]);
+
+  // Registrar quando está visualizando fotos
+  useEffect(() => {
+    setViewingPhotos(fotos.length > 0);
+  }, [fotos.length, setViewingPhotos]);
 
   if (loading) return <div>Carregando coreografias...</div>;
   if (error) return <div>{error}</div>;
@@ -350,36 +358,39 @@ function CoreografiasPage({ setShowCart }) {
             )}
           </div>
         )}
-        <button
-          className="voltar-btn"
-          onClick={handleBackButton}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            background: 'none',
-            border: 'none',
-            color: '#444',
-            fontSize: '1.18rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        >
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            border: '2px solid #888',
-            marginRight: 8,
-          }}>
-            <img src={LeftFill} alt="Voltar" width={18} height={18} />
-          </span>
-          Voltar a página anterior
-        </button>
+        {/* Botão voltar só aparece quando está visualizando fotos */}
+        {fotos.length > 0 && (
+          <button
+            className="voltar-btn"
+            onClick={handleBackButton}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'none',
+              border: 'none',
+              color: '#444',
+              fontSize: '1.18rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              border: '2px solid #888',
+              marginRight: 8,
+            }}>
+              <img src={LeftFill} alt="Voltar" width={18} height={18} />
+            </span>
+            Voltar a página anterior
+          </button>
+        )}
       </CoreografiaTop>
       {/* <div className="evento-info-bar">
         {evento && evento.data && (
@@ -427,9 +438,6 @@ function CoreografiasPage({ setShowCart }) {
             <div key={coreografia.nome || coreografia} onClick={() => {
               const nomePasta = coreografia.nome || coreografia;
               const novoCaminho = caminhoAtual ? `${caminhoAtual}/${nomePasta}` : `${eventoId}/${nomePasta}`;
-              console.log('[CoreografiasPage] Clicou em pasta:', nomePasta);
-              console.log('[CoreografiasPage] Caminho atual:', caminhoAtual);
-              console.log('[CoreografiasPage] Novo caminho:', novoCaminho);
               buscarPastasEFotos(novoCaminho);
             }} style={{cursor: 'pointer'}}>
               <CoreografiaCard

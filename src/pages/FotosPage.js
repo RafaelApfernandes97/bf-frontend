@@ -13,7 +13,7 @@ import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
 
-const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
+const BACKEND_URL = 'http://localhost:3001';
 
 function FotosPage({ setShowCart }) {
   const { eventoId, coreografiaId, diaId } = useParams();
@@ -44,23 +44,16 @@ function FotosPage({ setShowCart }) {
   // Buscar fotos da coreografia
   useEffect(() => {
     setLoading(true);
-    console.log('[FotosPage] eventoId:', eventoId);
-    console.log('[FotosPage] diaId:', diaId);
-    console.log('[FotosPage] coreografiaId:', coreografiaId);
     
     const url = diaId 
       ? `${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaId)}/fotos`
       : `${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/${encodeURIComponent(coreografiaId)}/fotos`;
     
-    console.log('[FotosPage] URL da API:', url);
-    
     fetch(url)
       .then(res => {
-        console.log('[FotosPage] Status da resposta:', res.status);
         return res.json();
       })
       .then(async data => {
-        console.log('[FotosPage] Dados recebidos:', data);
         const token = localStorage.getItem('user_token');
         const fotosComUrls = await Promise.all(
           (data.fotos || []).map(async (foto) => {
@@ -78,12 +71,10 @@ function FotosPage({ setShowCart }) {
             return { ...foto, url: '' };
           })
         );
-        console.log('[FotosPage] Fotos processadas:', fotosComUrls);
         setFotos(fotosComUrls);
         setLoading(false);
       })
       .catch(err => {
-        console.error('[FotosPage] Erro ao carregar fotos:', err);
         setError('Erro ao carregar fotos');
         setLoading(false);
       });
@@ -222,7 +213,7 @@ function FotosPage({ setShowCart }) {
           }}>
             <img src={LeftFill} alt="Voltar" width={18} height={18} />
           </span>
-          Voltar a página anterior
+          Voltar a página anterio
         </button>
         <div style={{ position: 'absolute', top: 16, right: 16 }}>
           <div style={{ position: 'relative' }}>

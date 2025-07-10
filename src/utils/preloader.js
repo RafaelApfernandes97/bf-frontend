@@ -1,5 +1,5 @@
 // Utilitário para pré-carregamento de dados
-const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
+const BACKEND_URL = 'http://localhost:3001';
 
 class DataPreloader {
   constructor() {
@@ -30,7 +30,6 @@ class DataPreloader {
       
       return data;
     } catch (error) {
-      console.error('Erro ao pré-carregar eventos:', error);
       return null;
     }
   }
@@ -57,7 +56,6 @@ class DataPreloader {
       
       return data;
     } catch (error) {
-      console.error('Erro ao pré-carregar coreografias:', error);
       return null;
     }
   }
@@ -90,7 +88,6 @@ class DataPreloader {
       
       return data;
     } catch (error) {
-      console.error('Erro ao pré-carregar pastas e fotos:', error);
       return null;
     }
   }
@@ -125,10 +122,10 @@ class DataPreloader {
       // Aquece cache no backend
       fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(evento)}/aquecer-cache`, {
         method: 'POST'
-      }).catch(err => console.log('Cache warming error:', err));
+      }).catch(err => {});
       
     } catch (error) {
-      console.error('Erro ao pré-carregar dados relacionados:', error);
+      // console.error('Erro ao pré-carregar dados relacionados:', error);
     }
   }
 
@@ -152,7 +149,7 @@ class DataPreloader {
       this.clearExpiredCache();
       
     } catch (error) {
-      console.error('Erro no pré-carregamento inteligente:', error);
+      // console.error('Erro no pré-carregamento inteligente:', error);
     }
   }
 }

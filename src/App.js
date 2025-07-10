@@ -8,7 +8,9 @@ import Header from './components/Header';
 import CartModal from './components/CartModal';
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
+import OrderSuccessModal from './components/OrderSuccessModal';
 import { useCart } from './components/CartContext';
+import { NavigationProvider } from './context/NavigationContext';
 import API_ENDPOINTS from './config/api';
 import NavegadorPastasFotosPage from './pages/NavegadorPastasFotosPage';
 import { preloader } from './utils/preloader';
@@ -33,6 +35,8 @@ function App() {
   const [checkoutMsg, setCheckoutMsg] = useState('');
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showOrderSuccess, setShowOrderSuccess] = useState(false);
+  const [successPedidoId, setSuccessPedidoId] = useState('');
 
   // Verificar se o usuário está logado
   const isLoggedIn = !!localStorage.getItem('user_token');
@@ -53,21 +57,17 @@ function App() {
         // Buscar todos os eventos cadastrados
         const resEventos = await fetch(API_ENDPOINTS.ADMIN_EVENTOS, { headers });
         let eventos = await resEventos.json();
-        console.log('Resposta bruta /api/admin/eventos:', eventos);
 
         // Buscar todas as tabelas de preço
         const resTabelas = await fetch(API_ENDPOINTS.ADMIN_TABELAS_PRECO, { headers });
         let tabelas = await resTabelas.json();
-        console.log('Resposta bruta /api/admin/tabelas-preco:', tabelas);
 
         // Se eventos não for array, logar erro e abortar
         if (!Array.isArray(eventos)) {
-          console.error('ERRO: eventos não é array!', eventos);
           setValorUnitario(0);
           return;
         }
         if (!Array.isArray(tabelas)) {
-          console.error('ERRO: tabelas não é array!', tabelas);
           setValorUnitario(0);
           return;
         }
@@ -84,8 +84,6 @@ function App() {
 
         // Encontrar o evento das fotos no carrinho
         const eventoNome = cart[0]?.evento;
-        console.log('Carrinho evento:', eventoNome, 'Normalizado:', normalize(eventoNome));
-        console.log('Eventos do backend:', eventos);
         eventos.forEach(e => console.log('->', e.nome, 'Normalizado:', normalize(e.nome)));
 
         // Busca tolerante: primeiro por igualdade, depois por includes
@@ -93,7 +91,6 @@ function App() {
         if (!evento) {
           evento = eventos.find(e => normalize(e.nome).includes(normalize(eventoNome)) || normalize(eventoNome).includes(normalize(e.nome)));
         }
-        console.log('Evento encontrado:', evento);
 
         let valor = 0;
         let tabela = null;
@@ -102,7 +99,6 @@ function App() {
         if (evento && evento.valorFixo) {
           // Valor fixo
           valor = Number(evento.valorFixo);
-          console.log('Usando valor fixo:', valor);
         } else if (evento && evento.tabelaPrecoId) {
           // Tabela específica do evento
           let tabelaId = evento && evento.tabelaPrecoId;
@@ -110,10 +106,8 @@ function App() {
             tabelaId = tabelaId._id;
           }
           tabela = tabelas.find(t => t._id === tabelaId);
-          console.log('Tabela encontrada:', tabela);
           if (tabela && tabela.faixas) {
             const faixas = [...tabela.faixas].sort((a, b) => a.min - b.min);
-            console.log('Faixas da tabela:', faixas);
             for (const faixa of faixas) {
               const min = Number(faixa.min);
               const max = faixa.max !== undefined && faixa.max !== null && faixa.max !== '' ? Number(faixa.max) : null;
@@ -133,10 +127,8 @@ function App() {
         } else {
           // Usar tabela default
           tabelaDefault = tabelas.find(t => t.isDefault);
-          console.log('Tabela default encontrada:', tabelaDefault);
           if (tabelaDefault && tabelaDefault.faixas) {
             const faixas = [...tabelaDefault.faixas].sort((a, b) => a.min - b.min);
-            console.log('Faixas da tabela default:', faixas);
             for (const faixa of faixas) {
               const min = Number(faixa.min);
               const max = faixa.max !== undefined && faixa.max !== null && faixa.max !== '' ? Number(faixa.max) : null;
@@ -155,8 +147,6 @@ function App() {
           }
         }
 
-        console.log('Tabela usada:', tabela || tabelaDefault);
-        console.log('Valor calculado:', valor);
         setValorUnitario(valor);
       } catch (error) {
         console.error('Erro ao calcular valor unitário:', error);
@@ -211,12 +201,10 @@ function App() {
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        setCheckoutMsg(`Pedido ${data.pedidoId} enviado com sucesso! Você receberá um WhatsApp com o resumo.`);
+        setSuccessPedidoId(data.pedidoId);
+        setShowOrderSuccess(true);
         clearCart();
-        setTimeout(() => {
-          setShowCart(false);
-          setCheckoutMsg('');
-        }, 1800);
+        setShowCart(false);
       } else {
         setCheckoutMsg(data.error || 'Erro ao enviar pedido.');
       }
@@ -227,66 +215,73 @@ function App() {
   }
 
   return (
-    <Router
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
-      <AppContent />
-      <Header onCartClick={() => setShowCart(true)} />
-      <div className="main-content">
-        <Routes>
-          <Route path="/" element={<Navigate to="/eventos" />} />
-          <Route path="/eventos" element={<EventosPage />} />
-          <Route path="/eventos/:eventoId" element={<CoreografiasPage setShowCart={setShowCart} />} />
-          <Route path="/eventos/:eventoId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
-          <Route path="/eventos/:eventoId/:diaId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
-          <Route path="/eventos/pasta/*" element={<NavegadorPastasFotosPage setShowCart={setShowCart} />} />
-          <Route path="/admin" element={<AdminPage />} />
-        </Routes>
-      </div>
-    {showCart && (
-      <CartModal
-        fotos={cart}
-        onClose={() => setShowCart(false)}
-        onRemove={removeFromCart}
-        onCheckout={handleCheckout}
-        valorUnitario={valorUnitario}
-        checkoutLoading={checkoutLoading}
-        checkoutMsg={checkoutMsg}
-        isLoggedIn={isLoggedIn}
-        onShowLogin={() => {
-          setShowCart(false);
-          setShowLogin(true);
+    <NavigationProvider>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
         }}
-        onShowRegister={() => {
-          setShowCart(false);
-          setShowRegister(true);
-        }}
-      />
-    )}
-    {showLogin && (
-      <LoginModal
-        onClose={() => setShowLogin(false)}
-        onRegisterClick={() => { setShowLogin(false); setShowRegister(true); }}
-        onLoginSuccess={() => {
-          setShowLogin(false);
-          setShowCart(true); // Reabre o carrinho após login
-        }}
-      />
-    )}
-    {showRegister && (
-      <RegisterModal
-        onClose={() => setShowRegister(false)}
-        onLoginClick={() => { setShowRegister(false); setShowLogin(true); }}
-        onLoginSuccess={() => {
-          setShowRegister(false);
-          setShowCart(true); // Reabre o carrinho após cadastro
-        }}
-      />
-    )}
-    </Router>
+      >
+        <AppContent />
+        <Header onCartClick={() => setShowCart(true)} />
+        <div className="main-content">
+          <Routes>
+            <Route path="/" element={<Navigate to="/eventos" />} />
+            <Route path="/eventos" element={<EventosPage />} />
+            <Route path="/eventos/:eventoId" element={<CoreografiasPage setShowCart={setShowCart} />} />
+            <Route path="/eventos/:eventoId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
+            <Route path="/eventos/:eventoId/:diaId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
+            <Route path="/eventos/pasta/*" element={<NavegadorPastasFotosPage setShowCart={setShowCart} />} />
+            <Route path="/admin" element={<AdminPage />} />
+          </Routes>
+        </div>
+        {showCart && (
+          <CartModal
+            fotos={cart}
+            onClose={() => setShowCart(false)}
+            onRemove={removeFromCart}
+            onCheckout={handleCheckout}
+            valorUnitario={valorUnitario}
+            checkoutLoading={checkoutLoading}
+            checkoutMsg={checkoutMsg}
+            isLoggedIn={isLoggedIn}
+            onShowLogin={() => {
+              setShowCart(false);
+              setShowLogin(true);
+            }}
+            onShowRegister={() => {
+              setShowCart(false);
+              setShowRegister(true);
+            }}
+          />
+        )}
+        {showLogin && (
+          <LoginModal
+            onClose={() => setShowLogin(false)}
+            onRegisterClick={() => { setShowLogin(false); setShowRegister(true); }}
+            onLoginSuccess={() => {
+              setShowLogin(false);
+              setShowCart(true); // Reabre o carrinho após login
+            }}
+          />
+        )}
+        {showRegister && (
+          <RegisterModal
+            onClose={() => setShowRegister(false)}
+            onLoginClick={() => { setShowRegister(false); setShowLogin(true); }}
+            onLoginSuccess={() => {
+              setShowRegister(false);
+              setShowCart(true); // Reabre o carrinho após cadastro
+            }}
+          />
+        )}
+        <OrderSuccessModal
+          isOpen={showOrderSuccess}
+          onClose={() => setShowOrderSuccess(false)}
+          pedidoId={successPedidoId}
+        />
+      </Router>
+    </NavigationProvider>
   );
 }
 

@@ -2,27 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import './PedidosModal.css';
 import { useCart } from './CartContext';
 
-const BACKEND_URL = 'https://backend.rfsolutionbr.com.br/';
+const BACKEND_URL = 'http://localhost:3001';
 const MINIO_ENDPOINT = 'https://balletemfoco-minio.ul08ww.easypanel.host';
 const MINIO_BUCKET = 'balletemfoco';
 
 async function buscarUrlAssinada(evento, coreografia, nome) {
   try {
-    console.log('[Frontend] Buscando URL assinada para:', { evento, coreografia, nome });
     
     const token = localStorage.getItem('user_token');
     const url = `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(evento)}/${encodeURIComponent(coreografia)}/${encodeURIComponent(nome)}`;
-    console.log('[Frontend] URL da requisição:', url);
     
     const res = await fetch(url, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     
-    console.log('[Frontend] Status da resposta:', res.status);
-    
     if (!res.ok) throw new Error('Erro ao buscar URL da foto');
     const data = await res.json();
-    console.log('[Frontend] Resposta recebida:', data);
     
     return data.url;
   } catch (e) {
