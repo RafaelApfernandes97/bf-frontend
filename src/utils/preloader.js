@@ -1,5 +1,5 @@
 // Utilitário para pré-carregamento de dados
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host/';
 
 class DataPreloader {
   constructor() {

@@ -1,6 +1,6 @@
 // Configuração da API
-// const BACKEND_URL = 'http://localhost:3001';
-const BACKEND_URL = 'http://localhost:3001';
+// const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host/';
+const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host/';
 
 export const API_ENDPOINTS = {
   // Usuários

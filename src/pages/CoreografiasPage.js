@@ -16,7 +16,7 @@ import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = 'https://site-backend.cbltmp.easypanel.host/';
 
 function isDiaFolder(nome) {
   // Regex para detectar formato 'dd-mm DiaSemana' ou 'dd-mm Dia'

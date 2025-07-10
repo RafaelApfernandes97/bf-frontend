@@ -30,7 +30,7 @@ Interface web React para o sistema de fotos de ballet.
 
 4. Configure a URL da API no arquivo `.env`:
    ```
-   REACT_APP_API_URL=http://localhost:3001
+   REACT_APP_API_URL=https://site-backend.cbltmp.easypanel.host/
    ```
 
 ## 🏃‍♂️ Executando
