@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
 import CartBtn from '../components/CartBtn';
+import VirtualizedPhotoGrid from '../components/VirtualizedPhotoGrid';
 import { useCart } from '../components/CartContext';
 import { useNavigation } from '../context/NavigationContext';
 import './CoreografiasBody.css';
@@ -16,6 +17,7 @@ import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
 import api, { API_ENDPOINTS } from '../config/api';
+import useImagePreloader from '../hooks/useImagePreloader';
 
 function isDiaFolder(nome) {
   // Regex para detectar formato 'dd-mm DiaSemana' ou 'dd-mm Dia'
@@ -336,6 +338,15 @@ function CoreografiasPage({ setShowCart }) {
   // Determinar quais fotos mostrar (normais ou filtradas por IA)
   const fotosParaMostrar = filtroIAAtivo ? fotosEncontradasIA : fotos;
 
+  // Otimização: Memoizar URLs para pré-carregamento
+  const photoUrls = useMemo(() => 
+    fotosParaMostrar.map(foto => foto.url), 
+    [fotosParaMostrar]
+  );
+
+  // Pré-carregar próximas imagens
+  useImagePreloader(photoUrls, 10);
+
   if (loading) return <div>Carregando coreografias...</div>;
   if (error) return <div>{error}</div>;
 
@@ -461,24 +472,14 @@ function CoreografiasPage({ setShowCart }) {
         </div>
       )}
       
-      {/* Grid de fotos */}
+      {/* Grid de fotos otimizado */}
       {fotosParaMostrar.length > 0 && (
-        <div className="fotos-grid">
-          {fotosParaMostrar.map((foto, index) => (
-            <div
-              key={`foto-${index}-${foto.nome}`}
-              className={isSelected(foto) ? 'foto-card foto-card-selected' : 'foto-card'}
-              style={{ position: 'relative', cursor: 'pointer' }}
-              onClick={() => toggleFoto(foto)}
-            >
-              <img src={foto.url} alt={foto.nome} />
-              <div className="foto-nome-overlay">{foto.nome}</div>
-              {isSelected(foto) && (
-                <span className="foto-check">✓</span>
-              )}
-            </div>
-          ))}
-        </div>
+        <VirtualizedPhotoGrid
+          fotos={fotosParaMostrar}
+          isSelected={isSelected}
+          onPhotoClick={toggleFoto}
+          itemsPerPage={15}
+        />
       )}
       
       {filtroIAAtivo && fotosEncontradasIA.length === 0 && (

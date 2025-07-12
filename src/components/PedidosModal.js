@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import './PedidosModal.css';
 import { useCart } from './CartContext';
 import { BACKEND_URL } from '../config/api';
-const MINIO_ENDPOINT = 'https://balletemfoco-minio.ul08ww.easypanel.host';
-const MINIO_BUCKET = 'balletemfoco';
 
 async function buscarUrlAssinada(evento, coreografia, nome) {
   try {
@@ -26,7 +24,8 @@ async function buscarUrlAssinada(evento, coreografia, nome) {
 }
 
 function montarUrlPublica(evento, coreografia, nome) {
-  return `${MINIO_ENDPOINT}/${MINIO_BUCKET}/${encodeURIComponent(evento)}/${encodeURIComponent(coreografia)}/${encodeURIComponent(nome)}`;
+  // Fallback URL - na prática, deve sempre usar URL assinada do backend
+  return `/img/sem_foto.jpg`;
 }
 
 export default function PedidosModal({ onClose }) {

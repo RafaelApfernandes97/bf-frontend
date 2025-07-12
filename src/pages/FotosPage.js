@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import CoreografiaTop from '../components/CoreografiaTop';
+import VirtualizedPhotoGrid from '../components/VirtualizedPhotoGrid';
 import './FotosPage.css';
 import '../CoreografiasBody.css';
 import { useCart } from '../components/CartContext';
@@ -14,6 +15,7 @@ import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
 import { BACKEND_URL } from '../config/api';
+import useImagePreloader from '../hooks/useImagePreloader';
 
 function FotosPage({ setShowCart }) {
   const { eventoId, coreografiaId, diaId } = useParams();
@@ -167,6 +169,15 @@ function FotosPage({ setShowCart }) {
   // Determinar quais fotos mostrar (normais ou filtradas por IA)
   const fotosParaMostrar = filtroIAAtivo ? fotosEncontradasIA : fotos;
 
+  // Otimização: Memoizar URLs para pré-carregamento
+  const photoUrls = useMemo(() => 
+    fotosParaMostrar.map(foto => foto.url), 
+    [fotosParaMostrar]
+  );
+
+  // Pré-carregar próximas imagens
+  useImagePreloader(photoUrls, 10);
+
   if (loading) return <div>Carregando fotos...</div>;
   if (error) return <div>{error}</div>;
 
@@ -280,22 +291,12 @@ function FotosPage({ setShowCart }) {
           </span>
         </div>
       )}
-      <div className="fotos-grid">
-        {fotosParaMostrar.map(foto => (
-          <div
-            key={foto.nome}
-            className={isSelected(foto) ? 'foto-card foto-card-selected' : 'foto-card'}
-            style={{ position: 'relative', cursor: 'pointer' }}
-            onClick={() => toggleFoto(foto)}
-          >
-            <img src={foto.url} alt={foto.nome} />
-            <div className="foto-nome-overlay">{foto.nome}</div>
-            {isSelected(foto) && (
-              <span className="foto-check">✓</span>
-            )}
-          </div>
-        ))}
-      </div>
+      <VirtualizedPhotoGrid
+        fotos={fotosParaMostrar}
+        isSelected={isSelected}
+        onPhotoClick={toggleFoto}
+        itemsPerPage={20}
+      />
       
       {filtroIAAtivo && fotosEncontradasIA.length === 0 && (
         <div className="no-photos-message">
