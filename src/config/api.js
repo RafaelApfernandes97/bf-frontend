@@ -3,7 +3,7 @@ import axios from 'axios';
 // Configuração da API - sempre usa o backend de produção
 // Em produção, prioriza a variável de ambiente REACT_APP_BACKEND_URL (definida em tempo de build)
 // Se não existir, usa o backend padrão informado: https://backend.rfsolutionbr.com.br
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://backend.rfsolutionbr.com.br';
 
 // Criar instância do axios
 const api = axios.create({
