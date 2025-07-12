@@ -14,7 +14,7 @@ import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
 import './FotosPage.css';
 import '../CoreografiasBody.css';
-import { BACKEND_URL } from '../config/api';
+import api, { API_ENDPOINTS, BACKEND_URL } from '../config/api';
 
 function isCoreografiaFolder(nome) {
   return nome.toLowerCase().includes('coreografia');
@@ -48,15 +48,10 @@ function NavegadorPastasFotosPage({ setShowCart }) {
     if (estaNaCoreografia) {
       // Se estiver em uma coreografia, buscar fotos via API de pastas usando caminho completo
       
-      fetch(`${BACKEND_URL}/api/eventos/pasta`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ caminho }),
-      })
-        .then(res => res.json())
-        .then(async data => {
+      api.post('/eventos/pasta', { caminho })
+        .then(res => {
+          const data = res.data;
+          return (async () => {
           
           // Processar fotos com URLs assinadas
           const fotosComUrls = await Promise.all(
@@ -84,6 +79,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           setFotos(fotosComUrls);
           setSubpastas([]);
           setLoading(false);
+          })();
         })
         .catch(err => {
           console.error('[NavegadorPastas] Erro ao carregar fotos:', err);
@@ -93,15 +89,9 @@ function NavegadorPastasFotosPage({ setShowCart }) {
     } else {
       // Navegação normal entre pastas
       
-      fetch(`${BACKEND_URL}/api/eventos/pasta`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ caminho }),
-      })
-        .then(res => res.json())
-        .then(data => {
+      api.post('/eventos/pasta', { caminho })
+        .then(res => {
+          const data = res.data;
           
           setSubpastas(data.subpastas || []);
           setFotos(data.fotos || []);
@@ -137,9 +127,9 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           .trim();
       }
       
-      fetch(`${BACKEND_URL}/api/admin/eventos`)
-        .then(res => res.json())
-        .then(data => {
+      api.get('/admin/eventos')
+        .then(res => {
+          const data = res.data;
           const ev = Array.isArray(data)
             ? data.find(e => normalize(e.nome) === normalize(eventoNome))
             : null;
@@ -155,13 +145,13 @@ function NavegadorPastasFotosPage({ setShowCart }) {
       const evento = partes[0];
       const dia = partes.length >= 3 ? partes[1] : null;
       
-      const url = dia 
-        ? `${BACKEND_URL}/api/eventos/${encodeURIComponent(evento)}/${encodeURIComponent(dia)}/coreografias`
-        : `${BACKEND_URL}/api/eventos/${encodeURIComponent(evento)}/coreografias`;
+      const endpoint = dia 
+        ? `/eventos/${encodeURIComponent(evento)}/${encodeURIComponent(dia)}/coreografias`
+        : `/eventos/${encodeURIComponent(evento)}/coreografias`;
       
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
+      api.get(endpoint)
+        .then(res => {
+          const data = res.data;
           setCoreografias(data.coreografias || []);
         })
         .catch(() => setCoreografias([]));

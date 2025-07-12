@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
-
-const BACKEND_URL = 'http://localhost:3001';
+import { BACKEND_URL } from '../config/api';
 
 function maskCpfCnpj(value) {
   value = value.replace(/\D/g, '');

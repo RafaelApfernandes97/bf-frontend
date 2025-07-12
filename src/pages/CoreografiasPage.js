@@ -15,7 +15,7 @@ import LeftFill from '../assets/icons/left_fill.svg';
 import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
-import { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS } from '../config/api';
 
 function isDiaFolder(nome) {
   // Regex para detectar formato 'dd-mm DiaSemana' ou 'dd-mm Dia'
@@ -55,14 +55,8 @@ function CoreografiasPage({ setShowCart }) {
       setCaminhoAtual(caminho);
       setLoading(true);
       
-      const response = await fetch(API_ENDPOINTS.PHOTOS_PASTA, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ caminho }),
-      });
-      const data = await response.json();
+      const response = await api.post('/eventos/pasta', { caminho });
+      const data = response.data;
       
       // Ordenar pastas
       const pastasOrdenadas = (data.subpastas || []).slice().sort((a, b) => {
@@ -92,15 +86,9 @@ function CoreografiasPage({ setShowCart }) {
           const caminhoPai = caminhoPartes.slice(0, -1).join('/');
           
           // Buscar pastas do nível pai
-          fetch(API_ENDPOINTS.PHOTOS_PASTA, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ caminho: caminhoPai }),
-          })
-          .then(res => res.json())
-          .then(dataPai => {
+          api.post('/eventos/pasta', { caminho: caminhoPai })
+          .then(res => {
+            const dataPai = res.data;
             if (dataPai.subpastas) {
               const pastasOrdenadas = dataPai.subpastas.slice().sort((a, b) => {
                 const nomeA = a.nome || a;
@@ -175,14 +163,12 @@ function CoreografiasPage({ setShowCart }) {
     setLoading(true);
     
     // Aquece cache do evento em background
-    fetch(API_ENDPOINTS.AQUECER_CACHE(eventoId), {
-      method: 'POST'
-    }).catch(err => console.log('Cache warming:', err));
+    api.post(`/eventos/${encodeURIComponent(eventoId)}/aquecer-cache`).catch(err => console.log('Cache warming:', err));
     
     // Primeiro verifica se tem dias
-    fetch(API_ENDPOINTS.COREOGRAFIAS_POR_EVENTO(eventoId))
-      .then(res => res.json())
-      .then(data => {
+    api.get(`/eventos/${encodeURIComponent(eventoId)}/coreografias`)
+      .then(res => {
+        const data = res.data;
         if (data.coreografias && data.coreografias.length > 0 && isDiaFolder(data.coreografias[0].nome)) {
           // Evento com múltiplos dias
           setDias(data.coreografias);
@@ -211,9 +197,9 @@ function CoreografiasPage({ setShowCart }) {
   }, [dias, diaSelecionado, eventoId]);
 
   useEffect(() => {
-    fetch(API_ENDPOINTS.PUBLIC_EVENTOS)
-      .then(res => res.json())
-      .then(data => {
+    api.get('/public/eventos')
+      .then(res => {
+        const data = res.data;
         if (!Array.isArray(data)) {
           setEvento(null);
           return;

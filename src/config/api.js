@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-// Configuração da API - detecta automaticamente se é desenvolvimento ou produção
-const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
-const BACKEND_URL = isDevelopment ? '' : 'https://backend.oballetemfoco.com';
+// Configuração da API - sempre usa o backend de produção
+// Em produção, prioriza a variável de ambiente REACT_APP_BACKEND_URL (definida em tempo de build)
+// Se não existir, usa o backend padrão informado: https://backend.rfsolutionbr.com.br
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://backend.rfsolutionbr.com.br';
 
 // Criar instância do axios
 const api = axios.create({

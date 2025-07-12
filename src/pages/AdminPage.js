@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import FinanceiroAdmin from '../components/FinanceiroAdmin';
 import './AdminPage.css';
+import { API_ENDPOINTS } from '../config/api';
 
-const API = 'http://localhost:3001/api/admin';
+const API = API_ENDPOINTS.ADMIN_BASE;
 
 export default function AdminPage() {
   const [logged, setLogged] = useState(false);

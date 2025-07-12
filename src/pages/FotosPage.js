@@ -13,8 +13,7 @@ import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
-
-const BACKEND_URL = 'http://localhost:3001';
+import { BACKEND_URL } from '../config/api';
 
 function FotosPage({ setShowCart }) {
   const { eventoId, coreografiaId, diaId } = useParams();

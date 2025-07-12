@@ -11,7 +11,7 @@ import RegisterModal from './components/RegisterModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import { useCart } from './components/CartContext';
 import { NavigationProvider } from './context/NavigationContext';
-import { API_ENDPOINTS } from './config/api';
+import API_ENDPOINTS from './config/api';
 import NavegadorPastasFotosPage from './pages/NavegadorPastasFotosPage';
 import { preloader } from './utils/preloader';
 import './App.css';
@@ -50,51 +50,40 @@ function App() {
       }
 
       try {
-        // Não precisa mais de token de admin para buscar dados públicos
-        const headers = {};
+        // Recuperar token do admin
+        const token = localStorage.getItem('admin_token') || '';
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         // Buscar todos os eventos cadastrados
-        const eventosUrl = API_ENDPOINTS.PUBLIC_EVENTOS;
-        console.log('Buscando eventos de:', eventosUrl);
-        const resEventos = await fetch(eventosUrl, { headers });
-        const eventosText = await resEventos.text();
-
+        const resEventos = await fetch(API_ENDPOINTS.ADMIN_EVENTOS, { headers });
         if (!resEventos.ok) {
           console.warn('Falha ao buscar eventos:', resEventos.status, resEventos.statusText);
-          console.error('Corpo do erro dos eventos:', eventosText);
           setValorUnitario(0);
           return;
         }
         
         let eventos;
         try {
-          eventos = JSON.parse(eventosText);
+          eventos = await resEventos.json();
         } catch (jsonError) {
           console.error('Erro ao parsear JSON dos eventos:', jsonError);
-          console.error('Resposta que causou o erro de JSON (eventos):', eventosText);
           setValorUnitario(0);
           return;
         }
 
         // Buscar todas as tabelas de preço
-        const tabelasUrl = API_ENDPOINTS.PUBLIC_TABELAS_PRECO;
-        console.log('Buscando tabelas de:', tabelasUrl);
-        const resTabelas = await fetch(tabelasUrl, { headers });
-        const tabelasText = await resTabelas.text();
-
+        const resTabelas = await fetch(API_ENDPOINTS.ADMIN_TABELAS_PRECO, { headers });
         if (!resTabelas.ok) {
           console.warn('Falha ao buscar tabelas de preço:', resTabelas.status, resTabelas.statusText);
-          console.error('Corpo do erro das tabelas:', tabelasText);
           setValorUnitario(0);
           return;
         }
         
         let tabelas;
         try {
-          tabelas = JSON.parse(tabelasText);
+          tabelas = await resTabelas.json();
         } catch (jsonError) {
           console.error('Erro ao parsear JSON das tabelas:', jsonError);
-          console.error('Resposta que causou o erro de JSON (tabelas):', tabelasText);
           setValorUnitario(0);
           return;
         }

@@ -1,5 +1,5 @@
 // Utilitário para pré-carregamento de dados
-const BACKEND_URL = 'http://localhost:3001';
+import { BACKEND_URL } from '../config/api';
 
 class DataPreloader {
   constructor() {

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './PedidosModal.css';
 import { useCart } from './CartContext';
-
-const BACKEND_URL = 'http://localhost:3001';
+import { BACKEND_URL } from '../config/api';
 const MINIO_ENDPOINT = 'https://balletemfoco-minio.ul08ww.easypanel.host';
 const MINIO_BUCKET = 'balletemfoco';
 

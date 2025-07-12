@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const BACKEND_URL = 'http://localhost:3001';
+import api, { API_ENDPOINTS } from '../config/api';
 
 function EventosPage() {
   const [eventos, setEventos] = useState([]);
@@ -14,19 +13,16 @@ function EventosPage() {
     const preloadData = async () => {
       try {
         // Inicia pré-carregamento em background (não aguarda)
-        fetch(`${BACKEND_URL}/api/pre-carregar`, {
-          method: 'POST'
-        }).catch(err => console.log('Pré-carregamento em background:', err));
+        api.post('/pre-carregar').catch(err => console.log('Pré-carregamento em background:', err));
       } catch (err) {
         console.log('Erro no pré-carregamento:', err);
       }
     };
 
     // Carrega eventos
-    fetch(`${BACKEND_URL}/api/eventos`)
-      .then(res => res.json())
-      .then(data => {
-        setEventos(data.eventos || []);
+    api.get('/eventos')
+      .then(res => {
+        setEventos(res.data.eventos || []);
         setLoading(false);
         
         // Inicia pré-carregamento após carregar eventos
