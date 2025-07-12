@@ -12,8 +12,19 @@ const VirtualizedPhotoGrid = ({
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef();
 
+  // Se há poucas fotos (menos de 50), mostrar todas de uma vez
+  const shouldPaginate = fotos.length > 50;
+
   // Dividir fotos em páginas
   const paginatedPhotos = useMemo(() => {
+    if (!shouldPaginate) {
+      return {
+        photos: fotos,
+        hasMore: false,
+        totalPages: 1
+      };
+    }
+
     const totalPages = Math.ceil(fotos.length / itemsPerPage);
     const pages = [];
     
@@ -28,19 +39,20 @@ const VirtualizedPhotoGrid = ({
       hasMore: currentPage < totalPages - 1,
       totalPages
     };
-  }, [fotos, currentPage, itemsPerPage]);
+  }, [fotos, currentPage, itemsPerPage, shouldPaginate]);
 
-  // Scroll infinito
+  // Scroll infinito (apenas se shouldPaginate for true)
   useEffect(() => {
+    if (!shouldPaginate) return;
+
     const handleScroll = () => {
       if (isLoading || !paginatedPhotos.hasMore) return;
 
-      const container = containerRef.current;
-      if (!container) return;
-
-      const { scrollTop, scrollHeight, clientHeight } = container.parentElement;
+      // Detectar scroll na janela principal
+      const { scrollY, innerHeight } = window;
+      const { scrollHeight } = document.documentElement;
       
-      if (scrollTop + clientHeight >= scrollHeight - 1000) {
+      if (scrollY + innerHeight >= scrollHeight - 1000) {
         setIsLoading(true);
         
         // Simular delay de carregamento para UX
@@ -51,17 +63,31 @@ const VirtualizedPhotoGrid = ({
       }
     };
 
-    const container = containerRef.current?.parentElement;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
-    }
-  }, [isLoading, paginatedPhotos.hasMore]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isLoading, paginatedPhotos.hasMore, shouldPaginate]);
 
   // Reset quando fotos mudam
   useEffect(() => {
     setCurrentPage(0);
-  }, [fotos]);
+    console.log('[VirtualizedPhotoGrid] Fotos alteradas:', {
+      totalFotos: fotos.length,
+      shouldPaginate,
+      itemsPerPage
+    });
+  }, [fotos, shouldPaginate, itemsPerPage]);
+
+  // Debug do estado atual
+  useEffect(() => {
+    console.log('[VirtualizedPhotoGrid] Estado:', {
+      currentPage,
+      totalFotos: fotos.length,
+      fotosExibidas: paginatedPhotos.photos.length,
+      hasMore: paginatedPhotos.hasMore,
+      shouldPaginate,
+      isLoading
+    });
+  }, [currentPage, fotos.length, paginatedPhotos.photos.length, paginatedPhotos.hasMore, shouldPaginate, isLoading]);
 
   return (
     <>
@@ -98,6 +124,36 @@ const VirtualizedPhotoGrid = ({
             <div className="loading-spinner"></div>
             Carregando mais fotos...
           </div>
+        </div>
+      )}
+      
+      {paginatedPhotos.hasMore && shouldPaginate && !isLoading && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <button 
+            onClick={() => {
+              setIsLoading(true);
+              setTimeout(() => {
+                setCurrentPage(prev => prev + 1);
+                setIsLoading(false);
+              }, 300);
+            }}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Carregar mais fotos
+          </button>
         </div>
       )}
       

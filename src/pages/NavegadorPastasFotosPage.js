@@ -390,7 +390,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           fotos={fotosParaMostrar}
           isSelected={isSelected}
           onPhotoClick={toggleFoto}
-          itemsPerPage={15}
+          itemsPerPage={30}
         />
       )}
       
