@@ -166,6 +166,13 @@ function NavegadorPastasFotosPage({ setShowCart }) {
       const coreografia = partes[partes.length - 1];
       const dia = partes.length >= 3 ? partes[1] : null;
       
+      // Verificar se o evento é válido antes de adicionar ao carrinho
+      if (!evento || evento === 'undefined') {
+        console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { partes, caminho });
+        alert('Erro: não foi possível identificar o evento desta foto.');
+        return;
+      }
+      
       addToCart({ 
         ...foto, 
         evento, 

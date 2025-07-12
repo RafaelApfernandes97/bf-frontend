@@ -11,7 +11,7 @@ import RegisterModal from './components/RegisterModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import { useCart } from './components/CartContext';
 import { NavigationProvider } from './context/NavigationContext';
-import API_ENDPOINTS from './config/api';
+import { API_ENDPOINTS } from './config/api';
 import NavegadorPastasFotosPage from './pages/NavegadorPastasFotosPage';
 import { preloader } from './utils/preloader';
 import './App.css';
@@ -50,12 +50,8 @@ function App() {
       }
 
       try {
-        // Recuperar token do admin
-        const token = localStorage.getItem('admin_token') || '';
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-        // Buscar todos os eventos cadastrados
-        const resEventos = await fetch(API_ENDPOINTS.ADMIN_EVENTOS, { headers });
+        // Buscar todos os eventos cadastrados (usando rota pública)
+        const resEventos = await fetch(API_ENDPOINTS.PUBLIC_EVENTOS);
         if (!resEventos.ok) {
           console.warn('Falha ao buscar eventos:', resEventos.status, resEventos.statusText);
           setValorUnitario(0);
@@ -71,8 +67,8 @@ function App() {
           return;
         }
 
-        // Buscar todas as tabelas de preço
-        const resTabelas = await fetch(API_ENDPOINTS.ADMIN_TABELAS_PRECO, { headers });
+        // Buscar todas as tabelas de preço (usando rota pública)
+        const resTabelas = await fetch(API_ENDPOINTS.PUBLIC_TABELAS_PRECO);
         if (!resTabelas.ok) {
           console.warn('Falha ao buscar tabelas de preço:', resTabelas.status, resTabelas.statusText);
           setValorUnitario(0);
@@ -114,8 +110,9 @@ function App() {
         console.log('Debug eventoNome:', eventoNome, typeof eventoNome);
         
         // Verificar se o evento existe
-        if (!eventoNome || eventoNome === 'undefined') {
-          console.warn('Nome do evento não encontrado no carrinho ou é undefined');
+        if (!eventoNome || eventoNome === 'undefined' || eventoNome === 'null' || typeof eventoNome !== 'string') {
+          console.warn('Nome do evento não encontrado no carrinho ou é inválido:', eventoNome);
+          console.warn('Item do carrinho completo:', JSON.stringify(cart[0], null, 2));
           setValorUnitario(0);
           return;
         }

@@ -49,18 +49,38 @@ export default function CoreografiaTop({ nome, coreografia, eventoAtual, childre
       });
 
       const fotosEncontradas = response.data.fotos || [];
+      const mensagem = response.data.message;
+      
       setFotosEncontradasIA(fotosEncontradas);
       setFiltroIAAtivo(true);
       
       console.log(`[CoreografiaTop] ${fotosEncontradas.length} fotos encontradas por IA`);
+      
+      // Se não encontrou fotos, mostrar mensagem específica
+      if (fotosEncontradas.length === 0 && mensagem) {
+        alert(mensagem);
+      } else if (fotosEncontradas.length === 0) {
+        alert('Nenhuma foto foi encontrada com a face da selfie enviada.');
+      }
     } catch (error) {
       console.error('[CoreografiaTop] Erro ao buscar fotos por selfie:', error);
-      // Se o backend retornar 404, significa que a coleção não existe ou não houve matches.
-      if (error.response && error.response.status === 404) {
+      
+      // Se o backend retornar erro com mensagem específica
+      if (error.response && error.response.data && error.response.data.message) {
         setFotosEncontradasIA([]);
         setFiltroIAAtivo(true);
-      } else {
-        alert('Erro ao buscar fotos. Tente novamente.');
+        alert(error.response.data.message);
+      }
+      // Se o backend retornar 404, significa que a coleção não existe
+      else if (error.response && error.response.status === 404) {
+        setFotosEncontradasIA([]);
+        setFiltroIAAtivo(true);
+        alert('Nenhuma foto foi encontrada para este evento.');
+      } 
+      // Outros erros reais do servidor
+      else {
+        const mensagemErro = error.response?.data?.error || 'Erro ao buscar fotos. Tente novamente.';
+        alert(mensagemErro);
       }
     } finally {
       setUploading(false);

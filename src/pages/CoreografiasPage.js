@@ -236,6 +236,15 @@ function CoreografiasPage({ setShowCart }) {
         dia = pathParts.length > 1 ? pathParts[1] : null;
         pasta = pathParts.length > 2 ? pathParts[2] : null;
         coreografia = pathParts.length > 3 ? pathParts[3] : null;
+      } else {
+        evento = eventoId; // Garantir que sempre tenha um evento
+      }
+      
+      // Verificar se o evento é válido antes de adicionar ao carrinho
+      if (!evento || evento === 'undefined') {
+        console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { foto, eventoId });
+        alert('Erro: não foi possível identificar o evento desta foto.');
+        return;
       }
       
       addToCart({ 

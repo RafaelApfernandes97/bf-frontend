@@ -130,6 +130,13 @@ function FotosPage({ setShowCart }) {
     if (isSelected(foto)) {
       removeFromCart(foto);
     } else {
+      // Verificar se o evento é válido antes de adicionar ao carrinho
+      if (!eventoId || eventoId === 'undefined') {
+        console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { eventoId, coreografiaId, diaId });
+        alert('Erro: não foi possível identificar o evento desta foto.');
+        return;
+      }
+      
       addToCart({
         ...foto,
         evento: eventoId,
