@@ -76,9 +76,72 @@
   border-radius: 16px;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  transition: background 0.2s;
-  visibility: hidden;
+  transition: background 0.2s, transform 0.2s;
   white-space: nowrap;
+}
+
+.coreografia-top-btn:hover {
+  background: linear-gradient(146deg, #FFE001 0%, #FAF782 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* Estilos para o resultado da busca por IA */
+.coreografia-top-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-top: 16px;
+}
+
+.coreografia-top-result-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.coreografia-top-result-avatar {
+  flex-shrink: 0;
+}
+
+.coreografia-top-result-avatar-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.coreografia-top-result-text {
+  color: #181818;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
+  font-weight: 700;
+}
+
+.coreografia-top-result-btn {
+  padding: 8px 16px;
+  background: transparent;
+  color: #666;
+  font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+  font-weight: 500;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.coreografia-top-result-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+  color: #333;
 }
 @media (max-width: 768px) {
   .coreografia-top {
@@ -106,6 +169,16 @@
   .coreografia-top-bg-row {
     gap: 12px;
     padding: 0 12px;
+  }
+  
+  .coreografia-top-result {
+    max-width: 100%;
+    padding: 12px 16px;
+    margin-top: 12px;
+  }
+  
+  .coreografia-top-result-info {
+    gap: 8px;
   }
 }
 @media (max-width: 480px) {
@@ -137,6 +210,21 @@
   }
   .coreografia-top-coreografia-inline {
     gap: 6px;
+  }
+  
+  .coreografia-top-result {
+    max-width: 100%;
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+  
+  .coreografia-top-result-info {
+    gap: 6px;
+  }
+  
+  .coreografia-top-result-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 }
 .coreografia-top-children {

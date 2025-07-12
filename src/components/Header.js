@@ -10,6 +10,7 @@ import RegisterModal from './RegisterModal';
 import EditUserModal from './EditUserModal';
 import PedidosModal from './PedidosModal';
 
+
 function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedidos }) {
   const menuRef = useRef(null);
   const [style, setStyle] = useState({});

@@ -1,5 +1,5 @@
 // Utilitário para pré-carregamento de dados
-const BACKEND_URL = 'https://backend.oballetemfoco.com';
+const BACKEND_URL = 'http://localhost:3001';
 
 class DataPreloader {
   constructor() {

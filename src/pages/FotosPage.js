@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import CoreografiaTop from '../components/CoreografiaTop';
 import './FotosPage.css';
 import '../CoreografiasBody.css';
 import { useCart } from '../components/CartContext';
+import { NavigationContext } from '../context/NavigationContext';
 import CartBtn from '../components/CartBtn';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
@@ -13,7 +14,7 @@ import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
 
-const BACKEND_URL = 'https://backend.oballetemfoco.com';
+const BACKEND_URL = 'http://localhost:3001';
 
 function FotosPage({ setShowCart }) {
   const { eventoId, coreografiaId, diaId } = useParams();
@@ -24,6 +25,7 @@ function FotosPage({ setShowCart }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { cart, addToCart, removeFromCart } = useCart();
+  const { fotosEncontradasIA, filtroIAAtivo } = useContext(NavigationContext);
   const [evento, setEvento] = useState(null);
   const [tabelaPreco, setTabelaPreco] = useState(null);
   const [tabelas, setTabelas] = useState([]);
@@ -156,65 +158,72 @@ function FotosPage({ setShowCart }) {
     return 0;
   }
 
+  // Determinar quais fotos mostrar (normais ou filtradas por IA)
+  const fotosParaMostrar = filtroIAAtivo ? fotosEncontradasIA : fotos;
+
   if (loading) return <div>Carregando fotos...</div>;
   if (error) return <div>{error}</div>;
 
   return (
     <>
-      <CoreografiaTop nome={eventoId.replace(/%20/g, ' ')} coreografia={coreografiaId}>
-        <div className="coreografia-nav">
-          {coreografiaAnterior && (
-            <button className="nav-btn" onClick={() => {
-              const url = diaId 
-                ? `/eventos/${eventoId}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`
-                : `/eventos/${eventoId}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`;
-              navigate(url);
+      <CoreografiaTop nome={eventoId.replace(/%20/g, ' ')} coreografia={!filtroIAAtivo ? coreografiaId : undefined} eventoAtual={eventoId}>
+        {!filtroIAAtivo && (
+          <div className="coreografia-nav">
+            {coreografiaAnterior && (
+              <button className="nav-btn" onClick={() => {
+                const url = diaId 
+                  ? `/eventos/${eventoId}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`
+                  : `/eventos/${eventoId}/${encodeURIComponent(coreografiaAnterior.nome)}/fotos`;
+                navigate(url);
+              }}>
+                <img src={SquareArrowLeft} alt="Anterior" width={24} height={24} />
+              </button>
+            )}
+            <span className="coreografia-nav-nome">{coreografiaId}</span>
+            {coreografiaProxima && (
+              <button className="nav-btn" onClick={() => {
+                const url = diaId 
+                  ? `/eventos/${eventoId}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`
+                  : `/eventos/${eventoId}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`;
+                navigate(url);
+              }}>
+                <img src={SquareArrowRight} alt="Próxima" width={24} height={24} />
+              </button>
+            )}
+          </div>
+        )}
+        {!filtroIAAtivo && (
+          <button
+            className="voltar-btn"
+            onClick={() => navigate(`/eventos/${eventoId}`)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'none',
+              border: 'none',
+              color: '#444',
+              fontSize: '1.18rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              border: '2px solid #888',
+              marginRight: 8,
             }}>
-              <img src={SquareArrowLeft} alt="Anterior" width={24} height={24} />
-            </button>
-          )}
-          <span className="coreografia-nav-nome">{coreografiaId}</span>
-          {coreografiaProxima && (
-            <button className="nav-btn" onClick={() => {
-              const url = diaId 
-                ? `/eventos/${eventoId}/${encodeURIComponent(diaId)}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`
-                : `/eventos/${eventoId}/${encodeURIComponent(coreografiaProxima.nome)}/fotos`;
-              navigate(url);
-            }}>
-              <img src={SquareArrowRight} alt="Próxima" width={24} height={24} />
-            </button>
-          )}
-        </div>
-        <button
-          className="voltar-btn"
-          onClick={() => navigate(`/eventos/${eventoId}`)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            background: 'none',
-            border: 'none',
-            color: '#444',
-            fontSize: '1.18rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        >
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            border: '2px solid #888',
-            marginRight: 8,
-          }}>
-            <img src={LeftFill} alt="Voltar" width={18} height={18} />
-          </span>
-          Voltar a página anterio
-        </button>
+              <img src={LeftFill} alt="Voltar" width={18} height={18} />
+            </span>
+            Voltar a página anterior
+          </button>
+        )}
         <div style={{ position: 'absolute', top: 16, right: 16 }}>
           <div style={{ position: 'relative' }}>
             <div style={{ cursor: 'pointer' }}>
@@ -245,26 +254,28 @@ function FotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
-      <div className="evento-info-bar">
-        {evento && evento.data && (
+      {!filtroIAAtivo && (
+        <div className="evento-info-bar">
+          {evento && evento.data && (
+            <span className="evento-info-item">
+              <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+              {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : ''}
+            </span>
+          )}
+          {evento && evento.local && (
+            <span className="evento-info-item">
+              <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+              {evento.local}
+            </span>
+          )}
           <span className="evento-info-item">
-            <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : ''}
+            <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+            {fotos.length} fotos
           </span>
-        )}
-        {evento && evento.local && (
-          <span className="evento-info-item">
-            <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {evento.local}
-          </span>
-        )}
-        <span className="evento-info-item">
-          <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-          {fotos.length} fotos
-        </span>
-      </div>
+        </div>
+      )}
       <div className="fotos-grid">
-        {fotos.map(foto => (
+        {fotosParaMostrar.map(foto => (
           <div
             key={foto.nome}
             className={isSelected(foto) ? 'foto-card foto-card-selected' : 'foto-card'}
@@ -279,6 +290,13 @@ function FotosPage({ setShowCart }) {
           </div>
         ))}
       </div>
+      
+      {filtroIAAtivo && fotosEncontradasIA.length === 0 && (
+        <div className="no-photos-message">
+          <p>Nenhuma foto encontrada com reconhecimento facial.</p>
+          <p>Tente com uma selfie mais clara ou remova o filtro para ver todas as fotos.</p>
+        </div>
+      )}
     </>
   );
 }

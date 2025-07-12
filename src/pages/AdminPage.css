@@ -629,3 +629,99 @@
     min-height: 40px;
   }
 }
+
+/* Estilos para indexação e progresso */
+.admin-indexar-btn {
+  background: linear-gradient(135deg, #ffe001, #ffd700);
+  color: #222;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 44px;
+  margin-top: 12px;
+  transition: all 0.3s ease;
+}
+
+.admin-indexar-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 224, 1, 0.3);
+}
+
+.admin-indexar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.admin-indexar-status {
+  margin-top: 8px;
+  padding: 8px;
+  background: #333;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #ffe001;
+}
+
+.admin-progresso-container {
+  margin-top: 12px;
+  padding: 12px;
+  background: #111;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.admin-progresso-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #ccc;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-progresso-info span {
+  background: #222;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.admin-progresso-barra {
+  width: 100%;
+  height: 20px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.admin-progresso-preenchimento {
+  height: 100%;
+  background: linear-gradient(90deg, #ffe001 0%, #ffcc00 100%);
+  transition: width 0.3s ease;
+  border-radius: 10px;
+}
+
+.admin-progresso-percentual {
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffe001;
+}
+
+@media (max-width: 768px) {
+  .admin-progresso-info {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .admin-progresso-info span {
+    text-align: center;
+  }
+}

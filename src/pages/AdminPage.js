@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FinanceiroAdmin from '../components/FinanceiroAdmin';
 import './AdminPage.css';
 
-const API = 'https://backend.oballetemfoco.com/api/admin';
+const API = 'http://localhost:3001/api/admin';
 
 export default function AdminPage() {
   const [logged, setLogged] = useState(false);
@@ -22,6 +22,10 @@ export default function AdminPage() {
   const [editEvento, setEditEvento] = useState({});
   const [editTabelaId, setEditTabelaId] = useState(null);
   const [editTabela, setEditTabela] = useState({});
+  const [indexando, setIndexando] = useState({}); // { [evento]: true/false }
+  const [statusIndexacao, setStatusIndexacao] = useState({}); // { [evento]: mensagem }
+  const [progressoIndexacao, setProgressoIndexacao] = useState({}); // { [evento]: progresso }
+  const [progressoCarregado, setProgressoCarregado] = useState(false); // Flag para saber se já carregou o progresso inicial
 
   useEffect(() => {
     if (token) {
@@ -29,9 +33,30 @@ export default function AdminPage() {
       fetchEventos();
       fetchEventosMinio();
       fetchTabelasPreco();
+      // O progresso será verificado automaticamente pelo próximo useEffect
     }
     // eslint-disable-next-line
   }, [token]);
+
+  // Verificar progresso de indexação periodicamente
+  useEffect(() => {
+    if (!token || eventosMinio.length === 0) return;
+    
+    // Primeira verificação ou se há alguma indexação ativa
+    const temIndexacaoAtiva = Object.values(indexando).some(valor => valor);
+    if (!progressoCarregado || temIndexacaoAtiva) {
+      // Verifica imediatamente se necessário
+      if (!progressoCarregado) {
+        verificarProgressoIndexacao();
+      }
+      
+      const interval = setInterval(() => {
+        verificarProgressoIndexacao();
+      }, 3000); // Verificar a cada 3 segundos
+      
+      return () => clearInterval(interval);
+    }
+  }, [token, eventosMinio, indexando, progressoCarregado]);
 
   async function fetchEventos() {
     setLoading(true);
@@ -54,8 +79,11 @@ export default function AdminPage() {
       });
       const data = await res.json();
       setEventosMinio(Array.isArray(data) ? data : []);
+      // Reset progresso quando a lista de eventos mudar
+      setProgressoCarregado(false);
     } catch {
       setEventosMinio([]);
+      setProgressoCarregado(false);
     }
   }
 
@@ -68,6 +96,55 @@ export default function AdminPage() {
       setTabelasPreco(Array.isArray(data) ? data : []);
     } catch {
       setTabelasPreco([]);
+    }
+  }
+
+  async function verificarProgressoIndexacao() {
+    try {
+      const novosProgressos = { ...progressoIndexacao };
+      const novosIndexando = { ...indexando };
+      const novosStatus = { ...statusIndexacao };
+      
+      // Na primeira vez, carrega o progresso de todos os eventos
+      let eventosParaVerificar;
+      if (!progressoCarregado) {
+        eventosParaVerificar = eventosMinio;
+      } else {
+        // Depois, só verifica eventos que estão indexando
+        eventosParaVerificar = eventosMinio.filter(evento => indexando[evento]);
+      }
+      
+      // Se não há nenhum evento para verificar, sai
+      if (eventosParaVerificar.length === 0) {
+        return;
+      }
+      
+      for (const evento of eventosParaVerificar) {
+        const res = await fetch(`${API}/eventos/${evento}/progresso-indexacao`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const progresso = await res.json();
+        
+        novosProgressos[evento] = progresso;
+        novosIndexando[evento] = progresso.ativo;
+        
+        if (progresso.ativo) {
+          novosStatus[evento] = progresso.fotoAtual;
+        } else if (progresso.finalizadoEm) {
+          novosStatus[evento] = progresso.fotoAtual;
+        }
+      }
+      
+      setProgressoIndexacao(novosProgressos);
+      setIndexando(novosIndexando);
+      setStatusIndexacao(novosStatus);
+      
+      // Marca como carregado após a primeira verificação
+      if (!progressoCarregado) {
+        setProgressoCarregado(true);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar progresso:', error);
     }
   }
 
@@ -297,6 +374,29 @@ export default function AdminPage() {
     setLoading(false);
   }
 
+  const handleIndexarFotos = async (evento) => {
+    try {
+      const resp = await fetch(`${API}/eventos/${evento}/indexar-fotos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        // Indexação iniciada em background, o progresso será atualizado automaticamente
+        setStatusIndexacao(prev => ({ ...prev, [evento]: 'Indexação iniciada...' }));
+        setIndexando(prev => ({ ...prev, [evento]: true }));
+      } else {
+        setStatusIndexacao(prev => ({ ...prev, [evento]: data.erro || 'Erro ao indexar fotos.' }));
+      }
+    } catch (err) {
+      console.error('Erro ao indexar fotos:', err);
+      setStatusIndexacao(prev => ({ ...prev, [evento]: 'Erro ao indexar fotos.' }));
+    }
+  };
+
   if (!logged) {
     return (
       <div style={{ maxWidth: 320, margin: '80px auto', background: '#222', padding: 32, borderRadius: 12, color: '#fff' }}>
@@ -419,6 +519,36 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
+                    <button
+                      onClick={() => handleIndexarFotos(ev.nome)}
+                      disabled={indexando[ev.nome]}
+                      className="admin-indexar-btn"
+                    >
+                      {indexando[ev.nome] ? 'Indexando...' : 'Indexar fotos no Rekognition'}
+                    </button>
+                    {statusIndexacao[ev.nome] && (
+                      <div className="admin-indexar-status">{statusIndexacao[ev.nome]}</div>
+                    )}
+                    {progressoIndexacao[ev.nome] && progressoIndexacao[ev.nome].total > 0 && (
+                      <div className="admin-progresso-container">
+                        <div className="admin-progresso-info">
+                          <span>Progresso: {progressoIndexacao[ev.nome].processadas || 0} de {progressoIndexacao[ev.nome].total}</span>
+                          <span>Indexadas: {progressoIndexacao[ev.nome].indexadas || 0}</span>
+                          <span>Erros: {progressoIndexacao[ev.nome].erros || 0}</span>
+                        </div>
+                        <div className="admin-progresso-barra">
+                          <div 
+                            className="admin-progresso-preenchimento"
+                            style={{ 
+                              width: `${((progressoIndexacao[ev.nome].processadas || 0) / progressoIndexacao[ev.nome].total) * 100}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <div className="admin-progresso-percentual">
+                          {Math.round(((progressoIndexacao[ev.nome].processadas || 0) / progressoIndexacao[ev.nome].total) * 100)}%
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </li>

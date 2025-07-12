@@ -120,6 +120,37 @@
   }
 }
 
+.no-photos-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.no-photos-message p {
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.no-photos-message p:first-child {
+  font-weight: 600;
+  color: #444;
+}
+
+@media (max-width: 768px) {
+  .no-photos-message {
+    padding: 32px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .no-photos-message {
+    padding: 24px 12px;
+  }
+}
+
 .fotos-footer {
   width: 100%;
   background: #181818;
@@ -200,4 +231,30 @@
   white-space: nowrap;
   overflow: hidden;
   background: none;
+}
+
+/* Mensagem quando nenhuma foto é encontrada por IA */
+.no-photos-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-family: 'Inter', Arial, sans-serif;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.no-photos-message p {
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+.no-photos-message p:first-child {
+  font-weight: 600;
+  color: #444;
+  font-size: 1.1rem;
+}
+
+.no-photos-message p:last-child {
+  font-size: 0.9rem;
+  color: #777;
 } 

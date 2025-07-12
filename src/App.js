@@ -11,7 +11,7 @@ import RegisterModal from './components/RegisterModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import { useCart } from './components/CartContext';
 import { NavigationProvider } from './context/NavigationContext';
-import API_ENDPOINTS from './config/api';
+import { API_ENDPOINTS } from './config/api';
 import NavegadorPastasFotosPage from './pages/NavegadorPastasFotosPage';
 import { preloader } from './utils/preloader';
 import './App.css';
@@ -50,17 +50,54 @@ function App() {
       }
 
       try {
-        // Recuperar token do admin
-        const token = localStorage.getItem('admin_token') || '';
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        // Não precisa mais de token de admin para buscar dados públicos
+        const headers = {};
 
         // Buscar todos os eventos cadastrados
-        const resEventos = await fetch(API_ENDPOINTS.ADMIN_EVENTOS, { headers });
-        let eventos = await resEventos.json();
+        const eventosUrl = API_ENDPOINTS.PUBLIC_EVENTOS;
+        console.log('Buscando eventos de:', eventosUrl);
+        const resEventos = await fetch(eventosUrl, { headers });
+        const eventosText = await resEventos.text();
+
+        if (!resEventos.ok) {
+          console.warn('Falha ao buscar eventos:', resEventos.status, resEventos.statusText);
+          console.error('Corpo do erro dos eventos:', eventosText);
+          setValorUnitario(0);
+          return;
+        }
+        
+        let eventos;
+        try {
+          eventos = JSON.parse(eventosText);
+        } catch (jsonError) {
+          console.error('Erro ao parsear JSON dos eventos:', jsonError);
+          console.error('Resposta que causou o erro de JSON (eventos):', eventosText);
+          setValorUnitario(0);
+          return;
+        }
 
         // Buscar todas as tabelas de preço
-        const resTabelas = await fetch(API_ENDPOINTS.ADMIN_TABELAS_PRECO, { headers });
-        let tabelas = await resTabelas.json();
+        const tabelasUrl = API_ENDPOINTS.PUBLIC_TABELAS_PRECO;
+        console.log('Buscando tabelas de:', tabelasUrl);
+        const resTabelas = await fetch(tabelasUrl, { headers });
+        const tabelasText = await resTabelas.text();
+
+        if (!resTabelas.ok) {
+          console.warn('Falha ao buscar tabelas de preço:', resTabelas.status, resTabelas.statusText);
+          console.error('Corpo do erro das tabelas:', tabelasText);
+          setValorUnitario(0);
+          return;
+        }
+        
+        let tabelas;
+        try {
+          tabelas = JSON.parse(tabelasText);
+        } catch (jsonError) {
+          console.error('Erro ao parsear JSON das tabelas:', jsonError);
+          console.error('Resposta que causou o erro de JSON (tabelas):', tabelasText);
+          setValorUnitario(0);
+          return;
+        }
 
         // Se eventos não for array, logar erro e abortar
         if (!Array.isArray(eventos)) {
@@ -84,12 +121,29 @@ function App() {
 
         // Encontrar o evento das fotos no carrinho
         const eventoNome = cart[0]?.evento;
+        console.log('Debug carrinho:', cart[0]);
+        console.log('Debug eventoNome:', eventoNome, typeof eventoNome);
+        
+        // Verificar se o evento existe
+        if (!eventoNome || eventoNome === 'undefined') {
+          console.warn('Nome do evento não encontrado no carrinho ou é undefined');
+          setValorUnitario(0);
+          return;
+        }
+
+        console.log('Buscando evento:', eventoNome);
         eventos.forEach(e => console.log('->', e.nome, 'Normalizado:', normalize(e.nome)));
 
         // Busca tolerante: primeiro por igualdade, depois por includes
         let evento = eventos.find(e => normalize(e.nome) === normalize(eventoNome));
         if (!evento) {
           evento = eventos.find(e => normalize(e.nome).includes(normalize(eventoNome)) || normalize(eventoNome).includes(normalize(e.nome)));
+        }
+
+        if (!evento) {
+          console.warn('Evento não encontrado na lista de eventos:', eventoNome);
+          setValorUnitario(0);
+          return;
         }
 
         let valor = 0;

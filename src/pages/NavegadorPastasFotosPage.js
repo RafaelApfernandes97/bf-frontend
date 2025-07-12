@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
+import { NavigationContext } from '../context/NavigationContext';
 import CartBtn from '../components/CartBtn';
 import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
@@ -23,6 +24,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, addToCart, removeFromCart } = useCart();
+  const { fotosEncontradasIA, filtroIAAtivo } = useContext(NavigationContext);
   const [subpastas, setSubpastas] = useState([]);
   const [fotos, setFotos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -217,6 +219,9 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   // NOVO: Renderizar botões de navegação para subpastas (dias) se houver mais de uma
   const renderBotoesDias = subpastas.length > 1 && !estaNaCoreografia;
 
+  // Determinar quais fotos mostrar (normais ou filtradas por IA)
+  const fotosParaMostrar = filtroIAAtivo ? fotosEncontradasIA : fotos;
+
   if (loading) return <div>Carregando pastas/fotos...</div>;
   if (error) return <div>{error}</div>;
 
@@ -224,9 +229,10 @@ function NavegadorPastasFotosPage({ setShowCart }) {
     <>
       <CoreografiaTop 
         nome={eventoNome.replace(/%20/g, ' ')} 
-        coreografia={estaNaCoreografia ? coreografiaAtual : undefined}
+        coreografia={!filtroIAAtivo && estaNaCoreografia ? coreografiaAtual : undefined}
+        eventoAtual={eventoNome}
       >
-        {estaNaCoreografia && (
+        {!filtroIAAtivo && estaNaCoreografia && (
           <div className="coreografia-nav">
             {coreografiaAnterior && (
               <button className="nav-btn" onClick={() => {
@@ -249,36 +255,38 @@ function NavegadorPastasFotosPage({ setShowCart }) {
             )}
           </div>
         )}
-        <button
-          className="voltar-btn"
-          onClick={voltarUmNivel}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            background: 'none',
-            border: 'none',
-            color: '#444',
-            fontSize: '1.18rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        >
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            border: '2px solid #888',
-            marginRight: 8,
-          }}>
-            <img src={LeftFill} alt="Voltar" width={18} height={18} />
-          </span>
-          Voltar a página anterior
-        </button>
+        {!filtroIAAtivo && (
+          <button
+            className="voltar-btn"
+            onClick={voltarUmNivel}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'none',
+              border: 'none',
+              color: '#444',
+              fontSize: '1.18rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              border: '2px solid #888',
+              marginRight: 8,
+            }}>
+              <img src={LeftFill} alt="Voltar" width={18} height={18} />
+            </span>
+            Voltar a página anterior
+          </button>
+        )}
         <div style={{ position: 'absolute', top: 16, right: 16 }}>
           <div style={{ position: 'relative' }}>
             <div style={{ cursor: 'pointer' }}>
@@ -309,26 +317,28 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
-      <div className="evento-info-bar" style={{ margin: '0 16px', padding: '8px 16px' }}>
-        {evento && evento.data && (
+      {!filtroIAAtivo && (
+        <div className="evento-info-bar" style={{ margin: '0 16px', padding: '8px 16px' }}>
+          {evento && evento.data && (
+            <span className="evento-info-item">
+              <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+              {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : ''}
+            </span>
+          )}
+          {evento && evento.local && (
+            <span className="evento-info-item">
+              <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+              {evento.local}
+            </span>
+          )}
           <span className="evento-info-item">
-            <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : ''}
+            <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+            {totalFotos} fotos
           </span>
-        )}
-        {evento && evento.local && (
-          <span className="evento-info-item">
-            <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-            {evento.local}
-          </span>
-        )}
-        <span className="evento-info-item">
-          <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-          {totalFotos} fotos
-        </span>
-      </div>
+        </div>
+      )}
       {/* Botões de navegação de dias/pastas */}
-      {renderBotoesDias && (
+      {!filtroIAAtivo && renderBotoesDias && (
         <div className="dias-nav-bar">
           {subpastas.map((pasta, idx) => {
             const nome = pasta.nome || pasta;
@@ -349,7 +359,7 @@ function NavegadorPastasFotosPage({ setShowCart }) {
         </div>
       )}
       {/* Navegação entre pastas */}
-      {subpastas.length > 0 && (
+      {!filtroIAAtivo && subpastas.length > 0 && (
         <div className="body">
           {subpastas.map((pasta, index) => (
             <div 
@@ -367,9 +377,9 @@ function NavegadorPastasFotosPage({ setShowCart }) {
         </div>
       )}
       {/* Grid de fotos */}
-      {fotos.length > 0 && (
+      {fotosParaMostrar.length > 0 && (
         <div className="fotos-grid">
-          {fotos.map((foto, index) => (
+          {fotosParaMostrar.map((foto, index) => (
             <div
               key={`foto-${index}-${foto.nome}`}
               className={isSelected(foto) ? 'foto-card foto-card-selected' : 'foto-card'}
@@ -383,6 +393,13 @@ function NavegadorPastasFotosPage({ setShowCart }) {
               )}
             </div>
           ))}
+        </div>
+      )}
+      
+      {filtroIAAtivo && fotosEncontradasIA.length === 0 && (
+        <div className="no-photos-message">
+          <p>Nenhuma foto encontrada com reconhecimento facial.</p>
+          <p>Tente com uma selfie mais clara ou remova o filtro para ver todas as fotos.</p>
         </div>
       )}
     </>

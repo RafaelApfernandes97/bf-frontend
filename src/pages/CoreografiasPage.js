@@ -15,8 +15,7 @@ import LeftFill from '../assets/icons/left_fill.svg';
 import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
-
-const BACKEND_URL = 'https://backend.oballetemfoco.com';
+import { API_ENDPOINTS } from '../config/api';
 
 function isDiaFolder(nome) {
   // Regex para detectar formato 'dd-mm DiaSemana' ou 'dd-mm Dia'
@@ -41,7 +40,13 @@ function CoreografiasPage({ setShowCart }) {
   const [historicoNavegacao, setHistoricoNavegacao] = useState([]);
   const [coreografiasNivelPai, setCoreografiasNivelPai] = useState([]); // Para guardar as coreografias do nível pai
   const { cart, addToCart, removeFromCart } = useCart();
-  const { registerBackButtonHandler, clearBackButtonHandler, setViewingPhotos } = useNavigation();
+  const { 
+    registerBackButtonHandler, 
+    clearBackButtonHandler, 
+    setViewingPhotos,
+    fotosEncontradasIA,
+    filtroIAAtivo 
+  } = useNavigation();
   const navigate = useNavigate();
 
   // Função para buscar pastas e fotos via API unificada
@@ -50,7 +55,7 @@ function CoreografiasPage({ setShowCart }) {
       setCaminhoAtual(caminho);
       setLoading(true);
       
-      const response = await fetch(`${BACKEND_URL}/api/eventos/pasta`, {
+      const response = await fetch(API_ENDPOINTS.PHOTOS_PASTA, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +92,7 @@ function CoreografiasPage({ setShowCart }) {
           const caminhoPai = caminhoPartes.slice(0, -1).join('/');
           
           // Buscar pastas do nível pai
-          fetch(`${BACKEND_URL}/api/eventos/pasta`, {
+          fetch(API_ENDPOINTS.PHOTOS_PASTA, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -134,10 +139,10 @@ function CoreografiasPage({ setShowCart }) {
               
               if (pathParts.length === 4) {
                 // evento/dia/pasta/coreografia
-                urlFoto = `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(pathParts[0])}/${encodeURIComponent(pathParts[1])}/${encodeURIComponent(pathParts[2])}/${encodeURIComponent(pathParts[3])}/${encodeURIComponent(foto.nome)}`;
+                urlFoto = `${API_ENDPOINTS.USUARIOS_FOTO_URL}/${encodeURIComponent(pathParts[0])}/${encodeURIComponent(pathParts[1])}/${encodeURIComponent(pathParts[2])}/${encodeURIComponent(pathParts[3])}/${encodeURIComponent(foto.nome)}`;
               } else if (pathParts.length === 2) {
                 // evento/coreografia
-                urlFoto = `${BACKEND_URL}/api/usuarios/foto-url/${encodeURIComponent(pathParts[0])}/${encodeURIComponent(pathParts[1])}/${encodeURIComponent(foto.nome)}`;
+                urlFoto = `${API_ENDPOINTS.USUARIOS_FOTO_URL}/${encodeURIComponent(pathParts[0])}/${encodeURIComponent(pathParts[1])}/${encodeURIComponent(foto.nome)}`;
               } else {
                 // Usar URL direta se não conseguir determinar
                 return { ...foto, url: foto.url || '' };
@@ -170,12 +175,12 @@ function CoreografiasPage({ setShowCart }) {
     setLoading(true);
     
     // Aquece cache do evento em background
-    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/aquecer-cache`, {
+    fetch(API_ENDPOINTS.AQUECER_CACHE(eventoId), {
       method: 'POST'
     }).catch(err => console.log('Cache warming:', err));
     
     // Primeiro verifica se tem dias
-    fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(eventoId)}/coreografias`)
+    fetch(API_ENDPOINTS.COREOGRAFIAS_POR_EVENTO(eventoId))
       .then(res => res.json())
       .then(data => {
         if (data.coreografias && data.coreografias.length > 0 && isDiaFolder(data.coreografias[0].nome)) {
@@ -206,7 +211,7 @@ function CoreografiasPage({ setShowCart }) {
   }, [dias, diaSelecionado, eventoId]);
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/admin/eventos`)
+    fetch(API_ENDPOINTS.PUBLIC_EVENTOS)
       .then(res => res.json())
       .then(data => {
         if (!Array.isArray(data)) {
@@ -234,11 +239,18 @@ function CoreografiasPage({ setShowCart }) {
     if (isSelected(foto)) {
       removeFromCart(foto);
     } else {
-      const pathParts = foto.caminho.split('/');
-      const evento = pathParts[0];
-      const dia = pathParts.length > 1 ? pathParts[1] : null;
-      const pasta = pathParts.length > 2 ? pathParts[2] : null;
-      const coreografia = pathParts.length > 3 ? pathParts[3] : null;
+      let evento = eventoId;
+      let dia = null;
+      let pasta = null;
+      let coreografia = null;
+
+      if (foto.caminho) {
+        const pathParts = foto.caminho.split('/');
+        evento = pathParts[0] || eventoId;
+        dia = pathParts.length > 1 ? pathParts[1] : null;
+        pasta = pathParts.length > 2 ? pathParts[2] : null;
+        coreografia = pathParts.length > 3 ? pathParts[3] : null;
+      }
       
       addToCart({ 
         ...foto, 
@@ -326,14 +338,17 @@ function CoreografiasPage({ setShowCart }) {
     setViewingPhotos(fotos.length > 0);
   }, [fotos.length, setViewingPhotos]);
 
+  // Determinar quais fotos mostrar (normais ou filtradas por IA)
+  const fotosParaMostrar = filtroIAAtivo ? fotosEncontradasIA : fotos;
+
   if (loading) return <div>Carregando coreografias...</div>;
   if (error) return <div>{error}</div>;
 
   return (
     <>
-      <CoreografiaTop nome={eventoId.replace(/%20/g, ' ')} coreografia={coreografiaAtual?.nome}>
+      <CoreografiaTop nome={eventoId.replace(/%20/g, ' ')} coreografia={!filtroIAAtivo ? coreografiaAtual?.nome : undefined} eventoAtual={eventoId}>
         {/* Navegação entre coreografias no header */}
-        {mostrarNavegacao && (
+        {!filtroIAAtivo && mostrarNavegacao && (
           <div className="coreografia-nav">
             {coreografiaAnterior && (
               <button className="nav-btn" onClick={() => {
@@ -359,7 +374,7 @@ function CoreografiasPage({ setShowCart }) {
           </div>
         )}
         {/* Botão voltar só aparece quando está visualizando fotos */}
-        {fotos.length > 0 && (
+        {!filtroIAAtivo && fotos.length > 0 && (
           <button
             className="voltar-btn"
             onClick={handleBackButton}
@@ -413,7 +428,7 @@ function CoreografiasPage({ setShowCart }) {
       
       
       
-      {dias.length > 0 && (
+      {!filtroIAAtivo && dias.length > 0 && (
         <div className="dias-nav-bar">
           {dias.map((dia) => (
             <button
@@ -432,7 +447,7 @@ function CoreografiasPage({ setShowCart }) {
         </div>
       )}
       {/* Navegação entre pastas */}
-      {coreografias.length > 0 && (
+      {!filtroIAAtivo && coreografias.length > 0 && (
         <div className="body">
           {coreografias.map((coreografia, idx) => (
             <div key={coreografia.nome || coreografia} onClick={() => {
@@ -452,9 +467,9 @@ function CoreografiasPage({ setShowCart }) {
       )}
       
       {/* Grid de fotos */}
-      {fotos.length > 0 && (
+      {fotosParaMostrar.length > 0 && (
         <div className="fotos-grid">
-          {fotos.map((foto, index) => (
+          {fotosParaMostrar.map((foto, index) => (
             <div
               key={`foto-${index}-${foto.nome}`}
               className={isSelected(foto) ? 'foto-card foto-card-selected' : 'foto-card'}
@@ -468,6 +483,13 @@ function CoreografiasPage({ setShowCart }) {
               )}
             </div>
           ))}
+        </div>
+      )}
+      
+      {filtroIAAtivo && fotosEncontradasIA.length === 0 && (
+        <div className="no-photos-message">
+          <p>Nenhuma foto encontrada com reconhecimento facial.</p>
+          <p>Tente com uma selfie mais clara ou remova o filtro para ver todas as fotos.</p>
         </div>
       )}
       
