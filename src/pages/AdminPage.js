@@ -27,6 +27,12 @@ export default function AdminPage() {
   const [statusIndexacao, setStatusIndexacao] = useState({}); // { [evento]: mensagem }
   const [progressoIndexacao, setProgressoIndexacao] = useState({}); // { [evento]: progresso }
   const [progressoCarregado, setProgressoCarregado] = useState(false); // Flag para saber se já carregou o progresso inicial
+  const [criarPasta, setCriarPasta] = useState(false); // Para cadastro de evento
+  const [uploadFiles, setUploadFiles] = useState([]); // Arquivos para upload
+  const [uploading, setUploading] = useState(false); // Status do upload
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 }); // Progresso do upload
+  const [showCreateModal, setShowCreateModal] = useState(false); // Modal de criar evento
+  const [newEvent, setNewEvent] = useState({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false }); // Dados do novo evento
 
   useEffect(() => {
     if (token) {
@@ -180,7 +186,8 @@ export default function AdminPage() {
       nome: novoEvento.nome,
       data: novoEvento.data || undefined,
       valorFixo: modoFixo ? valorFixo : undefined,
-      tabelaPrecoId: modoFixo ? undefined : novoEvento.tabelaPrecoId
+      tabelaPrecoId: modoFixo ? undefined : novoEvento.tabelaPrecoId,
+      criarPasta
     };
     try {
       await fetch(`${API}/eventos`, {
@@ -193,6 +200,7 @@ export default function AdminPage() {
       });
       setNovoEvento({ nome: '', data: '', tabelaPrecoId: '' });
       setValorFixo('');
+      setCriarPasta(false);
       fetchEventos();
     } catch {
       alert('Erro ao cadastrar evento');
@@ -398,6 +406,85 @@ export default function AdminPage() {
     }
   };
 
+  const handleUploadFiles = async (evento) => {
+    if (!uploadFiles.length) {
+      alert('Selecione arquivos para upload');
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress({ current: 0, total: uploadFiles.length });
+
+    const formData = new FormData();
+    uploadFiles.forEach(file => {
+      formData.append('arquivos', file);
+    });
+
+    try {
+      const resp = await fetch(`${API}/upload/${evento}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await resp.json();
+      
+      if (resp.ok) {
+        alert(`Upload concluído! ${data.sucessos} arquivos enviados com sucesso, ${data.erros} erros.`);
+        setUploadFiles([]);
+        fetchEventosMinio(); // Atualiza lista de eventos
+      } else {
+        alert(`Erro no upload: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Erro no upload:', err);
+      alert('Erro ao fazer upload dos arquivos');
+    }
+
+    setUploading(false);
+    setUploadProgress({ current: 0, total: 0 });
+  };
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setUploadFiles(files);
+  };
+
+  const handleCreateEvent = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const body = {
+      nome: newEvent.nome,
+      data: newEvent.data || undefined,
+      valorFixo: newEvent.modoFixo ? newEvent.valorFixo : undefined,
+      tabelaPrecoId: newEvent.modoFixo ? undefined : newEvent.tabelaPrecoId,
+      criarPasta: true // Sempre criar pasta para eventos criados no modal
+    };
+    
+    try {
+      await fetch(`${API}/eventos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+      
+      setNewEvent({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false });
+      setShowCreateModal(false);
+      fetchEventos();
+      fetchEventosMinio(); // Atualiza lista do MinIO também
+      
+    } catch {
+      alert('Erro ao criar evento');
+    }
+    setLoading(false);
+  };
+
   if (!logged) {
     return (
       <div style={{ maxWidth: 320, margin: '80px auto', background: '#222', padding: 32, borderRadius: 12, color: '#fff' }}>
@@ -442,7 +529,23 @@ export default function AdminPage() {
 
       {activeTab === 'eventos' && (
         <>
-          <h3>Cadastro de Evento</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3>Cadastro de Evento</h3>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '10px 20px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Criar Evento
+            </button>
+          </div>
           <form onSubmit={handleAddEvento} style={{ marginBottom: 32 }}>
             <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
               <select value={novoEvento.nome} onChange={e => setNovoEvento(ev => ({ ...ev, nome: e.target.value }))} style={{ flex: 2, padding: 8 }} required>
@@ -456,6 +559,11 @@ export default function AdminPage() {
             <div style={{ marginBottom: 12 }}>
               <label>
                 <input type="checkbox" checked={modoFixo} onChange={e => setModoFixo(e.target.checked)} /> Valor fixo para todas as fotos
+              </label>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label>
+                <input type="checkbox" checked={criarPasta} onChange={e => setCriarPasta(e.target.checked)} /> Criar pasta no S3 automaticamente
               </label>
             </div>
             {modoFixo ? (
@@ -520,13 +628,63 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleIndexarFotos(ev.nome)}
-                      disabled={indexando[ev.nome]}
-                      className="admin-indexar-btn"
-                    >
-                      {indexando[ev.nome] ? 'Indexando...' : 'Indexar fotos no Rekognition'}
-                    </button>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <button
+                        onClick={() => handleIndexarFotos(ev.nome)}
+                        disabled={indexando[ev.nome]}
+                        className="admin-indexar-btn"
+                      >
+                        {indexando[ev.nome] ? 'Indexando...' : 'Indexar fotos no Rekognition'}
+                      </button>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          style={{ display: 'none' }}
+                          id={`upload-${ev.nome}`}
+                        />
+                        <label
+                          htmlFor={`upload-${ev.nome}`}
+                          style={{
+                            background: '#007bff',
+                            color: 'white',
+                            padding: '6px 12px',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            fontSize: 14,
+                            fontWeight: 700
+                          }}
+                        >
+                          Selecionar Arquivos
+                        </label>
+                        
+                        {uploadFiles.length > 0 && (
+                          <span style={{ fontSize: 12, color: '#aaa' }}>
+                            {uploadFiles.length} arquivo(s) selecionado(s)
+                          </span>
+                        )}
+                        
+                        <button
+                          onClick={() => handleUploadFiles(ev.nome)}
+                          disabled={uploading || uploadFiles.length === 0}
+                          style={{
+                            background: uploading ? '#666' : '#28a745',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: 6,
+                            padding: '6px 12px',
+                            fontSize: 14,
+                            fontWeight: 700,
+                            cursor: uploading ? 'not-allowed' : 'pointer'
+                          }}
+                        >
+                          {uploading ? 'Enviando...' : 'Upload'}
+                        </button>
+                      </div>
+                    </div>
                     {statusIndexacao[ev.nome] && (
                       <div className="admin-indexar-status">{statusIndexacao[ev.nome]}</div>
                     )}
@@ -547,6 +705,24 @@ export default function AdminPage() {
                         </div>
                         <div className="admin-progresso-percentual">
                           {Math.round(((progressoIndexacao[ev.nome].processadas || 0) / progressoIndexacao[ev.nome].total) * 100)}%
+                        </div>
+                      </div>
+                    )}
+                    {uploading && uploadProgress.total > 0 && (
+                      <div className="admin-progresso-container">
+                        <div className="admin-progresso-info">
+                          <span>Upload: {uploadProgress.current} de {uploadProgress.total}</span>
+                        </div>
+                        <div className="admin-progresso-barra">
+                          <div 
+                            className="admin-progresso-preenchimento"
+                            style={{ 
+                              width: `${(uploadProgress.current / uploadProgress.total) * 100}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <div className="admin-progresso-percentual">
+                          {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
                         </div>
                       </div>
                     )}
@@ -643,6 +819,132 @@ export default function AdminPage() {
 
       {activeTab === 'financeiro' && (
         <FinanceiroAdmin />
+      )}
+
+      {/* Modal para criar evento */}
+      {showCreateModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#222',
+            padding: 32,
+            borderRadius: 12,
+            width: '90%',
+            maxWidth: 500,
+            color: '#fff'
+          }}>
+            <h3 style={{ marginBottom: 20 }}>Criar Novo Evento</h3>
+            
+            <form onSubmit={handleCreateEvent}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 8 }}>Nome do Evento:</label>
+                <input
+                  type="text"
+                  value={newEvent.nome}
+                  onChange={e => setNewEvent(ev => ({ ...ev, nome: e.target.value }))}
+                  style={{ width: '100%', padding: 8, borderRadius: 4, border: 'none' }}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 8 }}>Data do Evento:</label>
+                <input
+                  type="date"
+                  value={newEvent.data}
+                  onChange={e => setNewEvent(ev => ({ ...ev, data: e.target.value }))}
+                  style={{ width: '100%', padding: 8, borderRadius: 4, border: 'none' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={newEvent.modoFixo}
+                    onChange={e => setNewEvent(ev => ({ ...ev, modoFixo: e.target.checked }))}
+                  />
+                  {' '}Valor fixo para todas as fotos
+                </label>
+              </div>
+
+              {newEvent.modoFixo ? (
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Valor Fixo (R$):</label>
+                  <input
+                    type="number"
+                    value={newEvent.valorFixo}
+                    onChange={e => setNewEvent(ev => ({ ...ev, valorFixo: e.target.value }))}
+                    style={{ width: '100%', padding: 8, borderRadius: 4, border: 'none' }}
+                    step="0.01"
+                    required
+                  />
+                </div>
+              ) : (
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 8 }}>Tabela de Preço:</label>
+                  <select
+                    value={newEvent.tabelaPrecoId}
+                    onChange={e => setNewEvent(ev => ({ ...ev, tabelaPrecoId: e.target.value }))}
+                    style={{ width: '100%', padding: 8, borderRadius: 4, border: 'none' }}
+                  >
+                    <option value="">Selecione uma tabela (ou use a default)</option>
+                    {tabelasPreco.map(tp => (
+                      <option key={tp._id} value={tp._id}>
+                        {tp.nome} {tp.isDefault ? '(Default)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setNewEvent({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false });
+                  }}
+                  style={{
+                    background: '#666',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '10px 20px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    background: loading ? '#666' : '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '10px 20px',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    fontWeight: 700
+                  }}
+                >
+                  {loading ? 'Criando...' : 'Criar Evento'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
