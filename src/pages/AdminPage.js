@@ -28,12 +28,9 @@ export default function AdminPage() {
   const [progressoIndexacao, setProgressoIndexacao] = useState({}); // { [evento]: progresso }
   const [progressoCarregado, setProgressoCarregado] = useState(false); // Flag para saber se já carregou o progresso inicial
   const [criarPasta, setCriarPasta] = useState(false); // Para cadastro de evento
-  const [uploadFiles, setUploadFiles] = useState([]); // Arquivos para upload
-  const [uploading, setUploading] = useState(false); // Status do upload
-  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 }); // Progresso do upload
-  const [uploadMode, setUploadMode] = useState('files'); // 'files' ou 'folder'
   const [showCreateModal, setShowCreateModal] = useState(false); // Modal de criar evento
   const [newEvent, setNewEvent] = useState({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false }); // Dados do novo evento
+  const [estatisticasIndexacao, setEstatisticasIndexacao] = useState({}); // { [evento]: estatisticas }
 
   useEffect(() => {
     if (token) {
@@ -45,6 +42,13 @@ export default function AdminPage() {
     }
     // eslint-disable-next-line
   }, [token]);
+
+  // Carregar estatísticas quando eventos são carregados
+  useEffect(() => {
+    if (token && eventosMinio.length > 0) {
+      fetchTodasEstatisticasIndexacao();
+    }
+  }, [token, eventosMinio]);
 
   // Verificar progresso de indexação periodicamente
   useEffect(() => {
@@ -140,6 +144,8 @@ export default function AdminPage() {
           novosStatus[evento] = progresso.fotoAtual;
         } else if (progresso.finalizadoEm) {
           novosStatus[evento] = progresso.fotoAtual;
+          // Atualizar estatísticas quando indexação terminar
+          await fetchEstatisticasIndexacao(evento);
         }
       }
       
@@ -398,6 +404,8 @@ export default function AdminPage() {
         // Indexação iniciada em background, o progresso será atualizado automaticamente
         setStatusIndexacao(prev => ({ ...prev, [evento]: 'Indexação iniciada...' }));
         setIndexando(prev => ({ ...prev, [evento]: true }));
+        // Buscar estatísticas atualizadas
+        await fetchEstatisticasIndexacao(evento);
       } else {
         setStatusIndexacao(prev => ({ ...prev, [evento]: data.erro || 'Erro ao indexar fotos.' }));
       }
@@ -407,75 +415,32 @@ export default function AdminPage() {
     }
   };
 
-  const handleUploadFiles = async (evento) => {
-    if (!uploadFiles.length) {
-      alert('Selecione arquivos ou pasta para upload');
-      return;
-    }
-
-    setUploading(true);
-    setUploadProgress({ current: 0, total: uploadFiles.length });
-
+  const fetchEstatisticasIndexacao = async (evento) => {
     try {
-      // Processa arquivos em lotes para evitar sobrecarga
-      const batchSize = 10;
-      let sucessos = 0;
-      let erros = 0;
-      
-      for (let i = 0; i < uploadFiles.length; i += batchSize) {
-        const batch = uploadFiles.slice(i, i + batchSize);
-        const formData = new FormData();
-        
-        batch.forEach(file => {
-          formData.append('arquivos', file);
-        });
-        
-        // Adicionar caminhos se existirem (upload de pasta)
-        batch.forEach(file => {
-          if (file.webkitRelativePath) {
-            formData.append('caminhos', file.webkitRelativePath);
-          }
-        });
-
-        const resp = await fetch(`${API}/upload/${evento}`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-
-        const data = await resp.json();
-        
-        if (resp.ok) {
-          sucessos += data.sucessos || 0;
-          erros += data.erros || 0;
-        } else {
-          erros += batch.length;
-          console.error(`Erro no lote ${i / batchSize + 1}:`, data.error);
+      const resp = await fetch(`${API}/eventos/${evento}/estatisticas-indexacao`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-        
-        // Atualiza progresso
-        setUploadProgress({ current: Math.min(i + batchSize, uploadFiles.length), total: uploadFiles.length });
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setEstatisticasIndexacao(prev => ({ ...prev, [evento]: data }));
       }
-      
-      alert(`Upload concluído! ${sucessos} arquivos enviados com sucesso, ${erros} erros.`);
-      setUploadFiles([]);
-      fetchEventosMinio(); // Atualiza lista de eventos
-      
     } catch (err) {
-      console.error('Erro no upload:', err);
-      alert('Erro ao fazer upload dos arquivos');
+      console.error('Erro ao buscar estatísticas de indexação:', err);
     }
-
-    setUploading(false);
-    setUploadProgress({ current: 0, total: 0 });
   };
 
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files);
-    setUploadFiles(files);
+  const fetchTodasEstatisticasIndexacao = async () => {
+    if (!eventosMinio || eventosMinio.length === 0) return;
+    
+    for (const evento of eventosMinio) {
+      await fetchEstatisticasIndexacao(evento);
+    }
   };
+
+
+
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
@@ -611,7 +576,15 @@ export default function AdminPage() {
           {loading && <div>Carregando...</div>}
           <ul>
             {Array.isArray(eventos) && eventos.map((ev, idx) => (
-              <li key={ev._id || idx} style={{ marginBottom: 12, background: '#222', padding: 12, borderRadius: 8 }}>
+              <li 
+                key={ev._id || idx} 
+                style={{ 
+                  marginBottom: 12, 
+                  background: '#222', 
+                  padding: 12, 
+                  borderRadius: 8
+                }}
+              >
                 {editEventoId === ev._id ? (
                   <form onSubmit={handleSaveEditEvento} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <input type="text" value={editEvento.nome} onChange={e => setEditEvento(ev2 => ({ ...ev2, nome: e.target.value }))} placeholder="Nome" style={{ padding: 6 }} required />
@@ -634,9 +607,15 @@ export default function AdminPage() {
                   </form>
                 ) : (
                   <>
-                    <strong>{ev.nome}</strong> - {ev.data ? new Date(ev.data).toLocaleDateString() : ''}
-                    <button onClick={() => handleEditEvento(ev)} style={{ float: 'right', background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, marginLeft: 8 }}>Editar</button>
-                    <button onClick={() => handleDeleteEvento(ev._id)} style={{ float: 'right', background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, marginLeft: 8 }}>Remover</button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <strong>{ev.nome}</strong> - {ev.data ? new Date(ev.data).toLocaleDateString() : ''}
+                      </div>
+                      <div>
+                        <button onClick={() => handleEditEvento(ev)} style={{ background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, marginLeft: 8 }}>Editar</button>
+                        <button onClick={() => handleDeleteEvento(ev._id)} style={{ background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, marginLeft: 8 }}>Remover</button>
+                      </div>
+                    </div>
                     <div>
                       {ev.valorFixo ? (
                         <span>Valor fixo: <b>R${ev.valorFixo}</b></span>
@@ -653,7 +632,84 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    
+                    {/* Estatísticas de Indexação */}
+                    {estatisticasIndexacao[ev.nome] && (
+                      <div style={{ 
+                        marginTop: 12, 
+                        padding: 12, 
+                        backgroundColor: '#333', 
+                        borderRadius: 6,
+                        border: '1px solid #555'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <strong style={{ color: '#ffe001' }}>📊 Status da Indexação</strong>
+                          <button
+                            onClick={() => fetchEstatisticasIndexacao(ev.nome)}
+                            style={{
+                              background: 'transparent',
+                              border: '1px solid #666',
+                              color: '#fff',
+                              borderRadius: 4,
+                              padding: '2px 8px',
+                              fontSize: 12,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            🔄 Atualizar
+                          </button>
+                        </div>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, fontSize: 14 }}>
+                          <div>
+                            <span style={{ color: '#aaa' }}>Total S3:</span>
+                            <div style={{ fontWeight: 'bold', color: '#fff' }}>{estatisticasIndexacao[ev.nome].totalFotosS3}</div>
+                          </div>
+                          <div>
+                            <span style={{ color: '#aaa' }}>Indexadas:</span>
+                            <div style={{ fontWeight: 'bold', color: '#28a745' }}>{estatisticasIndexacao[ev.nome].fotosIndexadas}</div>
+                          </div>
+                          <div>
+                            <span style={{ color: '#aaa' }}>Com Erro:</span>
+                            <div style={{ fontWeight: 'bold', color: '#dc3545' }}>{estatisticasIndexacao[ev.nome].fotosComErro}</div>
+                          </div>
+                          <div>
+                            <span style={{ color: '#aaa' }}>Não Indexadas:</span>
+                            <div style={{ fontWeight: 'bold', color: '#ffc107' }}>{estatisticasIndexacao[ev.nome].fotosNaoIndexadas}</div>
+                          </div>
+                        </div>
+                        
+                        <div style={{ marginTop: 8 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#aaa' }}>
+                            <span>Progresso da Indexação</span>
+                            <span>{estatisticasIndexacao[ev.nome].percentualIndexado}%</span>
+                          </div>
+                          <div style={{ 
+                            height: 6, 
+                            backgroundColor: '#555', 
+                            borderRadius: 3, 
+                            overflow: 'hidden',
+                            marginTop: 4
+                          }}>
+                            <div 
+                              style={{ 
+                                height: '100%', 
+                                backgroundColor: estatisticasIndexacao[ev.nome].percentualIndexado === 100 ? '#28a745' : '#007bff',
+                                width: `${estatisticasIndexacao[ev.nome].percentualIndexado}%`,
+                                transition: 'width 0.3s ease'
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        {estatisticasIndexacao[ev.nome].ultimaIndexacao && (
+                          <div style={{ marginTop: 8, fontSize: 12, color: '#aaa' }}>
+                            Última indexação: {new Date(estatisticasIndexacao[ev.nome].ultimaIndexacao).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div style={{ marginTop: 8 }}>
                       <button
                         onClick={() => handleIndexarFotos(ev.nome)}
                         disabled={indexando[ev.nome]}
@@ -661,85 +717,6 @@ export default function AdminPage() {
                       >
                         {indexando[ev.nome] ? 'Indexando...' : 'Indexar fotos no Rekognition'}
                       </button>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        {/* Input para arquivos múltiplos */}
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                          style={{ display: 'none' }}
-                          id={`upload-files-${ev.nome}`}
-                        />
-                        
-                        {/* Input para pasta */}
-                        <input
-                          type="file"
-                          webkitdirectory=""
-                          directory=""
-                          multiple
-                          onChange={handleFileSelect}
-                          style={{ display: 'none' }}
-                          id={`upload-folder-${ev.nome}`}
-                        />
-                        
-                        <label
-                          htmlFor={`upload-files-${ev.nome}`}
-                          style={{
-                            background: '#007bff',
-                            color: 'white',
-                            padding: '6px 12px',
-                            borderRadius: 6,
-                            cursor: 'pointer',
-                            fontSize: 14,
-                            fontWeight: 700
-                          }}
-                        >
-                          Selecionar Arquivos
-                        </label>
-                        
-                        <label
-                          htmlFor={`upload-folder-${ev.nome}`}
-                          style={{
-                            background: '#6f42c1',
-                            color: 'white',
-                            padding: '6px 12px',
-                            borderRadius: 6,
-                            cursor: 'pointer',
-                            fontSize: 14,
-                            fontWeight: 700
-                          }}
-                        >
-                          Selecionar Pasta
-                        </label>
-                        
-                        {uploadFiles.length > 0 && (
-                          <span style={{ fontSize: 12, color: '#aaa' }}>
-                            {uploadFiles.length} arquivo(s) selecionado(s)
-                            {uploadFiles[0]?.webkitRelativePath && (
-                              <span style={{ color: '#6f42c1' }}> (pasta: {uploadFiles[0].webkitRelativePath.split('/')[0]})</span>
-                            )}
-                          </span>
-                        )}
-                        
-                        <button
-                          onClick={() => handleUploadFiles(ev.nome)}
-                          disabled={uploading || uploadFiles.length === 0}
-                          style={{
-                            background: uploading ? '#666' : '#28a745',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 6,
-                            padding: '6px 12px',
-                            fontSize: 14,
-                            fontWeight: 700,
-                            cursor: uploading ? 'not-allowed' : 'pointer'
-                          }}
-                        >
-                          {uploading ? 'Enviando...' : 'Upload'}
-                        </button>
-                      </div>
                     </div>
                     {statusIndexacao[ev.nome] && (
                       <div className="admin-indexar-status">{statusIndexacao[ev.nome]}</div>
@@ -761,24 +738,6 @@ export default function AdminPage() {
                         </div>
                         <div className="admin-progresso-percentual">
                           {Math.round(((progressoIndexacao[ev.nome].processadas || 0) / progressoIndexacao[ev.nome].total) * 100)}%
-                        </div>
-                      </div>
-                    )}
-                    {uploading && uploadProgress.total > 0 && (
-                      <div className="admin-progresso-container">
-                        <div className="admin-progresso-info">
-                          <span>Upload: {uploadProgress.current} de {uploadProgress.total}</span>
-                        </div>
-                        <div className="admin-progresso-barra">
-                          <div 
-                            className="admin-progresso-preenchimento"
-                            style={{ 
-                              width: `${(uploadProgress.current / uploadProgress.total) * 100}%` 
-                            }}
-                          ></div>
-                        </div>
-                        <div className="admin-progresso-percentual">
-                          {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
                         </div>
                       </div>
                     )}
@@ -1002,6 +961,7 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
     </div>
   );
 } 
