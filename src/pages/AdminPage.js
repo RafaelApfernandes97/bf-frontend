@@ -31,6 +31,7 @@ export default function AdminPage() {
   const [uploadFiles, setUploadFiles] = useState([]); // Arquivos para upload
   const [uploading, setUploading] = useState(false); // Status do upload
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 }); // Progresso do upload
+  const [uploadMode, setUploadMode] = useState('files'); // 'files' ou 'folder'
   const [showCreateModal, setShowCreateModal] = useState(false); // Modal de criar evento
   const [newEvent, setNewEvent] = useState({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false }); // Dados do novo evento
 
@@ -408,36 +409,60 @@ export default function AdminPage() {
 
   const handleUploadFiles = async (evento) => {
     if (!uploadFiles.length) {
-      alert('Selecione arquivos para upload');
+      alert('Selecione arquivos ou pasta para upload');
       return;
     }
 
     setUploading(true);
     setUploadProgress({ current: 0, total: uploadFiles.length });
 
-    const formData = new FormData();
-    uploadFiles.forEach(file => {
-      formData.append('arquivos', file);
-    });
-
     try {
-      const resp = await fetch(`${API}/upload/${evento}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      const data = await resp.json();
+      // Processa arquivos em lotes para evitar sobrecarga
+      const batchSize = 10;
+      let sucessos = 0;
+      let erros = 0;
       
-      if (resp.ok) {
-        alert(`Upload concluído! ${data.sucessos} arquivos enviados com sucesso, ${data.erros} erros.`);
-        setUploadFiles([]);
-        fetchEventosMinio(); // Atualiza lista de eventos
-      } else {
-        alert(`Erro no upload: ${data.error}`);
+      for (let i = 0; i < uploadFiles.length; i += batchSize) {
+        const batch = uploadFiles.slice(i, i + batchSize);
+        const formData = new FormData();
+        
+        batch.forEach(file => {
+          formData.append('arquivos', file);
+        });
+        
+        // Adicionar caminhos se existirem (upload de pasta)
+        batch.forEach(file => {
+          if (file.webkitRelativePath) {
+            formData.append('caminhos', file.webkitRelativePath);
+          }
+        });
+
+        const resp = await fetch(`${API}/upload/${evento}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await resp.json();
+        
+        if (resp.ok) {
+          sucessos += data.sucessos || 0;
+          erros += data.erros || 0;
+        } else {
+          erros += batch.length;
+          console.error(`Erro no lote ${i / batchSize + 1}:`, data.error);
+        }
+        
+        // Atualiza progresso
+        setUploadProgress({ current: Math.min(i + batchSize, uploadFiles.length), total: uploadFiles.length });
       }
+      
+      alert(`Upload concluído! ${sucessos} arquivos enviados com sucesso, ${erros} erros.`);
+      setUploadFiles([]);
+      fetchEventosMinio(); // Atualiza lista de eventos
+      
     } catch (err) {
       console.error('Erro no upload:', err);
       alert('Erro ao fazer upload dos arquivos');
@@ -637,17 +662,30 @@ export default function AdminPage() {
                         {indexando[ev.nome] ? 'Indexando...' : 'Indexar fotos no Rekognition'}
                       </button>
                       
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        {/* Input para arquivos múltiplos */}
                         <input
                           type="file"
                           multiple
                           accept="image/*"
                           onChange={handleFileSelect}
                           style={{ display: 'none' }}
-                          id={`upload-${ev.nome}`}
+                          id={`upload-files-${ev.nome}`}
                         />
+                        
+                        {/* Input para pasta */}
+                        <input
+                          type="file"
+                          webkitdirectory=""
+                          directory=""
+                          multiple
+                          onChange={handleFileSelect}
+                          style={{ display: 'none' }}
+                          id={`upload-folder-${ev.nome}`}
+                        />
+                        
                         <label
-                          htmlFor={`upload-${ev.nome}`}
+                          htmlFor={`upload-files-${ev.nome}`}
                           style={{
                             background: '#007bff',
                             color: 'white',
@@ -661,9 +699,27 @@ export default function AdminPage() {
                           Selecionar Arquivos
                         </label>
                         
+                        <label
+                          htmlFor={`upload-folder-${ev.nome}`}
+                          style={{
+                            background: '#6f42c1',
+                            color: 'white',
+                            padding: '6px 12px',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            fontSize: 14,
+                            fontWeight: 700
+                          }}
+                        >
+                          Selecionar Pasta
+                        </label>
+                        
                         {uploadFiles.length > 0 && (
                           <span style={{ fontSize: 12, color: '#aaa' }}>
                             {uploadFiles.length} arquivo(s) selecionado(s)
+                            {uploadFiles[0]?.webkitRelativePath && (
+                              <span style={{ color: '#6f42c1' }}> (pasta: {uploadFiles[0].webkitRelativePath.split('/')[0]})</span>
+                            )}
                           </span>
                         )}
                         
