@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FinanceiroAdmin from '../components/FinanceiroAdmin';
+import FinanceiroAdminSimple from '../components/FinanceiroAdminSimple';
 import './AdminPage.css';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -1264,7 +1265,13 @@ ${data.duplicados.length > 0 ? data.duplicados.map(d => `- ${d._id} (${d.count} 
       )}
 
       {activeTab === 'financeiro' && (
-        <FinanceiroAdmin />
+        <div>
+          <h3>Modo Debug Ativo</h3>
+          <FinanceiroAdminSimple />
+          <hr />
+          <h3>Componente Original</h3>
+          <FinanceiroAdmin />
+        </div>
       )}
 
       {/* Modal para criar evento */}
