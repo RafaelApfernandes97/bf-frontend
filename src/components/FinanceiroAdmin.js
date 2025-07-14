@@ -362,8 +362,14 @@ const FinanceiroAdmin = () => {
         <div className="stat-card primary">
           <div className="stat-icon">📊</div>
           <div className="stat-content">
-            <h3>Total de Pedidos</h3>
-            <p className="stat-value">{estatisticas.totais?.totalPedidos || 0}</p>
+            <h3>Pedidos Ativos</h3>
+            <p className="stat-value">{estatisticas.totais?.totalPedidosAtivos || 0}</p>
+            <small style={{ color: '#ccc', fontSize: '12px' }}>
+              Total: {estatisticas.totais?.totalPedidos || 0} 
+              {estatisticas.totais?.totalPedidos > estatisticas.totais?.totalPedidosAtivos && 
+                ` (${(estatisticas.totais?.totalPedidos || 0) - (estatisticas.totais?.totalPedidosAtivos || 0)} cancelados)`
+              }
+            </small>
           </div>
         </div>
         
@@ -372,6 +378,12 @@ const FinanceiroAdmin = () => {
           <div className="stat-content">
             <h3>Receita Total</h3>
             <p className="stat-value">{formatCurrency(estatisticas.totais?.totalReceita || 0)}</p>
+            <small style={{ color: '#ccc', fontSize: '12px' }}>
+              Excluindo cancelados
+              {estatisticas.totais?.receitaCancelada > 0 && 
+                ` (${formatCurrency(estatisticas.totais?.receitaCancelada)} cancelados)`
+              }
+            </small>
           </div>
         </div>
         
@@ -380,6 +392,9 @@ const FinanceiroAdmin = () => {
           <div className="stat-content">
             <h3>Ticket Médio</h3>
             <p className="stat-value">{formatCurrency(estatisticas.periodo?.ticketMedio || 0)}</p>
+            <small style={{ color: '#ccc', fontSize: '12px' }}>
+              Baseado em pedidos ativos
+            </small>
           </div>
         </div>
         
@@ -388,6 +403,9 @@ const FinanceiroAdmin = () => {
           <div className="stat-content">
             <h3>Pedidos Pendentes</h3>
             <p className="stat-value">{estatisticas.porStatus?.find(s => s._id === 'pendente')?.count || 0}</p>
+            <small style={{ color: '#ccc', fontSize: '12px' }}>
+              Aguardando confirmação
+            </small>
           </div>
         </div>
       </div>
