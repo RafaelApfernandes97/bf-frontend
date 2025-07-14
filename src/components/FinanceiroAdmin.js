@@ -60,29 +60,15 @@ const FinanceiroAdmin = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('admin_token');
-      const url = `${API_ENDPOINTS.ADMIN_BASE}/estatisticas?periodo=${periodo}`;
-      
-      console.log('[DEBUG] fetchEstatisticas - URL:', url);
-      console.log('[DEBUG] fetchEstatisticas - Token presente:', !!token);
-      console.log('[DEBUG] fetchEstatisticas - API_ENDPOINTS.ADMIN_BASE:', API_ENDPOINTS.ADMIN_BASE);
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_BASE}/estatisticas?periodo=${periodo}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('[DEBUG] fetchEstatisticas - Status:', response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('[DEBUG] fetchEstatisticas - Dados recebidos:', data);
         setEstatisticas(data);
-      } else {
-        const errorText = await response.text();
-        console.error('[DEBUG] fetchEstatisticas - Erro:', response.status, errorText);
-        setError(`Erro ao carregar estatísticas: ${response.status}`);
       }
     } catch (err) {
-      console.error('[DEBUG] fetchEstatisticas - Exceção:', err);
       setError('Erro ao carregar estatísticas');
     } finally {
       setLoading(false);
@@ -99,28 +85,16 @@ const FinanceiroAdmin = () => {
         ...filtros
       });
       
-      const url = `${API_ENDPOINTS.ADMIN_BASE}/pedidos?${params}`;
-      console.log('[DEBUG] fetchPedidos - URL:', url);
-      console.log('[DEBUG] fetchPedidos - Token presente:', !!token);
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_BASE}/pedidos?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('[DEBUG] fetchPedidos - Status:', response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('[DEBUG] fetchPedidos - Pedidos recebidos:', data.pedidos?.length);
         setPedidos(data.pedidos);
         setPaginacao(prev => ({ ...prev, ...data.paginacao }));
-      } else {
-        const errorText = await response.text();
-        console.error('[DEBUG] fetchPedidos - Erro:', response.status, errorText);
-        setError(`Erro ao carregar pedidos: ${response.status}`);
       }
     } catch (err) {
-      console.error('[DEBUG] fetchPedidos - Exceção:', err);
       setError('Erro ao carregar pedidos');
     } finally {
       setLoading(false);
