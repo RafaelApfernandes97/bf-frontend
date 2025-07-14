@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import CoreografiaTop from '../components/CoreografiaTop';
+import ProductBanners from '../components/ProductBanners';
 import VirtualizedPhotoGrid from '../components/VirtualizedPhotoGrid';
 import './FotosPage.css';
 import '../CoreografiasBody.css';
@@ -15,6 +16,7 @@ import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
 import { BACKEND_URL } from '../config/api';
+import api, { API_ENDPOINTS } from '../config/api';
 import useImagePreloader from '../hooks/useImagePreloader';
 
 function FotosPage({ setShowCart }) {
@@ -26,10 +28,56 @@ function FotosPage({ setShowCart }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { cart, addToCart, removeFromCart } = useCart();
-  const { fotosEncontradasIA, filtroIAAtivo } = useContext(NavigationContext);
+  const { fotosEncontradasIA, filtroIAAtivo, isViewingPhotos, setViewingPhotos } = useContext(NavigationContext);
   const [evento, setEvento] = useState(null);
   const [tabelaPreco, setTabelaPreco] = useState(null);
   const [tabelas, setTabelas] = useState([]);
+  const [eventoData, setEventoData] = useState(null); // Dados completos do evento incluindo configurações dos banners
+
+  // Função personalizada para adicionar banners ao carrinho com evento
+  const addBannerToCart = (banner) => {
+    // Modificar o nome do produto para incluir a coreografia
+    let nomeComCoreografia = banner.nome;
+    if (coreografiaId) {
+      if (banner.tipo === 'vale') {
+        nomeComCoreografia = `Vale Coreografia: ${coreografiaId}`;
+      } else if (banner.tipo === 'video') {
+        nomeComCoreografia = `Vídeo: ${coreografiaId}`;
+      }
+    }
+    
+    // Adicionar o evento ao banner antes de colocar no carrinho
+    const bannerComEvento = {
+      ...banner,
+      nome: nomeComCoreografia,
+      evento: eventoId, // Adicionar o evento atual
+      dia: diaId || null, // Adicionar o dia se existir
+      coreografia: coreografiaId || null // Adicionar o nome da coreografia
+    };
+    addToCart(bannerComEvento);
+  };
+
+  // Buscar dados do evento (incluindo configurações dos banners)
+  useEffect(() => {
+    if (eventoId) {
+      console.log(`[FotosPage] Buscando dados do evento: ${eventoId}`);
+      
+      api.get(API_ENDPOINTS.PUBLIC_EVENTO_BY_NAME(eventoId))
+        .then(response => {
+          console.log(`[FotosPage] Dados do evento recebidos:`, response.data);
+          setEventoData(response.data);
+        })
+        .catch(error => {
+          console.error(`[FotosPage] Erro ao buscar evento:`, error);
+          // Se o evento não for encontrado, usar configuração padrão
+          setEventoData({
+            nome: eventoId,
+            exibirBannerValeCoreografia: false,
+            exibirBannerVideo: false
+          });
+        });
+    }
+  }, [eventoId]);
 
   // Buscar todas as coreografias do evento para navegação
   useEffect(() => {
@@ -178,6 +226,12 @@ function FotosPage({ setShowCart }) {
   // Pré-carregar próximas imagens
   useImagePreloader(photoUrls, 10);
 
+  // Definir quando está visualizando fotos
+  useEffect(() => {
+    console.log('[FotosPage] Definindo isViewingPhotos:', fotos.length > 0, 'fotos.length:', fotos.length);
+    setViewingPhotos(fotos.length > 0);
+  }, [fotos.length, setViewingPhotos]);
+
   if (loading) return <div>Carregando fotos...</div>;
   if (error) return <div>{error}</div>;
 
@@ -271,6 +325,21 @@ function FotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
+
+      {(() => {
+        const shouldShowBanners = location.pathname.includes('/fotos') && fotos.length > 0;
+        console.log('[FotosPage] shouldShowBanners:', shouldShowBanners, 'pathname:', location.pathname, 'fotos.length:', fotos.length);
+        return shouldShowBanners && (
+          <ProductBanners
+          quantidadeFotos={cart.length}
+          exibirBannerValeCoreografia={eventoData?.exibirBannerValeCoreografia || false}
+          exibirBannerVideo={eventoData?.exibirBannerVideo || false}
+          precoValeCoreografia={eventoData?.tabelaPrecoId?.precoValeCoreografia || 0}
+          precoVideo={eventoData?.tabelaPrecoId?.precoVideo || 0}
+          onAddToCart={addBannerToCart}
+          />
+        );
+      })()}
       {!filtroIAAtivo && (
         <div className="evento-info-bar">
           {evento && evento.data && (

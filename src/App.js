@@ -41,155 +41,170 @@ function App() {
   // Verificar se o usuário está logado
   const isLoggedIn = !!localStorage.getItem('user_token');
 
+  // Função utilitária para calcular preço baseado na quantidade
+  function calcularPrecoPorQuantidade(tabelaPreco, quantidade) {
+    if (!tabelaPreco || !tabelaPreco.faixas) {
+      return null;
+    }
+    
+    // Ordena as faixas por valor mínimo (crescente)
+    const faixasOrdenadas = [...tabelaPreco.faixas].sort((a, b) => a.min - b.min);
+    
+    // Encontra a faixa que se aplica à quantidade
+    for (const faixa of faixasOrdenadas) {
+      const min = faixa.min;
+      const max = faixa.max;
+      
+      // Se não tem max, aceita qualquer valor >= min
+      if (!max) {
+        if (quantidade >= min) {
+          return faixa.valor;
+        }
+      } else {
+        // Se tem max, verifica se está no intervalo
+        if (quantidade >= min && quantidade <= max) {
+          return faixa.valor;
+        }
+      }
+    }
+    
+    return null; // Nenhuma faixa se aplica
+  }
+
   // Calcular valor unitário baseado nas regras do admin
   useEffect(() => {
     async function calcularValorUnitario() {
+      console.log('🔍 [DEBUG CARRINHO] Iniciando cálculo de valor unitário');
+      
       if (cart.length === 0) {
+        console.log('🔍 [DEBUG CARRINHO] Carrinho vazio, definindo valor 0');
+        setValorUnitario(0);
+        return;
+      }
+
+      // Separar banners de fotos normais
+      const banners = cart.filter(item => item.tipo === 'banner');
+      const fotos = cart.filter(item => item.tipo !== 'banner');
+      
+      console.log('🔍 [DEBUG CARRINHO] Banners no carrinho:', banners.length);
+      console.log('🔍 [DEBUG CARRINHO] Fotos normais no carrinho:', fotos.length);
+
+      // Se só tem banners, não precisa calcular valor unitário de fotos
+      if (fotos.length === 0) {
+        console.log('🔍 [DEBUG CARRINHO] Apenas banners no carrinho, valor unitário = 0');
         setValorUnitario(0);
         return;
       }
 
       try {
+        console.log('🔍 [DEBUG CARRINHO] Buscando eventos da API pública...');
         // Buscar todos os eventos cadastrados (usando rota pública)
         const resEventos = await fetch(API_ENDPOINTS.PUBLIC_EVENTOS);
         if (!resEventos.ok) {
-          console.warn('Falha ao buscar eventos:', resEventos.status, resEventos.statusText);
-          setValorUnitario(0);
-          return;
+          throw new Error(`Erro ao buscar eventos: ${resEventos.status}`);
         }
-        
-        let eventos;
-        try {
-          eventos = await resEventos.json();
-        } catch (jsonError) {
-          console.error('Erro ao parsear JSON dos eventos:', jsonError);
-          setValorUnitario(0);
-          return;
-        }
+        const eventos = await resEventos.json();
 
-        // Buscar todas as tabelas de preço (usando rota pública)
+        // Buscar todas as tabelas de preço
+        console.log('🔍 [DEBUG CARRINHO] Buscando tabelas de preço da API pública...');
         const resTabelas = await fetch(API_ENDPOINTS.PUBLIC_TABELAS_PRECO);
         if (!resTabelas.ok) {
-          console.warn('Falha ao buscar tabelas de preço:', resTabelas.status, resTabelas.statusText);
-          setValorUnitario(0);
-          return;
+          throw new Error(`Erro ao buscar tabelas de preço: ${resTabelas.status}`);
         }
+        const tabelas = await resTabelas.json();
+
+        // Pegar evento da primeira foto (não banner)
+        const primeiraFoto = fotos[0];
         
-        let tabelas;
-        try {
-          tabelas = await resTabelas.json();
-        } catch (jsonError) {
-          console.error('Erro ao parsear JSON das tabelas:', jsonError);
-          setValorUnitario(0);
-          return;
-        }
-
-        // Se eventos não for array, logar erro e abortar
-        if (!Array.isArray(eventos)) {
-          setValorUnitario(0);
-          return;
-        }
-        if (!Array.isArray(tabelas)) {
-          setValorUnitario(0);
-          return;
-        }
-
-        // Função para normalizar strings (igual à usada na FotosPage)
+        console.log('🔍 [DEBUG CARRINHO] Primeira foto do carrinho (completa):', JSON.stringify(primeiraFoto, null, 2));
+        
+        // Normalizar nome do evento da primeira foto
         function normalize(str) {
-          return decodeURIComponent(str || '')
-            .toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
-            .replace(/[^a-z0-9]/g, ' ') // troca tudo que não for letra/número por espaço
-            .replace(/\s+/g, ' ') // normaliza múltiplos espaços
-            .trim();
+          return str ? str.toLowerCase().trim() : '';
         }
 
-        // Encontrar o evento das fotos no carrinho
-        const eventoNome = cart[0]?.evento;
-        console.log('Debug carrinho:', cart[0]);
-        console.log('Debug eventoNome:', eventoNome, typeof eventoNome);
+        const nomeEvento = `${primeiraFoto.evento} ${primeiraFoto.dia || ''}`.trim();
+        console.log('🔍 [DEBUG CARRINHO] Nome do evento extraído:', nomeEvento);
         
-        // Verificar se o evento existe
-        if (!eventoNome || eventoNome === 'undefined' || eventoNome === 'null' || typeof eventoNome !== 'string') {
-          console.warn('Nome do evento não encontrado no carrinho ou é inválido:', eventoNome);
-          console.warn('Item do carrinho completo:', JSON.stringify(cart[0], null, 2));
+        if (!nomeEvento || nomeEvento === 'undefined' || nomeEvento === 'undefined undefined') {
+          console.log('🔍 [DEBUG CARRINHO] Nome do evento não encontrado no carrinho ou é inválido:', nomeEvento);
           setValorUnitario(0);
           return;
         }
 
-        console.log('Buscando evento:', eventoNome);
-        eventos.forEach(e => console.log('->', e.nome, 'Normalizado:', normalize(e.nome)));
+        console.log('🔍 [DEBUG CARRINHO] Procurando evento:', nomeEvento);
 
-        // Busca tolerante: primeiro por igualdade, depois por includes
-        let evento = eventos.find(e => normalize(e.nome) === normalize(eventoNome));
+        // Encontrar o evento correspondente
+        let evento = eventos.find(e => {
+          const nomeEventoNormalizado = normalize(e.nome);
+          const nomeCarrinhoNormalizado = normalize(nomeEvento);
+          const match = nomeEventoNormalizado === nomeCarrinhoNormalizado;
+          return match;
+        });
+
         if (!evento) {
-          evento = eventos.find(e => normalize(e.nome).includes(normalize(eventoNome)) || normalize(eventoNome).includes(normalize(e.nome)));
+          console.log('🔍 [DEBUG CARRINHO] Evento não encontrado na lista de eventos. Procurando por partes do nome...');
+          
+          // Tentar encontrar por substring
+          const eventoSubstring = eventos.find(e => {
+            const nomeEventoNormalizado = normalize(e.nome);
+            const nomeCarrinhoNormalizado = normalize(nomeEvento);
+            const match = nomeEventoNormalizado.includes(nomeCarrinhoNormalizado) || 
+                         nomeCarrinhoNormalizado.includes(nomeEventoNormalizado);
+            return match;
+          });
+          
+          if (!eventoSubstring) {
+            console.log('🔍 [DEBUG CARRINHO] Evento não encontrado mesmo por substring. Usando tabela default.');
+            // Usar tabela default se não encontrar o evento
+            const tabelaDefault = tabelas.find(t => t.isDefault);
+            if (tabelaDefault) {
+              const valor = calcularPrecoPorQuantidade(tabelaDefault, fotos.length);
+              console.log(`🔍 [DEBUG CARRINHO] Valor calculado pela tabela default (${fotos.length} fotos):`, valor);
+              setValorUnitario(valor || 0);
+            } else {
+              console.log('🔍 [DEBUG CARRINHO] Nenhuma tabela default encontrada');
+              setValorUnitario(0);
+            }
+            return;
+          }
+          
+          console.log('🔍 [DEBUG CARRINHO] Evento encontrado por substring:', eventoSubstring);
+          // Usar o evento encontrado por substring
+          evento = eventoSubstring;
         }
 
-        if (!evento) {
-          console.warn('Evento não encontrado na lista de eventos:', eventoNome);
-          setValorUnitario(0);
-          return;
-        }
+        console.log('🔍 [DEBUG CARRINHO] Evento encontrado:', JSON.stringify(evento, null, 2));
 
         let valor = 0;
-        let tabela = null;
-        let tabelaDefault = null;
 
-        if (evento && evento.valorFixo) {
-          // Valor fixo
-          valor = Number(evento.valorFixo);
-        } else if (evento && evento.tabelaPrecoId) {
-          // Tabela específica do evento
-          let tabelaId = evento && evento.tabelaPrecoId;
-          if (typeof tabelaId === 'object' && tabelaId !== null) {
-            tabelaId = tabelaId._id;
-          }
-          tabela = tabelas.find(t => t._id === tabelaId);
-          if (tabela && tabela.faixas) {
-            const faixas = [...tabela.faixas].sort((a, b) => a.min - b.min);
-            for (const faixa of faixas) {
-              const min = Number(faixa.min);
-              const max = faixa.max !== undefined && faixa.max !== null && faixa.max !== '' ? Number(faixa.max) : null;
-              if (max === null) {
-                if (cart.length >= min) {
-                  valor = Number(faixa.valor);
-                  break;
-                }
-              } else {
-                if (cart.length >= min && cart.length <= max) {
-                  valor = Number(faixa.valor);
-                  break;
-                }
-              }
-            }
-          }
-        } else {
-          // Usar tabela default
-          tabelaDefault = tabelas.find(t => t.isDefault);
-          if (tabelaDefault && tabelaDefault.faixas) {
-            const faixas = [...tabelaDefault.faixas].sort((a, b) => a.min - b.min);
-            for (const faixa of faixas) {
-              const min = Number(faixa.min);
-              const max = faixa.max !== undefined && faixa.max !== null && faixa.max !== '' ? Number(faixa.max) : null;
-              if (max === null) {
-                if (cart.length >= min) {
-                  valor = Number(faixa.valor);
-                  break;
-                }
-              } else {
-                if (cart.length >= min && cart.length <= max) {
-                  valor = Number(faixa.valor);
-                  break;
-                }
-              }
-            }
+        // Se evento tem valor fixo, usar ele
+        if (evento.valorFixo) {
+          valor = evento.valorFixo;
+          console.log(`🔍 [DEBUG CARRINHO] Usando valor fixo do evento: ${valor}`);
+        }
+        // Se evento tem tabela específica, usar ela
+        else if (evento.tabelaPrecoId) {
+          valor = calcularPrecoPorQuantidade(evento.tabelaPrecoId, fotos.length);
+          console.log(`🔍 [DEBUG CARRINHO] Valor calculado pela tabela específica (${fotos.length} fotos):`, valor);
+        }
+        // Usar tabela default
+        else {
+          console.log('🔍 [DEBUG CARRINHO] Evento não possui valor fixo nem tabela específica. Usando tabela default.');
+          const tabelaDefault = tabelas.find(t => t.isDefault);
+          if (tabelaDefault) {
+            valor = calcularPrecoPorQuantidade(tabelaDefault, fotos.length);
+            console.log(`🔍 [DEBUG CARRINHO] Valor calculado pela tabela default (${fotos.length} fotos):`, valor);
+          } else {
+            console.log('🔍 [DEBUG CARRINHO] Nenhuma tabela default encontrada');
           }
         }
 
-        setValorUnitario(valor);
+        console.log('🔍 [DEBUG CARRINHO] Valor unitário final calculado:', valor);
+        setValorUnitario(valor || 0);
+
       } catch (error) {
-        console.error('Erro ao calcular valor unitário:', error);
+        console.error('🔍 [DEBUG CARRINHO] Erro ao calcular valor unitário:', error);
         setValorUnitario(0);
       }
     }
@@ -223,7 +238,12 @@ function App() {
       const fotos = cart.map(f => ({
         nome: f.nome,
         url: f.url,
-        coreografia: f.coreografia || ''
+        coreografia: f.coreografia || '',
+        tipo: f.tipo || 'foto', // Incluir tipo (banner ou foto)
+        preco: f.preco || 0, // Incluir preço (importante para banners)
+        categoria: f.categoria || '', // Incluir categoria (vale/video)
+        evento: f.evento || '',
+        dia: f.dia || null
       }));
       if (!evento || fotos.length === 0) {
         setCheckoutMsg('Carrinho vazio ou evento não identificado.');

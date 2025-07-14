@@ -4,6 +4,7 @@ import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
 import CartBtn from '../components/CartBtn';
 import VirtualizedPhotoGrid from '../components/VirtualizedPhotoGrid';
+import ProductBanners from '../components/ProductBanners';
 import { useCart } from '../components/CartContext';
 import { useNavigation } from '../context/NavigationContext';
 import './CoreografiasBody.css';
@@ -34,13 +35,14 @@ function CoreografiasPage({ setShowCart }) {
   const [dias, setDias] = useState([]); // lista de dias se houver
   const [diaSelecionado, setDiaSelecionado] = useState('');
   const [coreografias, setCoreografias] = useState([]);
-  const [fotos, setFotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [evento, setEvento] = useState(null);
   const [caminhoAtual, setCaminhoAtual] = useState('');
   const [historicoNavegacao, setHistoricoNavegacao] = useState([]);
   const [coreografiasNivelPai, setCoreografiasNivelPai] = useState([]); // Para guardar as coreografias do nível pai
+  const [eventoData, setEventoData] = useState(null); // Dados completos do evento
+  const [fotos, setFotos] = useState([]); // Estado para armazenar as fotos da coreografia atual
   const { cart, addToCart, removeFromCart } = useCart();
   const { 
     registerBackButtonHandler, 
@@ -50,6 +52,56 @@ function CoreografiasPage({ setShowCart }) {
     filtroIAAtivo 
   } = useNavigation();
   const navigate = useNavigate();
+
+  // Função personalizada para adicionar banners ao carrinho com evento
+  const addBannerToCart = (banner) => {
+    // Obter nome da coreografia atual
+    const partesAtual = caminhoAtual.split('/');
+    const coreografiaAtual = partesAtual.slice(-1)[0] || '';
+    
+    // Modificar o nome do produto para incluir a coreografia
+    let nomeComCoreografia = banner.nome;
+    if (coreografiaAtual) {
+      if (banner.tipo === 'vale') {
+        nomeComCoreografia = `Vale Coreografia: ${coreografiaAtual}`;
+      } else if (banner.tipo === 'video') {
+        nomeComCoreografia = `Vídeo: ${coreografiaAtual}`;
+      }
+    }
+    
+    // Adicionar o evento ao banner antes de colocar no carrinho
+    const bannerComEvento = {
+      ...banner,
+      nome: nomeComCoreografia,
+      evento: eventoId, // Adicionar o evento atual
+      dia: diaSelecionado || null, // Adicionar o dia se existir
+      coreografia: coreografiaAtual || null // Adicionar o nome da coreografia
+    };
+    addToCart(bannerComEvento);
+  };
+
+
+  // Buscar dados do evento (incluindo configurações dos banners)
+  useEffect(() => {
+    if (eventoId) {
+      console.log(`[CoreografiasPage] Buscando dados do evento: ${eventoId}`);
+      
+      api.get(API_ENDPOINTS.PUBLIC_EVENTO_BY_NAME(eventoId))
+        .then(response => {
+          console.log(`[CoreografiasPage] Dados do evento recebidos:`, response.data);
+          setEventoData(response.data);
+        })
+        .catch(error => {
+          console.error(`[CoreografiasPage] Erro ao buscar evento:`, error);
+          // Se o evento não for encontrado, usar configuração padrão
+          setEventoData({
+            nome: eventoId,
+            exibirBannerValeCoreografia: false,
+            exibirBannerVideo: false
+          });
+        });
+    }
+  }, [eventoId]);
 
   // Função para buscar pastas e fotos via API unificada
   async function buscarPastasEFotos(caminho) {
@@ -413,6 +465,19 @@ function CoreografiasPage({ setShowCart }) {
           </button>
         )}
       </CoreografiaTop>
+
+      {/* Exibir banners quando visualizando fotos */}
+      {fotos.length > 0 && (
+        <ProductBanners
+          quantidadeFotos={cart.length}
+          exibirBannerValeCoreografia={eventoData?.exibirBannerValeCoreografia || false}
+          exibirBannerVideo={eventoData?.exibirBannerVideo || false}
+          precoValeCoreografia={eventoData?.tabelaPrecoId?.precoValeCoreografia || 0}
+          precoVideo={eventoData?.tabelaPrecoId?.precoVideo || 0}
+          onAddToCart={addBannerToCart}
+        />
+      )}
+
       {/* <div className="evento-info-bar">
         {evento && evento.data && (
           <span className="evento-info-item">

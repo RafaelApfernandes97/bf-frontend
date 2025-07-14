@@ -2,8 +2,28 @@ import React, { useState } from 'react';
 import './CartModal.css';
 
 export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorUnitario, checkoutLoading = false, checkoutMsg = '', isLoggedIn = true, onShowLogin, onShowRegister }) {
-  const total = fotos.length * (Number(valorUnitario) || 0);
+  // Separar banners de fotos normais
+  const banners = fotos.filter(item => item.tipo === 'banner');
+  const fotosNormais = fotos.filter(item => item.tipo !== 'banner');
+  
+  // Calcular valor das fotos normais
+  const valorFotosNormais = fotosNormais.length * (Number(valorUnitario) || 0);
+  
+  // Calcular valor dos banners (soma dos preços individuais)
+  const valorBanners = banners.reduce((acc, banner) => acc + (Number(banner.preco) || 0), 0);
+  
+  // Total = fotos normais + banners
+  const total = valorFotosNormais + valorBanners;
+
   const [fotoExpandida, setFotoExpandida] = useState(null);
+
+  // Função para obter o preço correto de cada item
+  const getPrecoItem = (foto) => {
+    if (foto.tipo === 'banner') {
+      return Number(foto.preco) || 0;
+    }
+    return Number(valorUnitario) || 0;
+  };
 
   return (
     <div className="cart-modal-overlay">
@@ -22,7 +42,7 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
                   <img src={foto.url} alt={foto.nome} />
                 </div>
                 <div className="cart-info">
-                  <div className="cart-preco">R${(Number(valorUnitario) || 0).toFixed(2).replace('.', ',')}</div>
+                  <div className="cart-preco">R${getPrecoItem(foto).toFixed(2).replace('.', ',')}</div>
                   <div className="cart-nome">
                     <div>#{foto.nome}</div>
                     {foto.coreografia && (
@@ -30,6 +50,11 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
                     )}
                     {foto.evento && (
                       <div style={{ color: '#faf782', fontStyle: 'italic' }}>{foto.evento}</div>
+                    )}
+                    {foto.tipo === 'banner' && (
+                      <div style={{ color: '#ff6b35', fontStyle: 'italic', fontSize: '0.9em' }}>
+                        {foto.categoria === 'vale' ? '📄 Vale Coreografia' : '🎥 Vídeo'}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -55,12 +80,20 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
           </div>
         )}
         <div className="cart-summary">
-          <div className="cart-summary-row">
-            <span>Itens ({fotos.length})</span>
-            <span>R${(Number(total) || 0).toFixed(2).replace('.', ',')}</span>
-          </div>
+          {fotosNormais.length > 0 && (
+            <div className="cart-summary-row">
+              <span>Fotos ({fotosNormais.length})</span>
+              <span>R${valorFotosNormais.toFixed(2).replace('.', ',')}</span>
+            </div>
+          )}
+          {banners.length > 0 && (
+            <div className="cart-summary-row">
+              <span>Produtos ({banners.length})</span>
+              <span>R${valorBanners.toFixed(2).replace('.', ',')}</span>
+            </div>
+          )}
           <div className="cart-summary-row cart-summary-total">
-            <span>Total</span>
+            <span>Total ({fotos.length} itens)</span>
             <span>R${(Number(total) || 0).toFixed(2).replace('.', ',')}</span>
           </div>
         </div>

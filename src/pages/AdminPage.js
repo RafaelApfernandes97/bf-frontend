@@ -14,7 +14,7 @@ export default function AdminPage() {
   const [eventosMinio, setEventosMinio] = useState([]);
   const [tabelasPreco, setTabelasPreco] = useState([]);
   const [novoEvento, setNovoEvento] = useState({ nome: '', data: '', tabelaPrecoId: '' });
-  const [novaTabela, setNovaTabela] = useState({ nome: '', descricao: '', faixas: [{ min: '', max: '', valor: '' }], isDefault: false });
+  const [novaTabela, setNovaTabela] = useState({ nome: '', descricao: '', faixas: [{ min: '', max: '', valor: '' }], precoValeCoreografia: '', precoVideo: '', isDefault: false });
   const [valorFixo, setValorFixo] = useState('');
   const [modoFixo, setModoFixo] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,16 +29,37 @@ export default function AdminPage() {
   const [progressoCarregado, setProgressoCarregado] = useState(false); // Flag para saber se já carregou o progresso inicial
   const [criarPasta, setCriarPasta] = useState(false); // Para cadastro de evento
   const [showCreateModal, setShowCreateModal] = useState(false); // Modal de criar evento
-  const [newEvent, setNewEvent] = useState({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false }); // Dados do novo evento
+  const [newEvent, setNewEvent] = useState({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false, exibirBannerValeCoreografia: false, exibirBannerVideo: false }); // Dados do novo evento
   const [estatisticasIndexacao, setEstatisticasIndexacao] = useState({}); // { [evento]: estatisticas }
 
   useEffect(() => {
     if (token) {
-      setLogged(true);
-      fetchEventos();
-      fetchEventosMinio();
-      fetchTabelasPreco();
-      // O progresso será verificado automaticamente pelo próximo useEffect
+      console.log('[DEBUG] useEffect - Token encontrado, verificando validade...');
+      // Verificar se o token não está expirado
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        const expirationTime = tokenPayload.exp * 1000; // Converter para milliseconds
+        const currentTime = Date.now();
+
+        console.log('[DEBUG] useEffect - Token expira em:', new Date(expirationTime));
+        console.log('[DEBUG] useEffect - Hora atual:', new Date(currentTime));
+
+        if (currentTime >= expirationTime) {
+          console.log('[DEBUG] useEffect - Token expirado, fazendo logout...');
+          handleLogout();
+          return;
+        }
+
+        console.log('[DEBUG] useEffect - Token válido, fazendo login automático...');
+        setLogged(true);
+        fetchEventos();
+        fetchEventosMinio();
+        fetchTabelasPreco();
+        // O progresso será verificado automaticamente pelo próximo useEffect
+      } catch (error) {
+        console.error('[DEBUG] useEffect - Erro ao decodificar token:', error);
+        handleLogout();
+      }
     }
     // eslint-disable-next-line
   }, [token]);
@@ -50,10 +71,24 @@ export default function AdminPage() {
     }
   }, [token, eventosMinio]);
 
+  // Atualizar duração em tempo real para indexações ativas
+  useEffect(() => {
+    const indexacoesAtivas = Object.keys(indexando).filter(evento => indexando[evento]);
+
+    if (indexacoesAtivas.length === 0) return;
+
+    const interval = setInterval(() => {
+      // Força re-render para atualizar duração em tempo real
+      setProgressoIndexacao(prev => ({ ...prev }));
+    }, 1000); // Atualiza a cada segundo
+
+    return () => clearInterval(interval);
+  }, [indexando]);
+
   // Verificar progresso de indexação periodicamente
   useEffect(() => {
     if (!token || eventosMinio.length === 0) return;
-    
+
     // Primeira verificação ou se há alguma indexação ativa
     const temIndexacaoAtiva = Object.values(indexando).some(valor => valor);
     if (!progressoCarregado || temIndexacaoAtiva) {
@@ -61,34 +96,56 @@ export default function AdminPage() {
       if (!progressoCarregado) {
         verificarProgressoIndexacao();
       }
-      
+
       const interval = setInterval(() => {
         verificarProgressoIndexacao();
       }, 3000); // Verificar a cada 3 segundos
-      
+
       return () => clearInterval(interval);
     }
   }, [token, eventosMinio, indexando, progressoCarregado]);
 
-  async function fetchEventos() {
+  async function fetchEventos(customToken = null) {
+    const tokenToUse = customToken || token;
     setLoading(true);
     try {
+      console.log('[DEBUG] fetchEventos - Fazendo requisição com token:', tokenToUse ? tokenToUse.substring(0, 20) + '...' : 'undefined');
       const res = await fetch(`${API}/eventos`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${tokenToUse}` }
       });
+
+      console.log('[DEBUG] fetchEventos - Status da resposta:', res.status);
+
+      if (res.status === 401) {
+        console.log('Token expirado ou inválido, fazendo logout...');
+        const errorData = await res.json().catch(() => ({}));
+        console.log('Detalhes do erro 401:', errorData);
+        handleLogout();
+        return;
+      }
+
       const data = await res.json();
       setEventos(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (error) {
+      console.error('Erro ao buscar eventos:', error);
       setEventos([]);
     }
     setLoading(false);
   }
 
-  async function fetchEventosMinio() {
+  async function fetchEventosMinio(customToken = null) {
+    const tokenToUse = customToken || token;
     try {
       const res = await fetch(`${API}/eventos-minio`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${tokenToUse}` }
       });
+
+      if (res.status === 401) {
+        console.log('Token expirado, fazendo logout...');
+        handleLogout();
+        return;
+      }
+
       const data = await res.json();
       setEventosMinio(Array.isArray(data) ? data : []);
       // Reset progresso quando a lista de eventos mudar
@@ -99,11 +156,19 @@ export default function AdminPage() {
     }
   }
 
-  async function fetchTabelasPreco() {
+  async function fetchTabelasPreco(customToken = null) {
+    const tokenToUse = customToken || token;
     try {
       const res = await fetch(`${API}/tabelas-preco`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${tokenToUse}` }
       });
+
+      if (res.status === 401) {
+        console.log('Token expirado, fazendo logout...');
+        handleLogout();
+        return;
+      }
+
       const data = await res.json();
       setTabelasPreco(Array.isArray(data) ? data : []);
     } catch {
@@ -116,7 +181,7 @@ export default function AdminPage() {
       const novosProgressos = { ...progressoIndexacao };
       const novosIndexando = { ...indexando };
       const novosStatus = { ...statusIndexacao };
-      
+
       // Na primeira vez, carrega o progresso de todos os eventos
       let eventosParaVerificar;
       if (!progressoCarregado) {
@@ -125,34 +190,48 @@ export default function AdminPage() {
         // Depois, só verifica eventos que estão indexando
         eventosParaVerificar = eventosMinio.filter(evento => indexando[evento]);
       }
-      
+
       // Se não há nenhum evento para verificar, sai
       if (eventosParaVerificar.length === 0) {
         return;
       }
-      
+
       for (const evento of eventosParaVerificar) {
         const res = await fetch(`${API}/eventos/${evento}/progresso-indexacao`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const progresso = await res.json();
-        
+
         novosProgressos[evento] = progresso;
         novosIndexando[evento] = progresso.ativo;
-        
+
         if (progresso.ativo) {
           novosStatus[evento] = progresso.fotoAtual;
         } else if (progresso.finalizadoEm) {
           novosStatus[evento] = progresso.fotoAtual;
           // Atualizar estatísticas quando indexação terminar
           await fetchEstatisticasIndexacao(evento);
+
+          // Limpar progresso após 10 segundos para dar tempo de ler a mensagem final
+          setTimeout(() => {
+            setProgressoIndexacao(prev => {
+              const updated = { ...prev };
+              delete updated[evento];
+              return updated;
+            });
+            setStatusIndexacao(prev => {
+              const updated = { ...prev };
+              delete updated[evento];
+              return updated;
+            });
+          }, 10000); // 10 segundos
         }
       }
-      
+
       setProgressoIndexacao(novosProgressos);
       setIndexando(novosIndexando);
       setStatusIndexacao(novosStatus);
-      
+
       // Marca como carregado após a primeira verificação
       if (!progressoCarregado) {
         setProgressoCarregado(true);
@@ -164,24 +243,33 @@ export default function AdminPage() {
 
   async function handleLogin(e) {
     e.preventDefault();
+    console.log('[DEBUG] handleLogin - Iniciando login...');
     try {
       const res = await fetch(`${API}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: user, password: pass })
       });
+      console.log('[DEBUG] handleLogin - Status da resposta:', res.status);
       const data = await res.json();
+      console.log('[DEBUG] handleLogin - Dados da resposta:', data);
+
       if (data.token) {
-        setToken(data.token);
+        console.log('[DEBUG] handleLogin - Token recebido, salvando...');
         localStorage.setItem('admin_token', data.token);
+        setToken(data.token);
         setLogged(true);
-        fetchEventos();
-        fetchEventosMinio();
-        fetchTabelasPreco();
-      } else {
-        alert(data.error || 'Usuário ou senha inválidos');
+
+        // Fazer chamadas usando o token recebido diretamente
+        console.log('[DEBUG] handleLogin - Fazendo chamadas pós-login...');
+        await Promise.all([
+          fetchEventos(data.token),
+          fetchEventosMinio(data.token), 
+          fetchTabelasPreco(data.token)
+        ]);
       }
-    } catch {
+    } catch (error) {
+      console.error('[DEBUG] handleLogin - Erro na requisição:', error);
       alert('Erro ao conectar ao servidor');
     }
   }
@@ -220,10 +308,12 @@ export default function AdminPage() {
     setLoading(true);
     const body = {
       ...novaTabela,
-      faixas: novaTabela.faixas.filter(f => f.min && f.valor)
+      faixas: novaTabela.faixas.filter(f => f.min && f.valor),
+      precoValeCoreografia: novaTabela.precoValeCoreografia ? parseFloat(novaTabela.precoValeCoreografia) : 0,
+      precoVideo: novaTabela.precoVideo ? parseFloat(novaTabela.precoVideo) : 0
     };
     try {
-      await fetch(`${API}/tabelas-preco`, {
+      const response = await fetch(`${API}/tabelas-preco`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -231,9 +321,15 @@ export default function AdminPage() {
         },
         body: JSON.stringify(body)
       });
-      setNovaTabela({ nome: '', descricao: '', faixas: [{ min: '', max: '', valor: '' }], isDefault: false });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      setNovaTabela({ nome: '', descricao: '', faixas: [{ min: '', max: '', valor: '' }], precoValeCoreografia: '', precoVideo: '', isDefault: false });
       fetchTabelasPreco();
-    } catch {
+    } catch (error) {
+      console.error('Erro ao cadastrar tabela de preço:', error);
       alert('Erro ao cadastrar tabela de preço');
     }
     setLoading(false);
@@ -295,7 +391,13 @@ export default function AdminPage() {
     setLogged(false);
     localStorage.removeItem('admin_token');
     setEventos([]);
+    setEventosMinio([]);
     setTabelasPreco([]);
+    setEstatisticasIndexacao({});
+    setIndexando({});
+    setProgressoIndexacao({});
+    setStatusIndexacao({});
+    setProgressoCarregado(false);
   }
 
   async function handleEditEvento(ev) {
@@ -303,8 +405,11 @@ export default function AdminPage() {
     setEditEvento({
       nome: ev.nome,
       data: ev.data ? ev.data.slice(0, 10) : '',
+      local: ev.local || '',
       valorFixo: ev.valorFixo || '',
       tabelaPrecoId: ev.tabelaPrecoId?._id || ev.tabelaPrecoId || '',
+      exibirBannerValeCoreografia: ev.exibirBannerValeCoreografia || false,
+      exibirBannerVideo: ev.exibirBannerVideo || false,
     });
   }
 
@@ -314,10 +419,13 @@ export default function AdminPage() {
     const body = {
       ...editEvento,
       valorFixo: editEvento.valorFixo || undefined,
-      tabelaPrecoId: editEvento.valorFixo ? undefined : editEvento.tabelaPrecoId
+      tabelaPrecoId: editEvento.valorFixo ? undefined : editEvento.tabelaPrecoId,
+      exibirBannerValeCoreografia: editEvento.exibirBannerValeCoreografia,
+      exibirBannerVideo: editEvento.exibirBannerVideo
     };
+    
     try {
-      await fetch(`${API}/eventos/${editEventoId}`, {
+      const response = await fetch(`${API}/eventos/${editEventoId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -325,11 +433,17 @@ export default function AdminPage() {
         },
         body: JSON.stringify(body)
       });
-      setEditEventoId(null);
-      setEditEvento({});
-      fetchEventos();
-    } catch {
-      alert('Erro ao editar evento');
+      
+      if (response.ok) {
+        setEditEventoId(null);
+        fetchEventos();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(`Erro ao editar evento: ${errorData.error || 'Erro desconhecido'}`);
+      }
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+      alert(`Erro ao editar evento: ${error.message}`);
     }
     setLoading(false);
   }
@@ -337,10 +451,12 @@ export default function AdminPage() {
   async function handleEditTabela(tp) {
     setEditTabelaId(tp._id);
     setEditTabela({
-      nome: tp.nome,
-      descricao: tp.descricao,
-      isDefault: tp.isDefault,
+      nome: tp.nome || '',
+      descricao: tp.descricao || '',
+      isDefault: tp.isDefault || false,
       faixas: tp.faixas ? tp.faixas.map(f => ({ ...f })) : [{ min: '', max: '', valor: '' }],
+      precoValeCoreografia: tp.precoValeCoreografia != null ? tp.precoValeCoreografia.toString() : '',
+      precoVideo: tp.precoVideo != null ? tp.precoVideo.toString() : '',
     });
   }
 
@@ -370,10 +486,12 @@ export default function AdminPage() {
     setLoading(true);
     const body = {
       ...editTabela,
-      faixas: editTabela.faixas.filter(f => f.min && f.valor)
+      faixas: editTabela.faixas.filter(f => f.min && f.valor),
+      precoValeCoreografia: editTabela.precoValeCoreografia ? parseFloat(editTabela.precoValeCoreografia) : 0,
+      precoVideo: editTabela.precoVideo ? parseFloat(editTabela.precoVideo) : 0
     };
     try {
-      await fetch(`${API}/tabelas-preco/${editTabelaId}`, {
+      const response = await fetch(`${API}/tabelas-preco/${editTabelaId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -381,10 +499,16 @@ export default function AdminPage() {
         },
         body: JSON.stringify(body)
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       setEditTabelaId(null);
       setEditTabela({});
       fetchTabelasPreco();
-    } catch {
+    } catch (error) {
+      console.error('Erro ao editar tabela:', error);
       alert('Erro ao editar tabela');
     }
     setLoading(false);
@@ -417,6 +541,7 @@ export default function AdminPage() {
 
   const fetchEstatisticasIndexacao = async (evento) => {
     try {
+      console.log(`[DEBUG] Buscando estatísticas para evento: ${evento}`);
       const resp = await fetch(`${API}/eventos/${evento}/estatisticas-indexacao`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -424,18 +549,151 @@ export default function AdminPage() {
       });
       if (resp.ok) {
         const data = await resp.json();
+        console.log(`[DEBUG] Estatísticas recebidas para ${evento}:`, data);
         setEstatisticasIndexacao(prev => ({ ...prev, [evento]: data }));
+      } else {
+        console.error(`[DEBUG] Erro ao buscar estatísticas para ${evento}:`, resp.status, resp.statusText);
       }
     } catch (err) {
-      console.error('Erro ao buscar estatísticas de indexação:', err);
+      console.error(`[DEBUG] Erro ao buscar estatísticas de indexação para ${evento}:`, err);
+    }
+  };
+
+  // Nova função para diagnóstico detalhado
+  const executarDiagnostico = async (evento) => {
+    try {
+      console.log(`[DIAGNOSTICO] Executando diagnóstico para evento: ${evento}`);
+      const resp = await fetch(`${API}/eventos/${evento}/diagnostico-indexacao`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        console.log(`[DIAGNOSTICO] Resultado detalhado para ${evento}:`, data);
+        
+        // Mostrar resultado em formato legível
+        const resultado = `
+=== DIAGNÓSTICO DE INDEXAÇÃO ===
+Evento: ${data.evento}
+Data: ${new Date(data.timestamp).toLocaleString()}
+
+CONTAGENS:
+- Total de registros: ${data.contagens.total}
+- Fotos indexadas: ${data.contagens.indexadas}
+- Fotos com erro: ${data.contagens.erros}
+- Fotos processando: ${data.contagens.processando}
+- Não classificados: ${data.contagens.naoClassificados}
+
+EXEMPLOS DE FOTOS INDEXADAS:
+${data.exemplos.indexadas.map(f => `- ${f.nomeArquivo} (${new Date(f.indexadaEm).toLocaleString()})`).join('\n')}
+
+EXEMPLOS DE FOTOS COM ERRO:
+${data.exemplos.erros.map(f => `- ${f.nomeArquivo} (${f.erroDetalhes || 'Sem detalhes'})`).join('\n')}
+
+DUPLICADOS ENCONTRADOS:
+${data.duplicados.length > 0 ? data.duplicados.map(d => `- ${d._id} (${d.count} ocorrências)`).join('\n') : 'Nenhum duplicado encontrado'}
+        `;
+        
+        alert(resultado);
+        
+        // Atualizar estatísticas após diagnóstico
+        await fetchEstatisticasIndexacao(evento);
+      } else {
+        console.error(`[DIAGNOSTICO] Erro na requisição para ${evento}:`, resp.status);
+        alert(`Erro ao executar diagnóstico: ${resp.status}`);
+      }
+    } catch (err) {
+      console.error(`[DIAGNOSTICO] Erro para evento ${evento}:`, err);
+      alert(`Erro ao executar diagnóstico: ${err.message}`);
     }
   };
 
   const fetchTodasEstatisticasIndexacao = async () => {
     if (!eventosMinio || eventosMinio.length === 0) return;
-    
+
     for (const evento of eventosMinio) {
       await fetchEstatisticasIndexacao(evento);
+    }
+  };
+
+  const invalidarCacheEvento = async (evento) => {
+    try {
+      const resp = await fetch(`${API}/eventos/${evento}/invalidar-cache`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (resp.ok) {
+        // Recarregar dados após invalidar cache
+        await fetchEventosMinio();
+        await fetchEstatisticasIndexacao(evento);
+        alert(`Cache invalidado para evento: ${evento}`);
+      } else {
+        alert('Erro ao invalidar cache');
+      }
+    } catch (err) {
+      console.error('Erro ao invalidar cache:', err);
+      alert('Erro ao invalidar cache');
+    }
+  };
+
+  // Função para formatar timestamp
+  const formatarTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const data = new Date(timestamp);
+    return data.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  // Função para calcular duração
+  const calcularDuracao = (inicio, fim) => {
+    if (!inicio || !fim) return '';
+    const duracaoMs = new Date(fim) - new Date(inicio);
+    const duracaoSegundos = Math.round(duracaoMs / 1000);
+
+    if (duracaoSegundos < 60) {
+      return `${duracaoSegundos}s`;
+    } else if (duracaoSegundos < 3600) {
+      const minutos = Math.floor(duracaoSegundos / 60);
+      const segundos = duracaoSegundos % 60;
+      return `${minutos}m ${segundos}s`;
+    } else {
+      const horas = Math.floor(duracaoSegundos / 3600);
+      const minutos = Math.floor((duracaoSegundos % 3600) / 60);
+      const segundos = duracaoSegundos % 60;
+      return `${horas}h ${minutos}m ${segundos}s`;
+    }
+  };
+
+  // Função para estimar tempo restante
+  const estimarTempoRestante = (progresso) => {
+    if (!progresso.iniciadoEm || !progresso.processadas || progresso.processadas === 0) {
+      return '';
+    }
+
+    const tempoDecorrido = (new Date() - new Date(progresso.iniciadoEm)) / 1000; // em segundos
+    const velocidade = progresso.processadas / tempoDecorrido; // fotos por segundo
+    const fotosRestantes = progresso.total - progresso.processadas;
+    const tempoRestanteSegundos = Math.round(fotosRestantes / velocidade);
+
+    if (tempoRestanteSegundos < 60) {
+      return `~${tempoRestanteSegundos}s restantes`;
+    } else if (tempoRestanteSegundos < 3600) {
+      const minutos = Math.floor(tempoRestanteSegundos / 60);
+      const segundos = tempoRestanteSegundos % 60;
+      return `~${minutos}m ${segundos}s restantes`;
+    } else {
+      const horas = Math.floor(tempoRestanteSegundos / 3600);
+      const minutos = Math.floor((tempoRestanteSegundos % 3600) / 60);
+      return `~${horas}h ${minutos}m restantes`;
     }
   };
 
@@ -445,15 +703,17 @@ export default function AdminPage() {
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const body = {
       nome: newEvent.nome,
       data: newEvent.data || undefined,
       valorFixo: newEvent.modoFixo ? newEvent.valorFixo : undefined,
       tabelaPrecoId: newEvent.modoFixo ? undefined : newEvent.tabelaPrecoId,
-      criarPasta: true // Sempre criar pasta para eventos criados no modal
+      criarPasta: true, // Sempre criar pasta para eventos criados no modal
+      exibirBannerValeCoreografia: newEvent.exibirBannerValeCoreografia,
+      exibirBannerVideo: newEvent.exibirBannerVideo
     };
-    
+
     try {
       await fetch(`${API}/eventos`, {
         method: 'POST',
@@ -463,12 +723,12 @@ export default function AdminPage() {
         },
         body: JSON.stringify(body)
       });
-      
-      setNewEvent({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false });
+
+      setNewEvent({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false, exibirBannerValeCoreografia: false, exibirBannerVideo: false });
       setShowCreateModal(false);
       fetchEventos();
       fetchEventosMinio(); // Atualiza lista do MinIO também
-      
+
     } catch {
       alert('Erro ao criar evento');
     }
@@ -576,18 +836,19 @@ export default function AdminPage() {
           {loading && <div>Carregando...</div>}
           <ul>
             {Array.isArray(eventos) && eventos.map((ev, idx) => (
-              <li 
-                key={ev._id || idx} 
-                style={{ 
-                  marginBottom: 12, 
-                  background: '#222', 
-                  padding: 12, 
+              <li
+                key={ev._id || idx}
+                style={{
+                  marginBottom: 12,
+                  background: '#222',
+                  padding: 12,
                   borderRadius: 8
                 }}
               >
                 {editEventoId === ev._id ? (
                   <form onSubmit={handleSaveEditEvento} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <input type="text" value={editEvento.nome} onChange={e => setEditEvento(ev2 => ({ ...ev2, nome: e.target.value }))} placeholder="Nome" style={{ padding: 6 }} required />
+                    <input type="text" value={editEvento.local || ''} onChange={e => setEditEvento(ev2 => ({ ...ev2, local: e.target.value }))} placeholder="Local" style={{ padding: 6 }} />
                     <input type="date" value={editEvento.data} onChange={e => setEditEvento(ev2 => ({ ...ev2, data: e.target.value }))} style={{ padding: 6 }} />
                     <label><input type="checkbox" checked={!!editEvento.valorFixo} onChange={e => setEditEvento(ev2 => ({ ...ev2, valorFixo: e.target.checked ? (ev.valorFixo || 1) : '' }))} /> Valor fixo</label>
                     {editEvento.valorFixo ? (
@@ -600,6 +861,30 @@ export default function AdminPage() {
                         ))}
                       </select>
                     )}
+                    
+                    {/* Controle dos Banners */}
+                    <div style={{ padding: 12, backgroundColor: '#444', borderRadius: 6, marginTop: 8 }}>
+                      <div style={{ marginBottom: 8, color: '#ffe001', fontWeight: 600 }}>Configuração dos Banners:</div>
+                      
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        <input
+                          type="checkbox"
+                          checked={editEvento.exibirBannerValeCoreografia || false}
+                          onChange={e => setEditEvento(ev2 => ({ ...ev2, exibirBannerValeCoreografia: e.target.checked }))}
+                        />
+                        <span style={{ fontSize: 14 }}>Exibir Banner "Vale Coreografia"</span>
+                      </label>
+                      
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <input
+                          type="checkbox"
+                          checked={editEvento.exibirBannerVideo || false}
+                          onChange={e => setEditEvento(ev2 => ({ ...ev2, exibirBannerVideo: e.target.checked }))}
+                        />
+                        <span style={{ fontSize: 14 }}>Exibir Banner "Video"</span>
+                      </label>
+                    </div>
+                    
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 6, padding: '6px 18px' }}>Salvar</button>
                       <button type="button" onClick={() => setEditEventoId(null)} style={{ background: '#333', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 18px' }}>Cancelar</button>
@@ -632,34 +917,66 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Estatísticas de Indexação */}
                     {estatisticasIndexacao[ev.nome] && (
-                      <div style={{ 
-                        marginTop: 12, 
-                        padding: 12, 
-                        backgroundColor: '#333', 
+                      <div style={{
+                        marginTop: 12,
+                        padding: 12,
+                        backgroundColor: '#333',
                         borderRadius: 6,
                         border: '1px solid #555'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                           <strong style={{ color: '#ffe001' }}>📊 Status da Indexação</strong>
-                          <button
-                            onClick={() => fetchEstatisticasIndexacao(ev.nome)}
-                            style={{
-                              background: 'transparent',
-                              border: '1px solid #666',
-                              color: '#fff',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                              fontSize: 12,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            🔄 Atualizar
-                          </button>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              onClick={() => fetchEstatisticasIndexacao(ev.nome)}
+                              style={{
+                                background: 'transparent',
+                                border: '1px solid #666',
+                                color: '#fff',
+                                borderRadius: 4,
+                                padding: '2px 8px',
+                                fontSize: 12,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              🔄 Atualizar
+                            </button>
+                            <button
+                              onClick={() => invalidarCacheEvento(ev.nome)}
+                              style={{
+                                background: 'transparent',
+                                border: '1px solid #ffc107',
+                                color: '#ffc107',
+                                borderRadius: 4,
+                                padding: '2px 8px',
+                                fontSize: 12,
+                                cursor: 'pointer'
+                              }}
+                              title="Invalidar cache para carregar novos arquivos do S3"
+                            >
+                              🧹 Limpar Cache
+                            </button>
+                            <button
+                              onClick={() => executarDiagnostico(ev.nome)}
+                              style={{
+                                background: 'transparent',
+                                border: '1px solid #007bff',
+                                color: '#007bff',
+                                borderRadius: 4,
+                                padding: '2px 8px',
+                                fontSize: 12,
+                                cursor: 'pointer'
+                              }}
+                              title="Executar diagnóstico detalhado"
+                            >
+                              🔍 Diagnóstico
+                            </button>
+                          </div>
                         </div>
-                        
+
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, fontSize: 14 }}>
                           <div>
                             <span style={{ color: '#aaa' }}>Total S3:</span>
@@ -678,22 +995,22 @@ export default function AdminPage() {
                             <div style={{ fontWeight: 'bold', color: '#ffc107' }}>{estatisticasIndexacao[ev.nome].fotosNaoIndexadas}</div>
                           </div>
                         </div>
-                        
+
                         <div style={{ marginTop: 8 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#aaa' }}>
                             <span>Progresso da Indexação</span>
                             <span>{estatisticasIndexacao[ev.nome].percentualIndexado}%</span>
                           </div>
-                          <div style={{ 
-                            height: 6, 
-                            backgroundColor: '#555', 
-                            borderRadius: 3, 
+                          <div style={{
+                            height: 6,
+                            backgroundColor: '#555',
+                            borderRadius: 3,
                             overflow: 'hidden',
                             marginTop: 4
                           }}>
-                            <div 
-                              style={{ 
-                                height: '100%', 
+                            <div
+                              style={{
+                                height: '100%',
                                 backgroundColor: estatisticasIndexacao[ev.nome].percentualIndexado === 100 ? '#28a745' : '#007bff',
                                 width: `${estatisticasIndexacao[ev.nome].percentualIndexado}%`,
                                 transition: 'width 0.3s ease'
@@ -701,7 +1018,7 @@ export default function AdminPage() {
                             ></div>
                           </div>
                         </div>
-                        
+
                         {estatisticasIndexacao[ev.nome].ultimaIndexacao && (
                           <div style={{ marginTop: 8, fontSize: 12, color: '#aaa' }}>
                             Última indexação: {new Date(estatisticasIndexacao[ev.nome].ultimaIndexacao).toLocaleString()}
@@ -727,12 +1044,70 @@ export default function AdminPage() {
                           <span>Progresso: {progressoIndexacao[ev.nome].processadas || 0} de {progressoIndexacao[ev.nome].total}</span>
                           <span>Indexadas: {progressoIndexacao[ev.nome].indexadas || 0}</span>
                           <span>Erros: {progressoIndexacao[ev.nome].erros || 0}</span>
+                          {progressoIndexacao[ev.nome].ativo && progressoIndexacao[ev.nome].iniciadoEm && progressoIndexacao[ev.nome].processadas > 0 && (
+                            <span style={{ color: '#28a745', fontWeight: 'bold' }}>
+                              🚀 {((progressoIndexacao[ev.nome].processadas / ((new Date() - new Date(progressoIndexacao[ev.nome].iniciadoEm)) / 1000))).toFixed(1)} fotos/s
+                            </span>
+                          )}
                         </div>
+
+                        {/* Timestamps de início e término */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: 12,
+                          color: '#aaa',
+                          marginTop: 8,
+                          marginBottom: 4
+                        }}>
+                          <div>
+                            {progressoIndexacao[ev.nome].iniciadoEm && (
+                              <span>
+                                🕐 Início: {formatarTimestamp(progressoIndexacao[ev.nome].iniciadoEm)}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            {progressoIndexacao[ev.nome].finalizadoEm ? (
+                              <span style={{ color: '#28a745' }}>
+                                ✅ Término: {formatarTimestamp(progressoIndexacao[ev.nome].finalizadoEm)}
+                              </span>
+                            ) : progressoIndexacao[ev.nome].ativo && (
+                              <span style={{ color: '#ffc107' }}>
+                                ⏳ Em andamento...
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Duração e Tempo Restante */}
+                        {progressoIndexacao[ev.nome].iniciadoEm && (
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            fontSize: 12,
+                            marginBottom: 8,
+                            fontWeight: 'bold'
+                          }}>
+                            <div style={{ color: '#007bff' }}>
+                              ⏱️ Duração: {progressoIndexacao[ev.nome].finalizadoEm
+                                ? calcularDuracao(progressoIndexacao[ev.nome].iniciadoEm, progressoIndexacao[ev.nome].finalizadoEm)
+                                : calcularDuracao(progressoIndexacao[ev.nome].iniciadoEm, new Date())
+                              }
+                            </div>
+                            {!progressoIndexacao[ev.nome].finalizadoEm && progressoIndexacao[ev.nome].ativo && (
+                              <div style={{ color: '#ffc107' }}>
+                                ⏳ {estimarTempoRestante(progressoIndexacao[ev.nome])}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <div className="admin-progresso-barra">
-                          <div 
+                          <div
                             className="admin-progresso-preenchimento"
-                            style={{ 
-                              width: `${((progressoIndexacao[ev.nome].processadas || 0) / progressoIndexacao[ev.nome].total) * 100}%` 
+                            style={{
+                              width: `${((progressoIndexacao[ev.nome].processadas || 0) / progressoIndexacao[ev.nome].total) * 100}%`
                             }}
                           ></div>
                         </div>
@@ -774,6 +1149,35 @@ export default function AdminPage() {
               ))}
               <button type="button" onClick={addFaixa} style={{ background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, marginTop: 4 }}>Adicionar faixa</button>
             </div>
+            <div style={{ marginBottom: 12 }}>
+              <strong>Preços dos Banners:</strong>
+              <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label htmlFor="precoVale" style={{ fontSize: 14, fontWeight: 600 }}>Vale Coreografia (R$):</label>
+                  <input 
+                    id="precoVale"
+                    type="number" 
+                    placeholder="0.00" 
+                    step="0.01"
+                    value={novaTabela.precoValeCoreografia} 
+                    onChange={e => setNovaTabela(tp => ({ ...tp, precoValeCoreografia: e.target.value }))} 
+                    style={{ width: 150, padding: 8 }} 
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label htmlFor="precoVideo" style={{ fontSize: 14, fontWeight: 600 }}>Vídeo (R$):</label>
+                  <input 
+                    id="precoVideo"
+                    type="number" 
+                    placeholder="0.00" 
+                    step="0.01"
+                    value={novaTabela.precoVideo} 
+                    onChange={e => setNovaTabela(tp => ({ ...tp, precoVideo: e.target.value }))} 
+                    style={{ width: 150, padding: 8 }} 
+                  />
+                </div>
+              </div>
+            </div>
             <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 8, padding: '10px 24px', marginTop: 8 }} disabled={loading}>{loading ? 'Salvando...' : 'Cadastrar tabela'}</button>
           </form>
 
@@ -799,6 +1203,33 @@ export default function AdminPage() {
                       ))}
                       <button type="button" onClick={addEditFaixa} style={{ background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, marginTop: 4 }}>Adicionar faixa</button>
                     </div>
+                    <div style={{ marginBottom: 12 }}>
+                      <strong>Preços dos Banners:</strong>
+                      <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <label style={{ fontSize: 14, fontWeight: 600 }}>Vale Coreografia (R$):</label>
+                          <input 
+                            type="number" 
+                            placeholder="0.00" 
+                            step="0.01"
+                            value={editTabela.precoValeCoreografia ?? ''} 
+                            onChange={e => setEditTabela(tb => ({ ...tb, precoValeCoreografia: e.target.value }))} 
+                            style={{ width: 150, padding: 6 }} 
+                          />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <label style={{ fontSize: 14, fontWeight: 600 }}>Vídeo (R$):</label>
+                          <input 
+                            type="number" 
+                            placeholder="0.00" 
+                            step="0.01"
+                            value={editTabela.precoVideo ?? ''} 
+                            onChange={e => setEditTabela(tb => ({ ...tb, precoVideo: e.target.value }))} 
+                            style={{ width: 150, padding: 6 }} 
+                          />
+                        </div>
+                      </div>
+                    </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 6, padding: '6px 18px' }}>Salvar</button>
                       <button type="button" onClick={() => setEditTabelaId(null)} style={{ background: '#333', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 18px' }}>Cancelar</button>
@@ -815,8 +1246,8 @@ export default function AdminPage() {
                       <ul>
                         {tp.faixas && tp.faixas.map((faixa, i) => (
                           <li key={i}>
-                            {faixa.max ? 
-                              `De ${faixa.min} até ${faixa.max} fotos: ` : 
+                            {faixa.max ?
+                              `De ${faixa.min} até ${faixa.max} fotos: ` :
                               `Acima de ${faixa.min} fotos: `
                             }
                             <b>R${faixa.valor}</b>
@@ -859,7 +1290,7 @@ export default function AdminPage() {
             color: '#fff'
           }}>
             <h3 style={{ marginBottom: 20 }}>Criar Novo Evento</h3>
-            
+
             <form onSubmit={handleCreateEvent}>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', marginBottom: 8 }}>Nome do Evento:</label>
@@ -923,12 +1354,39 @@ export default function AdminPage() {
                 </div>
               )}
 
+              {/* Controle dos Banners */}
+              <div style={{ marginBottom: 16, padding: 16, backgroundColor: '#333', borderRadius: 8 }}>
+                <h4 style={{ margin: '0 0 12px 0', color: '#ffe001' }}>Configuração dos Banners</h4>
+                
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={newEvent.exibirBannerValeCoreografia}
+                      onChange={e => setNewEvent(ev => ({ ...ev, exibirBannerValeCoreografia: e.target.checked }))}
+                    />
+                    <span>Exibir Banner "Vale Coreografia"</span>
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: 0 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={newEvent.exibirBannerVideo}
+                      onChange={e => setNewEvent(ev => ({ ...ev, exibirBannerVideo: e.target.checked }))}
+                    />
+                    <span>Exibir Banner "Video"</span>
+                  </label>
+                </div>
+              </div>
+
               <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
                 <button
                   type="button"
                   onClick={() => {
                     setShowCreateModal(false);
-                    setNewEvent({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false });
+                    setNewEvent({ nome: '', data: '', tabelaPrecoId: '', valorFixo: '', modoFixo: false, exibirBannerValeCoreografia: false, exibirBannerVideo: false });
                   }}
                   style={{
                     background: '#666',

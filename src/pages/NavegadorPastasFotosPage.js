@@ -5,6 +5,7 @@ import { NavigationContext } from '../context/NavigationContext';
 import CartBtn from '../components/CartBtn';
 import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
+import ProductBanners from '../components/ProductBanners';
 import VirtualizedPhotoGrid from '../components/VirtualizedPhotoGrid';
 import LeftFill from '../assets/icons/left_fill.svg';
 import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
@@ -26,15 +27,30 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, addToCart, removeFromCart } = useCart();
-  const { fotosEncontradasIA, filtroIAAtivo } = useContext(NavigationContext);
+  const { fotosEncontradasIA, filtroIAAtivo, isViewingPhotos, setViewingPhotos } = useContext(NavigationContext);
   const [subpastas, setSubpastas] = useState([]);
   const [fotos, setFotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [evento, setEvento] = useState(null);
+  const [eventoData, setEventoData] = useState(null); // Dados completos do evento incluindo configurações dos banners
   const [coreografias, setCoreografias] = useState([]);
-  const [isInCoreografia, setIsInCoreografia] = useState(false);
-  const [pastaSelecionada, setPastaSelecionada] = useState(''); // NOVO
+
+  // Função personalizada para adicionar banners ao carrinho com evento
+  const addBannerToCart = (banner) => {
+    // Extrair evento das partes do caminho
+    const partes = caminho ? caminho.split('/').filter(Boolean) : [];
+    const eventoNome = partes[0];
+    const dia = partes.length >= 3 ? partes[1] : null;
+    
+    // Adicionar o evento ao banner antes de colocar no carrinho
+    const bannerComEvento = {
+      ...banner,
+      evento: eventoNome || 'evento-desconhecido', // Adicionar o evento atual
+      dia: dia || null // Adicionar o dia se existir
+    };
+    addToCart(bannerComEvento);
+  };
 
   // Extrai o caminho da URL após /eventos/pasta/
   const caminho = decodeURIComponent(location.pathname.replace(/^\/eventos\/pasta\//, ''));
@@ -43,9 +59,30 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   const ultimaParte = partes[partes.length - 1] || '';
   const estaNaCoreografia = isCoreografiaFolder(ultimaParte);
 
+  // Buscar dados do evento (incluindo configurações dos banners)
+  useEffect(() => {
+    if (eventoNome) {
+      console.log(`[NavegadorPastasFotosPage] Buscando dados do evento: ${eventoNome}`);
+      
+      api.get(API_ENDPOINTS.PUBLIC_EVENTO_BY_NAME(eventoNome))
+        .then(response => {
+          console.log(`[NavegadorPastasFotosPage] Dados do evento recebidos:`, response.data);
+          setEventoData(response.data);
+        })
+        .catch(error => {
+          console.error(`[NavegadorPastasFotosPage] Erro ao buscar evento:`, error);
+          // Se o evento não for encontrado, usar configuração padrão
+          setEventoData({
+            nome: eventoNome,
+            exibirBannerValeCoreografia: false,
+            exibirBannerVideo: false
+          });
+        });
+    }
+  }, [eventoNome]);
+
   useEffect(() => {
     setLoading(true);
-    setIsInCoreografia(estaNaCoreografia);
     
     if (estaNaCoreografia) {
       // Se estiver em uma coreografia, buscar fotos via API de pastas usando caminho completo
@@ -230,6 +267,12 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   // Pré-carregar próximas imagens
   useImagePreloader(photoUrls, 10);
 
+  // Definir quando está visualizando fotos
+  useEffect(() => {
+    console.log('[NavegadorPastasFotosPage] Definindo isViewingPhotos:', fotos.length > 0, 'fotos.length:', fotos.length);
+    setViewingPhotos(fotos.length > 0);
+  }, [fotos.length, setViewingPhotos]);
+
   if (loading) return <div>Carregando pastas/fotos...</div>;
   if (error) return <div>{error}</div>;
 
@@ -325,27 +368,43 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           </div>
         </div>
       </CoreografiaTop>
+
+      {/* Banners de Produtos com Desconto - apenas quando estiver dentro de uma coreografia */}
+      {(() => {
+        const isInPhotosPage = estaNaCoreografia && fotos.length > 0;
+        console.log('[NavegadorPastasFotosPage] Verificando isViewingPhotos:', isViewingPhotos, 'estaNaCoreografia:', estaNaCoreografia, 'fotos.length:', fotos.length, 'isInPhotosPage:', isInPhotosPage);
+        return isViewingPhotos && isInPhotosPage && (
+          <ProductBanners
+          quantidadeFotos={cart.length}
+          exibirBannerValeCoreografia={eventoData?.exibirBannerValeCoreografia || false}
+          exibirBannerVideo={eventoData?.exibirBannerVideo || false}
+          precoValeCoreografia={eventoData?.tabelaPrecoId?.precoValeCoreografia || 0}
+          precoVideo={eventoData?.tabelaPrecoId?.precoVideo || 0}
+          onAddToCart={addBannerToCart}
+          />
+        );
+      })()}
+
       {!filtroIAAtivo && (
-        <div className="evento-info-bar" style={{ margin: '0 16px', padding: '8px 16px' }}>
+        <div className="evento-info-bar" style={{ margin: "0 16px", padding: "8px 16px" }}>
           {evento && evento.data && (
             <span className="evento-info-item">
-              <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
-              {evento.data ? new Date(evento.data).toLocaleDateString('pt-BR') : ''}
+              <img src={CalendarIcon} alt="Data" style={{width:16,marginRight:6,verticalAlign:"middle"}} />
+              {evento.data ? new Date(evento.data).toLocaleDateString("pt-BR") : ""}
             </span>
           )}
           {evento && evento.local && (
             <span className="evento-info-item">
-              <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+              <img src={LocationIcon} alt="Local" style={{width:16,marginRight:6,verticalAlign:"middle"}} />
               {evento.local}
             </span>
           )}
           <span className="evento-info-item">
-            <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:'middle'}} />
+            <img src={CameraIcon} alt="Fotos" style={{width:16,marginRight:6,verticalAlign:"middle"}} />
             {totalFotos} fotos
           </span>
         </div>
       )}
-      {/* Botões de navegação de dias/pastas */}
       {!filtroIAAtivo && renderBotoesDias && (
         <div className="dias-nav-bar">
           {subpastas.map((pasta, idx) => {

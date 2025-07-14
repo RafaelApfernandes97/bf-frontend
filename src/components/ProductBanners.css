@@ -1,0 +1,165 @@
+.product-banners-container {
+  display: flex;
+  gap: 16px;
+  padding: 16px 12px;
+  background: #000;
+  position: sticky;
+  top: 72px; /* Altura do header */
+  z-index: 100;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #222;
+}
+
+.product-banner {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(255, 224, 1, 0.2);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Layout quando apenas um banner está habilitado */
+.product-banners-container.banner-unico {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.product-banners-container.banner-unico .product-banner {
+  flex: 0 0 auto;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Layout quando ambos banners estão habilitados - FORÇAR lado a lado */
+.product-banners-container.ambos-banners {
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+.product-banners-container.ambos-banners .product-banner {
+  flex: 1 1 50% !important;
+  min-width: 250px !important;
+  max-width: 580px !important;
+  width: 50% !important;
+  display: block !important;
+}
+
+.banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.product-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 224, 1, 0.3);
+}
+
+.product-banner:hover .banner-image {
+  transform: scale(1.02);
+}
+
+/* Responsivo para tablets */
+@media (max-width: 768px) {
+  .product-banners-container {
+    padding: 12px 8px;
+    gap: 12px;
+  }
+
+  .product-banner {
+    border-radius: 12px;
+  }
+
+  .product-banners-container.banner-unico .product-banner {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .product-banners-container.ambos-banners {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px;
+  }
+
+  .product-banners-container.ambos-banners .product-banner {
+    flex: 1 1 50% !important;
+    min-width: 180px !important;
+    width: 50% !important;
+  }
+}
+
+/* Responsivo para celulares - banners lado a lado com tamanho reduzido */
+@media (max-width: 480px) {
+  .product-banners-container {
+    padding: 8px 4px;
+    gap: 6px;
+  }
+
+  .product-banner {
+    border-radius: 8px;
+  }
+
+  .product-banners-container.banner-unico .product-banner {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Manter banners lado a lado no mobile, mas com tamanho bem reduzido */
+  .product-banners-container.ambos-banners {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .product-banners-container.ambos-banners .product-banner {
+    width: calc(50% - 2px) !important;
+    min-width: 140px !important;
+    max-width: 180px !important;
+    flex: 1 1 50% !important;
+  }
+
+  /* Garantir que as imagens se ajustem ao tamanho reduzido */
+  .product-banners-container.ambos-banners .banner-image {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+  }
+}
+
+/* Animação suave de entrada */
+@keyframes slideInBanners {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-banners-container {
+  animation: slideInBanners 0.3s ease-out;
+}
+
+.product-banner:hover {
+  transform: translateY(-3px);
+}
+
+.product-banner-vale:hover {
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.4);
+}
+
+.product-banner-video:hover {
+  box-shadow: 0 8px 24px rgba(255, 69, 0, 0.4);
+} 

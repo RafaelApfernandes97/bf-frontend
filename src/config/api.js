@@ -1,9 +1,38 @@
 import axios from 'axios';
 
-// Configuração da API - sempre usa o backend de produção
-// Em produção, prioriza a variável de ambiente REACT_APP_BACKEND_URL (definida em tempo de build)
-// Se não existir, usa o backend padrão informado: https://backend.rfsolutionbr.com.br
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://backend.rfsolutionbr.com.br';
+// Detectar se estamos em modo de desenvolvimento
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Configuração da API - flexível para desenvolvimento e produção
+// Em desenvolvimento: verifica se há backend local rodando, senão usa produção
+// Em produção: sempre usa o backend de produção
+let BACKEND_URL;
+
+if (isDevelopment) {
+  // Em desenvolvimento, primeiro tenta detectar se há um backend local
+  // Se REACT_APP_USE_LOCAL_BACKEND=true, força uso do backend local
+  // Se REACT_APP_BACKEND_URL está definida, usa ela
+  // Senão, usa o backend de produção como fallback
+  
+  const useLocalBackend = process.env.REACT_APP_USE_LOCAL_BACKEND === 'true';
+  const customBackendUrl = process.env.REACT_APP_BACKEND_URL;
+  
+  if (useLocalBackend) {
+    BACKEND_URL = 'http://localhost:3001';
+    console.log('🔧 [API CONFIG] Modo desenvolvimento - usando backend LOCAL:', BACKEND_URL);
+  } else if (customBackendUrl) {
+    BACKEND_URL = customBackendUrl;
+    console.log('🔧 [API CONFIG] Modo desenvolvimento - usando backend CUSTOMIZADO:', BACKEND_URL);
+  } else {
+    BACKEND_URL = 'https://backend.rfsolutionbr.com.br';
+    console.log('🔧 [API CONFIG] Modo desenvolvimento - usando backend de PRODUÇÃO:', BACKEND_URL);
+    console.log('💡 [API CONFIG] Para usar backend local, defina REACT_APP_USE_LOCAL_BACKEND=true no arquivo .env');
+  }
+} else {
+  // Em produção, sempre usa o backend de produção
+  BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://backend.rfsolutionbr.com.br';
+  console.log('🚀 [API CONFIG] Modo produção - usando backend:', BACKEND_URL);
+}
 
 // Criar instância do axios
 const api = axios.create({
@@ -12,6 +41,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Adicionar withCredentials para CORS
+  withCredentials: true,
 });
 
 // Interceptador para adicionar token automaticamente
@@ -32,6 +63,23 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptador para tratar erros de CORS e conexão
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (isDevelopment) {
+      if (error.code === 'ERR_NETWORK') {
+        console.error('❌ [API] Erro de rede - Backend pode estar offline ou bloqueado por CORS');
+        console.error('💡 [API] Verifique se o backend está rodando e configurado corretamente');
+        console.error('🔧 [API] Backend atual:', BACKEND_URL);
+      }
+    }
     return Promise.reject(error);
   }
 );
@@ -57,6 +105,7 @@ export const API_ENDPOINTS = {
   
   // Rotas Públicas
   PUBLIC_EVENTOS: `${BACKEND_URL}/api/public/eventos`,
+  PUBLIC_EVENTO_BY_NAME: (nome) => `${BACKEND_URL}/api/public/evento/${encodeURIComponent(nome)}`,
   PUBLIC_TABELAS_PRECO: `${BACKEND_URL}/api/public/tabelas-preco`,
 
   // Fotos
