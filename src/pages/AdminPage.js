@@ -194,7 +194,7 @@ export default function AdminPage() {
   }
 
   async function removerCapaDia(eventoId, diaNome) {
-    if (!confirm(`Tem certeza que deseja remover a capa do dia "${diaNome}"?`)) return;
+    if (!window.confirm(`Tem certeza que deseja remover a capa do dia "${diaNome}"?`)) return;
 
     setRemovendoCapa(prev => ({ ...prev, [diaNome]: true }));
     
