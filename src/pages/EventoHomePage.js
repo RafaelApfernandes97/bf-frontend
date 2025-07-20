@@ -131,7 +131,7 @@ export default function EventoHomePage() {
                 <div className="dia-card-content">
                   <h3 className="dia-nome">{dia}</h3>
                   <p className="dia-descricao">
-                    Clique para ver as fotos deste dia
+                    Clique para ver as fotos
                   </p>
                 </div>
                 
