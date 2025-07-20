@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import CoreografiaTop from '../components/CoreografiaTop';
+import PhotoModal from '../components/PhotoModal';
 import './FotosPage.css';
 import '../CoreografiasBody.css';
 import { useCart } from '../components/CartContext';
@@ -28,6 +29,10 @@ function FotosPage({ setShowCart }) {
   const [evento, setEvento] = useState(null);
   const [tabelaPreco, setTabelaPreco] = useState(null);
   const [tabelas, setTabelas] = useState([]);
+  
+  // Estados para o modal de foto (apenas desktop)
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   // Buscar todas as coreografias do evento para navegação
   useEffect(() => {
@@ -127,24 +132,44 @@ function FotosPage({ setShowCart }) {
   }
 
   function toggleFoto(foto) {
-    if (isSelected(foto)) {
-      removeFromCart(foto);
+    // Verificar se estamos no desktop (largura >= 769px)
+    const isDesktop = window.innerWidth >= 769;
+    
+    if (isDesktop) {
+      // No desktop, abrir modal de visualização
+      const photoIndex = fotosParaMostrar.findIndex(f => f.nome === foto.nome);
+      setCurrentPhotoIndex(photoIndex);
+      setPhotoModalOpen(true);
     } else {
-      // Verificar se o evento é válido antes de adicionar ao carrinho
-      if (!eventoId || eventoId === 'undefined') {
-        console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { eventoId, coreografiaId, diaId });
-        alert('Erro: não foi possível identificar o evento desta foto.');
-        return;
+      // No mobile, manter comportamento atual (adicionar/remover do carrinho)
+      if (isSelected(foto)) {
+        removeFromCart(foto);
+      } else {
+        // Verificar se o evento é válido antes de adicionar ao carrinho
+        if (!eventoId || eventoId === 'undefined') {
+          console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { eventoId, coreografiaId, diaId });
+          alert('Erro: não foi possível identificar o evento desta foto.');
+          return;
+        }
+        
+        addToCart({
+          ...foto,
+          evento: eventoId,
+          coreografia: coreografiaId,
+          dia: diaId
+        });
       }
-      
-      addToCart({
-        ...foto,
-        evento: eventoId,
-        coreografia: coreografiaId,
-        dia: diaId
-      });
     }
   }
+
+  // Funções para o modal de foto (desktop)
+  const handlePhotoModalClose = () => {
+    setPhotoModalOpen(false);
+  };
+
+  const handlePhotoModalNavigate = (newIndex) => {
+    setCurrentPhotoIndex(newIndex);
+  };
 
   function calcularValorUnitario(qtd) {
     if (evento && evento.valorFixo) return Number(evento.valorFixo);
@@ -166,6 +191,30 @@ function FotosPage({ setShowCart }) {
 
   // Determinar quais fotos mostrar (normais ou filtradas por IA)
   const fotosParaMostrar = filtroIAAtivo ? fotosEncontradasIA : fotos;
+
+  // Função para adicionar todas as fotos ao carrinho
+  function adicionarTodasFotos() {
+    const fotosParaAdicionar = fotos.filter(foto => !isSelected(foto));
+    
+    fotosParaAdicionar.forEach(foto => {
+      if (!eventoId || eventoId === 'undefined') {
+        console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido');
+        return;
+      }
+      
+      addToCart({
+        ...foto,
+        evento: eventoId,
+        coreografia: coreografiaId,
+        dia: diaId
+      });
+    });
+    
+    if (fotosParaAdicionar.length > 0) {
+      // Opcional: mostrar mensagem de sucesso ou abrir carrinho
+      setShowCart(true);
+    }
+  }
 
   if (loading) return <div>Carregando fotos...</div>;
   if (error) return <div>{error}</div>;
@@ -280,6 +329,61 @@ function FotosPage({ setShowCart }) {
           </span>
         </div>
       )}
+      
+      {/* Banners Horizontais */}
+      {!filtroIAAtivo && (
+        <div className="banners-container">
+          {/* Banner 1 */}
+          <div className="banner-horizontal banner-1">
+                         <div className="banner-content">
+               <div className="banner-icon">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <path d="M12 2L3.09 8.26L12 14.52L20.91 8.26L12 2Z" fill="#1a1a1a"/>
+                   <path d="M12 22L3.09 15.74L12 9.48L20.91 15.74L12 22Z" fill="#1a1a1a"/>
+                 </svg>
+               </div>
+              <div className="banner-text">
+                <h3>GANHE ATÉ 15% DE DESCONTO</h3>
+                <p>Compre mais e economize</p>
+              </div>
+            </div>
+            <div className="banner-pricing">
+              <div className="pricing-item">
+                <span className="discount">GANHE</span>
+                <span className="percentage">5%</span>
+                <span className="condition">na compra de 5 fotos</span>
+              </div>
+              <div className="pricing-item">
+                <span className="discount">GANHE</span>
+                <span className="percentage">10%</span>
+                <span className="condition">na compra de 10 fotos</span>
+              </div>
+              <div className="pricing-item pricing-highlight">
+                <span className="discount">GANHE</span>
+                <span className="percentage">15%</span>
+                <span className="condition">na compra de 15 fotos</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Banner 2 */}
+          <div className="banner-horizontal banner-2">
+            <div className="banner-content">
+              <div className="banner-text">
+                <h3>PROMOÇÃO ESPECIAL</h3>
+                <p>Adquira agora mesmo todas as fotos da sua coreografia por um preço especial</p>
+              </div>
+              <div className="banner-cta">
+                               <button className="banner-btn" onClick={adicionarTodasFotos}>
+                 <span className="cart-icon">🛒</span>
+                 Adicionar todas as fotos
+               </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="fotos-grid">
         {fotosParaMostrar.map(foto => (
           <div
@@ -303,6 +407,19 @@ function FotosPage({ setShowCart }) {
           <p>Tente com uma selfie mais clara ou remova o filtro para ver todas as fotos.</p>
         </div>
       )}
+
+      {/* Modal de visualização de foto para desktop */}
+      <PhotoModal
+        isOpen={photoModalOpen}
+        onClose={handlePhotoModalClose}
+        photos={fotosParaMostrar}
+        currentPhotoIndex={currentPhotoIndex}
+        onNavigate={handlePhotoModalNavigate}
+        tabelaPreco={tabelaPreco}
+        evento={eventoId}
+        coreografia={coreografiaId}
+        dia={diaId}
+      />
     </>
   );
 }

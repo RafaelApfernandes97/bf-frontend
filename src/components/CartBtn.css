@@ -1,13 +1,12 @@
 .cart-btn {
     align-items: center;
-    border: 1px solid;
-    border-color: var(--cole-o-1-cores-yellow01);
+    border: 1px solid var(--cole-o-1-cores-yellow01);
     border-radius: 10px;
     display: flex;
     gap: 8px;
     height: 40px;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     width: 44px;
     background: transparent;
@@ -21,23 +20,36 @@
 }
 
 .cart-btn-counter {
-    position: fixed;
-    top: 0;
-    right: 0;
+    position: absolute;
+    top: -8px;
+    right: -8px;
     background: #ffe001;
-    color: #131313;
+    color: rgb(0, 0, 0);
     border-radius: 50%;
-    min-width: 22px;
-    height: 22px;
+    min-width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 13px;
-    border: none;
-    box-shadow: none;
-    z-index: 9999;
-    padding: 0;
+    font-size: 12px;
+    border: 2px solid var(--cole-o-1-cores-yellow01); /* borda amarela */
+    z-index: 10;
+    padding: 0 6px;
     pointer-events: none;
     line-height: 1;
+}
+
+/* Estilos específicos para desktop */
+@media (min-width: 769px) {
+    .cart-btn-counter {
+        top: -10px;
+        right: -10px;
+        min-width: 24px;
+        height: 24px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 3px solid var(--cole-o-1-cores-yellow01);
+        padding: 0 8px;
+    }
 } 

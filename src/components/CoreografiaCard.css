@@ -198,14 +198,49 @@
         gap: 16px !important;
         width: 100% !important;
     }
+    
+    /* Esconder título superior no mobile para evitar duplicação */
     .coreografia .h {
-        font-size: 16px !important;
-        margin-top: -1.00px !important;
+        display: none !important;
     }
+    
     .coreografia .imagem-instance {
         width: 100% !important;
         max-width: 100vw !important;
         height: 164px !important;
+    }
+    
+    /* Estilos do footer para mobile */
+    .coreografia .info-footer {
+        margin-top: auto !important;
+        padding-top: 8px !important;
+        width: 100% !important;
+    }
+    
+    .coreografia .info-footer .coreografia-name {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: #ffffff !important; /* Fonte branca */
+        margin-bottom: 4px !important;
+        line-height: 1.2 !important;
+    }
+    
+    .coreografia .info-footer .photo-count {
+        font-size: 12px !important;
+        color: #ffffff !important; /* Fonte branca */
+        font-weight: 400 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    
+    /* Ícone da câmera no mobile */
+    .coreografia .info-footer .photo-count .camera-instance {
+        color: #ffffff !important;
+    }
+    
+    .coreografia .info-footer .photo-count .camera-instance svg {
+        color: #ffffff !important;
     }
 }
 
@@ -217,13 +252,20 @@
         gap: 8px !important;
     }
     .coreografia .h {
-        font-size: 15px !important;
+        display: none !important; /* Mantém escondido */
     }
     .coreografia .imagem-instance {
         height: 140px !important;
     }
-    .coreografia .text-wrapper {
+    
+    /* Ajustes no footer para telas menores */
+    .coreografia .info-footer .coreografia-name {
+        font-size: 15px !important;
+        color: #ffffff !important;
+    }
+    .coreografia .info-footer .photo-count {
         font-size: 11px !important;
+        color: #ffffff !important;
     }
 }
 
@@ -235,12 +277,139 @@
         gap: 6px !important;
     }
     .coreografia .h {
-        font-size: 14px !important;
+        display: none !important; /* Mantém escondido */
     }
     .coreografia .imagem-instance {
         height: 120px !important;
     }
-    .coreografia .text-wrapper {
+    
+    /* Ajustes no footer para telas muito pequenas */
+    .coreografia .info-footer .coreografia-name {
+        font-size: 14px !important;
+        color: #ffffff !important;
+    }
+    .coreografia .info-footer .photo-count {
         font-size: 10px !important;
+        color: #ffffff !important;
+    }
+}
+
+/* Estilos para Desktop - Melhorias no layout */
+@media (min-width: 1024px) {
+    .body {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 20px !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    .coreografia {
+        min-height: 280px !important;
+        height: auto !important;
+        padding: 20px !important;
+        gap: 16px !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        border-radius: 16px !important;
+    }
+    
+    .coreografia:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .coreografia .h {
+        font-size: 20px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.3 !important;
+    }
+    
+    .coreografia .imagem-instance {
+        height: 200px !important;
+        border-radius: 12px !important;
+        object-fit: cover !important;
+    }
+    
+    .coreografia .text-wrapper {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        margin-top: 8px !important;
+        color: #888 !important;
+    }
+    
+    /* Reorganizar estrutura do card */
+    .coreografia .frame {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+    }
+    
+    .coreografia .h {
+        display: none !important; /* Esconder título superior */
+    }
+    
+    .coreografia .imagem-instance {
+        flex: 1 !important;
+        margin-bottom: 12px !important;
+    }
+    
+    /* Informações na parte inferior do card */
+    .coreografia .info-footer {
+        margin-top: auto !important;
+        padding: 12px 0 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .coreografia .info-footer .coreografia-name {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: #fff !important;
+        margin-bottom: 6px !important;
+        line-height: 1.2 !important;
+    }
+    
+    .coreografia .info-footer .photo-count {
+        font-size: 13px !important;
+        color: #aaa !important;
+        font-weight: 400 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+    .body {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 16px !important;
+        padding: 0 20px !important;
+    }
+    
+    .coreografia {
+        min-height: 240px !important;
+        padding: 16px !important;
+        gap: 12px !important;
+        border-radius: 14px !important;
+    }
+    
+    .coreografia:hover {
+        transform: translateY(-4px) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .coreografia .h {
+        font-size: 18px !important;
+    }
+    
+    .coreografia .imagem-instance {
+        height: 160px !important;
+        border-radius: 10px !important;
+    }
+    
+    .coreografia .text-wrapper {
+        font-size: 14px !important;
+        font-weight: 600 !important;
     }
 } 

@@ -597,6 +597,13 @@
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Garantir 700px no desktop */
+@media (min-width: 769px) {
+  .modal-content {
+    max-width: 700px;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -753,6 +760,28 @@
 
 .foto-item:last-child {
   border-bottom: none;
+}
+
+/* Produtos */
+.produtos-lista {
+  background: #333;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.produto-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #444;
+  color: #ccc;
+}
+
+.produto-item:last-child {
+  border-bottom: none;
+}
+
+.produto-valor {
+  color: #9c27b0;
+  font-weight: 600;
 }
 
 /* Itens Adicionais */
@@ -970,5 +999,857 @@
   .nav-btn {
     font-size: 14px;
     padding: 10px 12px;
+  }
+}
+
+/* Estilos para as novas funcionalidades */
+
+/* Header com botão */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-header h4 {
+  margin: 0;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #555;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: #555;
+  border-color: #777;
+}
+
+/* Nota Fiscal */
+.nota-fiscal-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+.nota-fiscal-grid .form-group {
+  margin-bottom: 16px;
+}
+
+.nota-fiscal-grid .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.nota-fiscal-layout {
+  background: #2a2a2a;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.nota-fiscal-linha2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: end;
+  margin-top: 16px;
+}
+
+.nota-fiscal-linha2 .form-group {
+  margin-bottom: 0;
+}
+
+.nota-fiscal-linha2 .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.mes-campo, .botao-campo, .status-campo {
+  display: flex;
+  flex-direction: column;
+}
+
+.botao-campo button {
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .nota-fiscal-linha2 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Envio do Pedido */
+.envio-pedido {
+  padding: 16px;
+  background: #222;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.envio-pedido .form-group {
+  margin-bottom: 16px;
+}
+
+.envio-pedido .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.envio-pedido .help-text {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #aaa;
+  font-style: italic;
+}
+
+/* Edição de Valores */
+.valores-edicao {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group.inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-group.inline label {
+  margin: 0;
+  font-weight: 600;
+  color: #fff;
+  min-width: 80px;
+}
+
+.form-group.inline .form-control {
+  flex: 1;
+  max-width: 150px;
+}
+
+/* Modal de Edição de Usuário */
+.user-edit-form {
+  padding: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row.triple {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #333;
+  color: #fff;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.form-control::placeholder {
+  color: #888;
+}
+
+/* Modal de Desconto */
+.desconto-form {
+  padding: 0;
+}
+
+.desconto-preview {
+  margin-top: 20px;
+  padding: 16px;
+  background: #222;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.desconto-preview h4 {
+  margin: 0 0 12px 0;
+  color: #fff;
+  font-size: 16px;
+}
+
+.valor-original,
+.valor-desconto,
+.valor-final {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+}
+
+.valor-final {
+  border-bottom: none;
+  font-size: 16px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px solid #007bff;
+}
+
+.valor-final strong {
+  color: #007bff;
+}
+
+/* Botões de sucesso e warning */
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
+.btn-success:disabled {
+  background: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-1px);
+}
+
+/* Responsividade para as novas seções */
+@media (max-width: 768px) {
+  .nota-fiscal-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .form-group.inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .form-group.inline label {
+    min-width: unset;
+    margin-bottom: 6px;
+  }
+  
+  .form-group.inline .form-control {
+    max-width: unset;
+  }
+  
+  .valores-edicao {
+    gap: 12px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+}
+
+/* Estilos para feedback de CEP */
+.cep-feedback {
+  margin-top: 5px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.cep-feedback.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.cep-feedback.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.cep-feedback.loading {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Tooltip para campo CEP */
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Campo CEP com formatação */
+.form-control[placeholder*="CEP"] {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+/* Animações para notificações dos modais */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos aprimorados para notificações dos modais */
+.modal-notification {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: slideInDown 0.3s ease-out;
+}
+
+.modal-notification.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 2px solid #28a745;
+}
+
+.modal-notification.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 2px solid #dc3545;
+}
+
+.modal-notification.warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 2px solid #ffc107;
+}
+
+/* Resumo Financeiro Detalhado */
+.resumo-financeiro {
+  background: #2a2a2a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.secao-valores {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #333;
+  border-radius: 8px;
+  border-left: 4px solid #4a90e2;
+}
+
+.secao-valores h5 {
+  margin: 0 0 12px 0;
+  color: #4a90e2;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.secao-valores.cupom {
+  border-left-color: #f39c12;
+}
+
+.secao-valores.cupom h5 {
+  color: #f39c12;
+}
+
+.secao-valores.historico {
+  border-left-color: #9b59b6;
+}
+
+.secao-valores.historico h5 {
+  color: #9b59b6;
+}
+
+.secao-valores.total-final {
+  border-left-color: #27ae60;
+  background: #2d3e2d;
+}
+
+.secao-valores.total-final h5 {
+  color: #27ae60;
+}
+
+.valor-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #444;
+}
+
+.valor-linha:last-child {
+  border-bottom: none;
+}
+
+.valor-linha.subtotal {
+  border-top: 1px solid #555;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.valor-linha.total {
+  border-top: 2px solid #27ae60;
+  margin-top: 12px;
+  padding-top: 12px;
+  font-size: 18px;
+}
+
+.valor-linha.desconto .valor {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.valor-linha.historico {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.valor-linha .data {
+  font-size: 10px;
+  color: #888;
+}
+
+.economia {
+  text-align: center;
+  margin-top: 8px;
+  padding: 8px;
+  background: #27ae60;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.descricao {
+  font-style: italic;
+  color: #bbb;
+  font-size: 12px;
+}
+
+/* Modal de Edição de Pedidos - Layout Clean */
+.modal-large {
+  max-width: 750px;
+  width: 90%;
+  max-height: 90vh;
+}
+
+.modal-body-clean {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.secao-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Campo Valor Unitário */
+.campo-valor-unitario {
+  padding: 16px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  border-left: 4px solid #4a90e2;
+}
+
+.campo-label {
+  display: block;
+  color: #4a90e2;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.input-valor-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-valor {
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #fff;
+  width: 120px;
+  font-size: 14px;
+}
+
+.input-valor:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.preview-valor {
+  color: #4a90e2;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Seções de Itens */
+.secao-itens {
+  background: #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.header-secao {
+  background: #333;
+  padding: 12px 16px;
+  border-bottom: 1px solid #444;
+}
+
+.header-secao h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.lista-itens {
+  background: #2a2a2a;
+}
+
+.item-linha {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #333;
+  transition: background-color 0.2s;
+}
+
+.item-linha:hover {
+  background: #333;
+}
+
+.item-linha:last-child {
+  border-bottom: none;
+}
+
+.item-linha.foto {
+  border-left: 3px solid #e74c3c;
+}
+
+.item-linha.produto {
+  border-left: 3px solid #9c27b0;
+}
+
+.item-linha.item-adicional {
+  border-left: 3px solid #f39c12;
+}
+
+.item-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-nome {
+  color: #fff;
+  font-weight: 500;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.item-extra {
+  color: #bbb;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.item-valor {
+  color: #4a90e2;
+  font-weight: 600;
+  margin-right: 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.btn-remover {
+  background: #e74c3c;
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.btn-remover:hover {
+  background: #c0392b;
+}
+
+.subtotal {
+  padding: 12px 16px;
+  background: #333;
+  border-top: 1px solid #444;
+  text-align: right;
+  color: #4a90e2;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.secao-vazia {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Adicionar Item */
+.adicionar-item {
+  padding: 16px;
+  background: #333;
+  border-top: 1px solid #444;
+}
+
+.input-group-horizontal {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-descricao {
+  flex: 1;
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.input-valor-item {
+  width: 100px;
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.input-descricao:focus,
+.input-valor-item:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.btn-adicionar {
+  background: #27ae60;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.btn-adicionar:hover:not(:disabled) {
+  background: #229954;
+}
+
+.btn-adicionar:disabled {
+  background: #555;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Seção Total */
+.secao-total {
+  background: #2d3e2d;
+  border-radius: 8px;
+  padding: 16px;
+  border: 2px solid #27ae60;
+}
+
+.total-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linha-calculo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+.linha-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px solid #27ae60;
+  font-weight: bold;
+  font-size: 16px;
+  color: #27ae60;
+}
+
+/* Footer */
+.modal-footer-edit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #222;
+  border-top: 1px solid #444;
+}
+
+.botoes-esquerda,
+.botoes-direita {
+  display: flex;
+  gap: 10px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .modal-large {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .modal-body-clean {
+    padding: 15px;
+  }
+  
+  .input-group-horizontal {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .input-descricao,
+  .input-valor-item {
+    width: 100%;
+  }
+  
+  .btn-adicionar {
+    width: 100%;
+  }
+  
+  .modal-footer-edit {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .botoes-esquerda,
+  .botoes-direita {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .item-linha {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .item-conteudo {
+    min-width: 200px;
   }
 }

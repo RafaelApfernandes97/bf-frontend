@@ -5,6 +5,7 @@ import { NavigationContext } from '../context/NavigationContext';
 import CartBtn from '../components/CartBtn';
 import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
+import PhotoModal from '../components/PhotoModal';
 import LeftFill from '../assets/icons/left_fill.svg';
 import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
@@ -33,6 +34,10 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   const [coreografias, setCoreografias] = useState([]);
   const [isInCoreografia, setIsInCoreografia] = useState(false);
   const [pastaSelecionada, setPastaSelecionada] = useState(''); // NOVO
+  
+  // Estados para o modal de foto (apenas desktop)
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   // Extrai o caminho da URL após /eventos/pasta/
   const caminho = decodeURIComponent(location.pathname.replace(/^\/eventos\/pasta\//, ''));
@@ -40,6 +45,8 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   const eventoNome = partes[0] || '';
   const ultimaParte = partes[partes.length - 1] || '';
   const estaNaCoreografia = isCoreografiaFolder(ultimaParte);
+
+
 
   useEffect(() => {
     setLoading(true);
@@ -159,29 +166,49 @@ function NavegadorPastasFotosPage({ setShowCart }) {
   }, [estaNaCoreografia, partes]);
 
   function toggleFoto(foto) {
-    if (isSelected(foto)) {
-      removeFromCart(foto);
+    // Verificar se estamos no desktop (largura >= 769px)
+    const isDesktop = window.innerWidth >= 769;
+    
+    if (isDesktop) {
+      // No desktop, abrir modal de visualização
+      const photoIndex = fotosParaMostrar.findIndex(f => f.nome === foto.nome);
+      setCurrentPhotoIndex(photoIndex);
+      setPhotoModalOpen(true);
     } else {
-      const evento = partes[0];
-      const coreografia = partes[partes.length - 1];
-      const dia = partes.length >= 3 ? partes[1] : null;
-      
-      // Verificar se o evento é válido antes de adicionar ao carrinho
-      if (!evento || evento === 'undefined') {
-        console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { partes, caminho });
-        alert('Erro: não foi possível identificar o evento desta foto.');
-        return;
+      // No mobile, manter comportamento atual (adicionar/remover do carrinho)
+      if (isSelected(foto)) {
+        removeFromCart(foto);
+      } else {
+        const evento = partes[0];
+        const coreografia = partes[partes.length - 1];
+        const dia = partes.length >= 3 ? partes[1] : null;
+        
+        // Verificar se o evento é válido antes de adicionar ao carrinho
+        if (!evento || evento === 'undefined') {
+          console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { partes, caminho });
+          alert('Erro: não foi possível identificar o evento desta foto.');
+          return;
+        }
+        
+        addToCart({ 
+          ...foto, 
+          evento, 
+          coreografia: estaNaCoreografia ? coreografia : undefined,
+          dia,
+          caminho: estaNaCoreografia ? undefined : caminho 
+        });
       }
-      
-      addToCart({ 
-        ...foto, 
-        evento, 
-        coreografia: estaNaCoreografia ? coreografia : undefined,
-        dia,
-        caminho: estaNaCoreografia ? undefined : caminho 
-      });
     }
   }
+
+  // Funções para o modal de foto (desktop)
+  const handlePhotoModalClose = () => {
+    setPhotoModalOpen(false);
+  };
+
+  const handlePhotoModalNavigate = (newIndex) => {
+    setCurrentPhotoIndex(newIndex);
+  };
 
   // Navegação para pasta anterior
   function voltarUmNivel() {
@@ -218,6 +245,8 @@ function NavegadorPastasFotosPage({ setShowCart }) {
 
   // Determinar quais fotos mostrar (normais ou filtradas por IA)
   const fotosParaMostrar = filtroIAAtivo ? fotosEncontradasIA : fotos;
+
+
 
   if (loading) return <div>Carregando pastas/fotos...</div>;
   if (error) return <div>{error}</div>;
@@ -334,6 +363,125 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           </span>
         </div>
       )}
+      
+      {/* BANNERS PROMOCIONAIS - SEMPRE APARECEM EM COREOGRAFIAS */}
+      {estaNaCoreografia && !filtroIAAtivo && (
+        <div style={{ margin: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Banner 1 - Desconto Progressivo */}
+          <div style={{
+            background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
+            border: '2px solid #ddd',
+            borderRadius: '12px',
+            padding: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+                borderRadius: '50%',
+                width: '48px',
+                height: '48px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#1a1a1a' }}>%</span>
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#1a1a1a' }}>
+                  GANHE ATÉ 15% DE DESCONTO
+                </h3>
+                <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>Compre mais e economize</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center', padding: '8px', border: '1px solid #ccc', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', color: '#666' }}>GANHE</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1a1a1a' }}>5%</div>
+                <div style={{ fontSize: '10px', color: '#666' }}>5 fotos</div>
+              </div>
+              <div style={{ textAlign: 'center', padding: '8px', border: '1px solid #ccc', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', color: '#666' }}>GANHE</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1a1a1a' }}>10%</div>
+                <div style={{ fontSize: '10px', color: '#666' }}>10 fotos</div>
+              </div>
+              <div style={{ textAlign: 'center', padding: '8px', border: '2px solid #FFD700', borderRadius: '8px', background: '#FFF8DC' }}>
+                <div style={{ fontSize: '12px', color: '#B8860B' }}>GANHE</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#B8860B' }}>15%</div>
+                <div style={{ fontSize: '10px', color: '#B8860B' }}>15 fotos</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Banner 2 - Promoção Especial */}
+          <div style={{
+            background: 'linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%)',
+            border: '2px solid #FFD700',
+            borderRadius: '12px',
+            padding: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#FFD700' }}>
+                PROMOÇÃO ESPECIAL
+              </h3>
+              <p style={{ margin: 0, fontSize: '14px', color: '#ccc' }}>
+                Adquira agora mesmo todas as fotos da sua coreografia por um preço especial
+              </p>
+            </div>
+            <button 
+              onClick={() => {
+                const fotosParaAdicionar = fotos.filter(foto => !cart.some(item => item.nome === foto.nome));
+                fotosParaAdicionar.forEach(foto => {
+                  const evento = partes[0];
+                  const coreografia = partes[partes.length - 1];
+                  const dia = partes.length >= 3 ? partes[1] : null;
+                  
+                  if (evento && evento !== 'undefined') {
+                    addToCart({ 
+                      ...foto, 
+                      evento, 
+                      coreografia: estaNaCoreografia ? coreografia : undefined,
+                      dia,
+                      caminho: estaNaCoreografia ? undefined : caminho 
+                    });
+                  }
+                });
+                
+                if (fotosParaAdicionar.length > 0) {
+                  setShowCart(true);
+                }
+              }}
+              style={{
+                background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                color: '#1a1a1a',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'transform 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              <span style={{ fontSize: '16px' }}>🛒</span>
+              Adicionar todas as fotos
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Botões de navegação de dias/pastas */}
       {!filtroIAAtivo && renderBotoesDias && (
         <div className="dias-nav-bar">
@@ -373,7 +521,12 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           ))}
         </div>
       )}
+      
+
+      
       {/* Grid de fotos */}
+      <h1>Fotos</h1>
+
       {fotosParaMostrar.length > 0 && (
         <div className="fotos-grid">
           {fotosParaMostrar.map((foto, index) => (
@@ -399,6 +552,19 @@ function NavegadorPastasFotosPage({ setShowCart }) {
           <p>Tente com uma selfie mais clara ou remova o filtro para ver todas as fotos.</p>
         </div>
       )}
+
+      {/* Modal de visualização de foto para desktop */}
+      <PhotoModal
+        isOpen={photoModalOpen}
+        onClose={handlePhotoModalClose}
+        photos={fotosParaMostrar}
+        currentPhotoIndex={currentPhotoIndex}
+        onNavigate={handlePhotoModalNavigate}
+        tabelaPreco={null}
+        evento={partes[0]}
+        coreografia={estaNaCoreografia ? partes[partes.length - 1] : undefined}
+        dia={partes.length >= 3 ? partes[1] : null}
+      />
     </>
   );
 }

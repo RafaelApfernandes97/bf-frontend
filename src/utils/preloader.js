@@ -119,10 +119,7 @@ class DataPreloader {
       // Pré-carrega coreografias do evento
       await this.preloadCoreografias(evento);
       
-      // Aquece cache no backend
-      fetch(`${BACKEND_URL}/api/eventos/${encodeURIComponent(evento)}/aquecer-cache`, {
-        method: 'POST'
-      }).catch(err => {});
+      // O cache agora é aquecido automaticamente pelo backend
       
     } catch (error) {
       // console.error('Erro ao pré-carregar dados relacionados:', error);

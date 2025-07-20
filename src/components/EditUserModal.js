@@ -59,6 +59,7 @@ export default function EditUserModal({ onClose }) {
   const [cep, setCep] = useState('');
   const [rua, setRua] = useState('');
   const [numero, setNumero] = useState('');
+  const [complemento, setComplemento] = useState('');
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
@@ -96,6 +97,7 @@ export default function EditUserModal({ onClose }) {
         setCep(maskCep(data.cep || ''));
         setRua(data.rua || '');
         setNumero(data.numero || '');
+        setComplemento(data.complemento || '');
         setBairro(data.bairro || '');
         setCidade(data.cidade || '');
         setEstado(data.estado || '');
@@ -136,7 +138,7 @@ export default function EditUserModal({ onClose }) {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ nome, cpfCnpj: cpfCnpj.replace(/\D/g, ''), telefone: telefone.replace(/\D/g, ''), cep: cep.replace(/\D/g, ''), rua, numero, bairro, cidade, estado })
+        body: JSON.stringify({ nome, cpfCnpj: cpfCnpj.replace(/\D/g, ''), telefone: telefone.replace(/\D/g, ''), cep: cep.replace(/\D/g, ''), rua, numero, complemento, bairro, cidade, estado })
       });
       if (!res.ok) throw new Error('Erro ao salvar alterações');
       localStorage.setItem('user_nome', nome);
@@ -271,6 +273,17 @@ export default function EditUserModal({ onClose }) {
                 disabled={salvando} 
               />
               {erros.numero && <div className="edit-user-error-field">{erros.numero}</div>}
+            </label>
+            <label className="edit-user-label">Complemento (opcional)
+              <input 
+                type="text" 
+                value={complemento} 
+                onChange={(e) => setComplemento(e.target.value)} 
+                placeholder="Ex: Apto 101, Bloco A" 
+                className="edit-user-input"
+                disabled={salvando} 
+              />
+              {erros.complemento && <div className="edit-user-error-field">{erros.complemento}</div>}
             </label>
             <label className="edit-user-label">Bairro
               <input 

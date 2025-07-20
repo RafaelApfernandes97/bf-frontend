@@ -2,12 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CoreografiaCard from '../components/CoreografiaCard';
 import CoreografiaTop from '../components/CoreografiaTop';
+import PhotoModal from '../components/PhotoModal';
 import CartBtn from '../components/CartBtn';
 import { useCart } from '../components/CartContext';
 import { useNavigation } from '../context/NavigationContext';
 import './CoreografiasBody.css';
 import '../CoreografiasBody.css';
 import './FotosPage.css';
+import '../components/BannersDesktop.css';
 import CalendarIcon from '../assets/icons/calendar_fill.svg';
 import LocationIcon from '../assets/icons/location_on.svg';
 import CameraIcon from '../assets/icons/Camera.svg';
@@ -16,6 +18,13 @@ import ShoppingCart2Line from '../assets/icons/shopping_cart_2_line.svg';
 import SquareArrowLeft from '../assets/icons/square_arrow_left_line.svg';
 import SquareArrowRight from '../assets/icons/square_arrow_right_line.svg';
 import api, { API_ENDPOINTS } from '../config/api';
+import ValeModal from '../components/ValeModal';
+import VideoModal from '../components/VideoModal';
+import PosterModal from '../components/PosterModal';
+import BannerVale from '../assets/img/bannervale.png';
+import BannerVale50 from '../assets/img/bannervale50.png';
+import BannerVideo from '../assets/img/bannervideo.png';
+import BannerVideo50 from '../assets/img/bannervideo50.png';
 
 function isDiaFolder(nome) {
   // Regex para detectar formato 'dd-mm DiaSemana' ou 'dd-mm Dia'
@@ -36,28 +45,91 @@ function CoreografiasPage({ setShowCart }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [evento, setEvento] = useState(null);
+  // Estados para os modais e banners
+  const [valeModalOpen, setValeModalOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [posterModalOpen, setPosterModalOpen] = useState(false);
+  const [dadosEvento, setDadosEvento] = useState(null);
+
+  // Estados para o modal de foto (apenas desktop)
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [caminhoAtual, setCaminhoAtual] = useState('');
   const [historicoNavegacao, setHistoricoNavegacao] = useState([]);
   const [coreografiasNivelPai, setCoreografiasNivelPai] = useState([]); // Para guardar as coreografias do nível pai
   const { cart, addToCart, removeFromCart } = useCart();
-  const { 
-    registerBackButtonHandler, 
-    clearBackButtonHandler, 
+  const {
+    registerBackButtonHandler,
+    clearBackButtonHandler,
     setViewingPhotos,
     fotosEncontradasIA,
-    filtroIAAtivo 
+    filtroIAAtivo
   } = useNavigation();
   const navigate = useNavigate();
+
+  // Função para adicionar vale/vídeo ao carrinho
+  const handleAddBannerToCart = (bannerData) => {
+    console.log('🛒 [HANDLE ADD BANNER] Dados recebidos:', bannerData);
+    console.log('🛒 [HANDLE ADD BANNER] Dados do evento atual:', dadosEvento);
+
+    const item = {
+      ...bannerData,
+      evento: eventoId,
+      coreografia: obterCoreografiaAtual(),
+      quantidade: 1 // Banner sempre tem quantidade 1
+    };
+
+    console.log('🛒 [HANDLE ADD BANNER] Item final para carrinho:', item);
+    addToCart(item);
+    setShowCart(true); // Abre o carrinho automaticamente
+  };
+
+  // Função para obter a coreografia atual baseada no caminho
+  const obterCoreografiaAtual = () => {
+    const partes = caminhoAtual.split('/').filter(Boolean);
+    // Encontra a última parte que é uma coreografia
+    for (let i = partes.length - 1; i >= 0; i--) {
+      if (isCoreografiaFolder(partes[i])) {
+        return partes[i];
+      }
+    }
+    return 'Coreografia';
+  };
+
+  // Função para buscar dados do evento (incluindo configurações dos banners)
+  async function buscarDadosEvento(nomeEvento) {
+    try {
+      const response = await api.get(`/admin/eventos/nome/${encodeURIComponent(nomeEvento)}`);
+      setDadosEvento(response.data);
+      console.log('📊 Dados do evento carregados:', response.data);
+      console.log('💰 Valores dos banners:', {
+        valorVale: response.data?.valorVale,
+        valorVideo: response.data?.valorVideo,
+        valorPoster: response.data?.valorPoster,
+        bannerVale: response.data?.bannerVale,
+        bannerVideo: response.data?.bannerVideo,
+        bannerPoster: response.data?.bannerPoster
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar dados do evento:', error);
+      setDadosEvento(null);
+    }
+  }
 
   // Função para buscar pastas e fotos via API unificada
   async function buscarPastasEFotos(caminho) {
     try {
       setCaminhoAtual(caminho);
       setLoading(true);
-      
+
+      console.log('[COREOGRAFIAS] Chamando API /eventos/pasta com caminho:', caminho);
       const response = await api.post('/eventos/pasta', { caminho });
       const data = response.data;
-      
+      console.log('[COREOGRAFIAS] Resposta da API /eventos/pasta recebida:', {
+        quantidadeFotos: (data.fotos || []).length,
+        primeiras5: (data.fotos || []).slice(0, 5).map(f => f.nome)
+      });
+
       // Ordenar pastas
       const pastasOrdenadas = (data.subpastas || []).slice().sort((a, b) => {
         const nomeA = a.nome || a;
@@ -74,9 +146,9 @@ function CoreografiasPage({ setShowCart }) {
           return nomeA.localeCompare(nomeB, 'pt', { sensitivity: 'base' });
         }
       });
-      
+
       setCoreografias(pastasOrdenadas);
-      
+
       // Se encontramos fotos, significa que estamos em uma pasta de coreografia
       // Então vamos guardar as coreografias do nível pai para navegação
       if (data.fotos && data.fotos.length > 0) {
@@ -84,37 +156,37 @@ function CoreografiasPage({ setShowCart }) {
         const caminhoPartes = caminho.split('/');
         if (caminhoPartes.length > 1) {
           const caminhoPai = caminhoPartes.slice(0, -1).join('/');
-          
+
           // Buscar pastas do nível pai
           api.post('/eventos/pasta', { caminho: caminhoPai })
-          .then(res => {
-            const dataPai = res.data;
-            if (dataPai.subpastas) {
-              const pastasOrdenadas = dataPai.subpastas.slice().sort((a, b) => {
-                const nomeA = a.nome || a;
-                const nomeB = b.nome || b;
-                const numA = parseInt((nomeA.match(/\d+/) || [null])[0], 10);
-                const numB = parseInt((nomeB.match(/\d+/) || [null])[0], 10);
-                if (!isNaN(numA) && !isNaN(numB)) {
-                  return numA - numB;
-                } else if (!isNaN(numA)) {
-                  return -1;
-                } else if (!isNaN(numB)) {
-                  return 1;
-                } else {
-                  return nomeA.localeCompare(nomeB, 'pt', { sensitivity: 'base' });
-                }
-              });
-              setCoreografiasNivelPai(pastasOrdenadas);
-            }
-          })
-          .catch(err => console.error('Erro ao buscar coreografias do pai:', err));
+            .then(res => {
+              const dataPai = res.data;
+              if (dataPai.subpastas) {
+                const pastasOrdenadas = dataPai.subpastas.slice().sort((a, b) => {
+                  const nomeA = a.nome || a;
+                  const nomeB = b.nome || b;
+                  const numA = parseInt((nomeA.match(/\d+/) || [null])[0], 10);
+                  const numB = parseInt((nomeB.match(/\d+/) || [null])[0], 10);
+                  if (!isNaN(numA) && !isNaN(numB)) {
+                    return numA - numB;
+                  } else if (!isNaN(numA)) {
+                    return -1;
+                  } else if (!isNaN(numB)) {
+                    return 1;
+                  } else {
+                    return nomeA.localeCompare(nomeB, 'pt', { sensitivity: 'base' });
+                  }
+                });
+                setCoreografiasNivelPai(pastasOrdenadas);
+              }
+            })
+            .catch(err => console.error('Erro ao buscar coreografias do pai:', err));
         }
       } else {
         // Se não há fotos, resetar coreografias do nível pai
         setCoreografiasNivelPai([]);
       }
-      
+
       // Processar fotos com URLs assinadas se houver
       if (data.fotos && data.fotos.length > 0) {
         const token = localStorage.getItem('user_token');
@@ -124,7 +196,7 @@ function CoreografiasPage({ setShowCart }) {
               // Construir URL baseada no número de partes do caminho
               const pathParts = caminho.split('/');
               let urlFoto;
-              
+
               if (pathParts.length === 4) {
                 // evento/dia/pasta/coreografia
                 urlFoto = `${API_ENDPOINTS.USUARIOS_FOTO_URL}/${encodeURIComponent(pathParts[0])}/${encodeURIComponent(pathParts[1])}/${encodeURIComponent(pathParts[2])}/${encodeURIComponent(pathParts[3])}/${encodeURIComponent(foto.nome)}`;
@@ -135,21 +207,27 @@ function CoreografiasPage({ setShowCart }) {
                 // Usar URL direta se não conseguir determinar
                 return { ...foto, url: foto.url || '' };
               }
-              
+
               const res = await fetch(urlFoto, { headers: { Authorization: 'Bearer ' + token } });
               if (res.ok) {
                 const d = await res.json();
                 return { ...foto, url: d.url, caminho };
               }
-            } catch {}
+            } catch { }
             return { ...foto, url: foto.url || '', caminho };
           })
         );
+        // Log temporário para verificar ordenação
+        console.log('[COREOGRAFIAS] Fotos recebidas do backend (primeiras 10):');
+        fotosComUrls.slice(0, 10).forEach((foto, index) => {
+          console.log(`[COREOGRAFIAS] ${index + 1}. ${foto.nome}`);
+        });
+
         setFotos(fotosComUrls);
       } else {
         setFotos([]);
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar pastas e fotos:', error);
@@ -161,10 +239,10 @@ function CoreografiasPage({ setShowCart }) {
   // Carregar pastas de dias ou coreografias do evento
   useEffect(() => {
     setLoading(true);
-    
-    // Aquece cache do evento em background
-    api.post(`/eventos/${encodeURIComponent(eventoId)}/aquecer-cache`).catch(err => console.log('Cache warming:', err));
-    
+
+    // Buscar dados do evento (configurações de banners)
+    buscarDadosEvento(eventoId);
+
     // Primeiro verifica se tem dias
     api.get(`/eventos/${encodeURIComponent(eventoId)}/coreografias`)
       .then(res => {
@@ -222,56 +300,76 @@ function CoreografiasPage({ setShowCart }) {
   }
 
   function toggleFoto(foto) {
-    if (isSelected(foto)) {
-      removeFromCart(foto);
-    } else {
-      let evento = eventoId;
-      let dia = null;
-      let pasta = null;
-      let coreografia = null;
+    // Verificar se estamos no desktop (largura >= 769px)
+    const isDesktop = window.innerWidth >= 769;
 
-      if (foto.caminho) {
-        const pathParts = foto.caminho.split('/');
-        evento = pathParts[0] || eventoId;
-        dia = pathParts.length > 1 ? pathParts[1] : null;
-        pasta = pathParts.length > 2 ? pathParts[2] : null;
-        coreografia = pathParts.length > 3 ? pathParts[3] : null;
+    if (isDesktop) {
+      // No desktop, abrir modal de visualização
+      const photoIndex = fotosParaMostrar.findIndex(f => f.nome === foto.nome);
+      setCurrentPhotoIndex(photoIndex);
+      setPhotoModalOpen(true);
+    } else {
+      // No mobile, manter comportamento atual (adicionar/remover do carrinho)
+      if (isSelected(foto)) {
+        removeFromCart(foto);
       } else {
-        evento = eventoId; // Garantir que sempre tenha um evento
+        let evento = eventoId;
+        let dia = null;
+        let pasta = null;
+        let coreografia = null;
+
+        if (foto.caminho) {
+          const pathParts = foto.caminho.split('/');
+          evento = pathParts[0] || eventoId;
+          dia = pathParts.length > 1 ? pathParts[1] : null;
+          pasta = pathParts.length > 2 ? pathParts[2] : null;
+          coreografia = pathParts.length > 3 ? pathParts[3] : null;
+        } else {
+          evento = eventoId; // Garantir que sempre tenha um evento
+        }
+
+        // Verificar se o evento é válido antes de adicionar ao carrinho
+        if (!evento || evento === 'undefined') {
+          console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { foto, eventoId });
+          alert('Erro: não foi possível identificar o evento desta foto.');
+          return;
+        }
+
+        addToCart({
+          ...foto,
+          evento,
+          dia,
+          pasta,
+          coreografia
+        });
       }
-      
-      // Verificar se o evento é válido antes de adicionar ao carrinho
-      if (!evento || evento === 'undefined') {
-        console.error('Erro: tentativa de adicionar foto ao carrinho sem evento válido', { foto, eventoId });
-        alert('Erro: não foi possível identificar o evento desta foto.');
-        return;
-      }
-      
-      addToCart({ 
-        ...foto, 
-        evento, 
-        dia,
-        pasta,
-        coreografia
-      });
     }
   }
+
+  // Funções para o modal de foto (desktop)
+  const handlePhotoModalClose = () => {
+    setPhotoModalOpen(false);
+  };
+
+  const handlePhotoModalNavigate = (newIndex) => {
+    setCurrentPhotoIndex(newIndex);
+  };
 
   // Navegação entre coreografias
   const partesAtual = caminhoAtual.split('/');
   const ultimaPasta = partesAtual.slice(-1)[0];
-  
+
   // Encontrar coreografia atual na lista de coreografias do nível pai
   let idxCoreografiaAtual = -1;
   let coreografiaAtual = null;
   let coreografiaAnterior = null;
   let coreografiaProxima = null;
-  
+
   // Se temos fotos sendo exibidas, significa que estamos dentro de uma pasta de coreografia
   if (fotos.length > 0 && caminhoAtual) {
     // Usar coreografiasNivelPai se disponível, senão usar coreografias
     const listaCoreografias = coreografiasNivelPai.length > 0 ? coreografiasNivelPai : coreografias;
-    
+
     // Procurar pela coreografia atual na lista de coreografias disponíveis
     idxCoreografiaAtual = listaCoreografias.findIndex(c => (c.nome || c) === ultimaPasta);
     if (idxCoreografiaAtual >= 0) {
@@ -280,7 +378,7 @@ function CoreografiasPage({ setShowCart }) {
       coreografiaProxima = idxCoreografiaAtual < listaCoreografias.length - 1 ? listaCoreografias[idxCoreografiaAtual + 1] : null;
     }
   }
-  
+
   // Determinar se devemos mostrar a navegação 
   const listaCoreografias = coreografiasNivelPai.length > 0 ? coreografiasNivelPai : coreografias;
   const mostrarNavegacao = fotos.length > 0 && listaCoreografias.length > 1 && idxCoreografiaAtual >= 0;
@@ -420,9 +518,9 @@ function CoreografiasPage({ setShowCart }) {
           {totalFotos} fotos
         </span>
       </div> */}
-      
-      
-      
+
+
+
       {!filtroIAAtivo && dias.length > 0 && (
         <div className="dias-nav-bar">
           {dias.map((dia) => (
@@ -441,6 +539,51 @@ function CoreografiasPage({ setShowCart }) {
           ))}
         </div>
       )}
+      <div className="banner">
+        {/* CONTAINER UNIFICADO PARA TODOS OS BANNERS */}
+        {fotos.length > 0 && !filtroIAAtivo && dadosEvento && (dadosEvento.bannerVale || dadosEvento.bannerVideo || dadosEvento.bannerPoster) && (
+          <div className="banners-desktop-container">
+            {/* Banner Vale */}
+            {dadosEvento.bannerVale && (
+              <div
+                className="banner-item"
+                onClick={() => setValeModalOpen(true)}
+              >
+                <img
+                  src={BannerVale}
+                  alt="Vale Coreografia"
+                />
+              </div>
+            )}
+
+            {/* Banner Vídeo */}
+            {dadosEvento.bannerVideo && (
+              <div
+                className="banner-item"
+                onClick={() => setVideoModalOpen(true)}
+              >
+                <img
+                  src={BannerVideo}
+                  alt="Vídeo Coreografia"
+                />
+              </div>
+            )}
+
+            {/* Banner Pôster */}
+            {dadosEvento.bannerPoster && (
+              <div
+                className="banner-item"
+                onClick={() => setPosterModalOpen(true)}
+              >
+                <img
+                  src="/assets/img/bannerposter.png"
+                  alt="Placa Pôster"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       {/* Navegação entre pastas */}
       {!filtroIAAtivo && coreografias.length > 0 && (
         <div className="body">
@@ -449,18 +592,18 @@ function CoreografiasPage({ setShowCart }) {
               const nomePasta = coreografia.nome || coreografia;
               const novoCaminho = caminhoAtual ? `${caminhoAtual}/${nomePasta}` : `${eventoId}/${nomePasta}`;
               buscarPastasEFotos(novoCaminho);
-            }} style={{cursor: 'pointer'}}>
+            }} style={{ cursor: 'pointer' }}>
               <CoreografiaCard
                 nome={coreografia.nome || coreografia}
                 capa={coreografia.capa}
                 quantidade={coreografia.quantidade}
-                className={`coreografia-instance coreografia-${idx+1}`}
+                className={`coreografia-instance coreografia-${idx + 1}`}
               />
             </div>
           ))}
         </div>
       )}
-      
+
       {/* Grid de fotos */}
       {fotosParaMostrar.length > 0 && (
         <div className="fotos-grid">
@@ -480,14 +623,56 @@ function CoreografiasPage({ setShowCart }) {
           ))}
         </div>
       )}
-      
+
       {filtroIAAtivo && fotosEncontradasIA.length === 0 && (
         <div className="no-photos-message">
           <p>Nenhuma foto encontrada com reconhecimento facial.</p>
           <p>Tente com uma selfie mais clara ou remova o filtro para ver todas as fotos.</p>
         </div>
       )}
-      
+
+      {/* Modais */}
+      <ValeModal
+        isOpen={valeModalOpen}
+        onClose={() => setValeModalOpen(false)}
+        evento={eventoId}
+        coreografia={obterCoreografiaAtual()}
+        valorVale={dadosEvento?.valorVale || 0}
+        onAddToCart={handleAddBannerToCart}
+      />
+
+      <VideoModal
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        evento={eventoId}
+        coreografia={obterCoreografiaAtual()}
+        valorVideo={dadosEvento?.valorVideo || 0}
+        onAddToCart={handleAddBannerToCart}
+      />
+
+      {/* Modal Pôster */}
+      {posterModalOpen && (
+        <PosterModal
+          onClose={() => setPosterModalOpen(false)}
+          evento={eventoId}
+          valorPoster={dadosEvento?.valorPoster || 0}
+          onAddToCart={handleAddBannerToCart}
+        />
+      )}
+
+      {/* Modal de visualização de foto para desktop */}
+      <PhotoModal
+        isOpen={photoModalOpen}
+        onClose={handlePhotoModalClose}
+        photos={fotosParaMostrar}
+        currentPhotoIndex={currentPhotoIndex}
+        onNavigate={handlePhotoModalNavigate}
+        tabelaPreco={null}
+        evento={eventoId}
+        coreografia={obterCoreografiaAtual()}
+        dia={diaId}
+      />
+
     </>
   );
 }

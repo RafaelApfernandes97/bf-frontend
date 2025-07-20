@@ -43,15 +43,18 @@ export default function CoreografiaCard({
       />
       <div className="frame">
         <div className="h">{nome}</div>
-        <div className="info">
-          <span className="camera-instance">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="5" width="12" height="8" rx="2" fill="#A0A0A0"/>
-              <circle cx="8" cy="9" r="2" fill="#181818"/>
-              <rect x="6" y="3" width="4" height="2" rx="1" fill="#A0A0A0"/>
-            </svg>
-          </span>
-          <div className="text-wrapper">{quantidade} fotos</div>
+        <div className="info-footer">
+          <div className="coreografia-name">{nome}</div>
+          <div className="photo-count">
+            <span className="camera-instance">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="5" width="12" height="8" rx="2" fill="currentColor" opacity="0.8"/>
+                <circle cx="8" cy="9" r="2" fill="currentColor" opacity="0.6"/>
+                <rect x="5" y="3" width="6" height="2" rx="1" fill="currentColor" opacity="0.8"/>
+              </svg>
+            </span>
+            {quantidade} fotos
+          </div>
         </div>
       </div>
     </div>

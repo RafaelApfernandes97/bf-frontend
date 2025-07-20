@@ -1,9 +1,84 @@
 import React, { useState } from 'react';
 import './CartModal.css';
+import { API_ENDPOINTS } from '../config/api';
 
 export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorUnitario, checkoutLoading = false, checkoutMsg = '', isLoggedIn = true, onShowLogin, onShowRegister }) {
-  const total = fotos.length * (Number(valorUnitario) || 0);
+  // Função para calcular o preço de um item individual
+  const getPrecoItem = (foto) => {
+    // Se é banner (vale/vídeo/poster), usar seu valor próprio
+    if (foto.tipo === 'vale' || foto.tipo === 'video' || foto.tipo === 'poster') {
+      return Number(foto.valor) || Number(foto.preco) || 0;
+    }
+    // Se é foto normal, usar valorUnitario
+    return Number(valorUnitario) || 0;
+  };
+
+  // Estados para cupom de desconto
+  const [codigoCupom, setCodigoCupom] = useState('');
+  const [cupomAplicado, setCupomAplicado] = useState(null);
+  const [mensagemCupom, setMensagemCupom] = useState('');
+  const [aplicandoCupom, setAplicandoCupom] = useState(false);
+
+  // Calcular total antes do desconto
+  const subtotal = fotos.reduce((acc, foto) => acc + getPrecoItem(foto), 0);
+  
+  // Calcular desconto e total final
+  const desconto = cupomAplicado ? cupomAplicado.desconto : 0;
+  const total = subtotal - desconto;
+  
   const [fotoExpandida, setFotoExpandida] = useState(null);
+
+  // Função para aplicar cupom
+  const aplicarCupom = async () => {
+    if (!codigoCupom.trim()) {
+      setMensagemCupom('Digite um código de cupom válido');
+      return;
+    }
+
+    setAplicandoCupom(true);
+    setMensagemCupom('');
+
+    try {
+      const usuarioId = localStorage.getItem('user_id');
+      const requestBody = {
+        codigo: codigoCupom,
+        valorTotal: subtotal
+      };
+      
+      // Só inclui usuarioId se existir
+      if (usuarioId) {
+        requestBody.usuarioId = usuarioId;
+      }
+      
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_BASE}/cupons/validar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setCupomAplicado(data);
+        setMensagemCupom(`✅ Cupom aplicado! Desconto de R$ ${data.desconto.toFixed(2).replace('.', ',')}`);
+      } else {
+        setMensagemCupom(`❌ ${data.error}`);
+      }
+    } catch (error) {
+      setMensagemCupom('❌ Erro ao validar cupom. Tente novamente.');
+    }
+
+    setAplicandoCupom(false);
+  };
+
+  // Função para remover cupom
+  const removerCupom = () => {
+    setCupomAplicado(null);
+    setCodigoCupom('');
+    setMensagemCupom('');
+  };
 
   return (
     <div className="cart-modal-overlay">
@@ -22,7 +97,7 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
                   <img src={foto.url} alt={foto.nome} />
                 </div>
                 <div className="cart-info">
-                  <div className="cart-preco">R${(Number(valorUnitario) || 0).toFixed(2).replace('.', ',')}</div>
+                  <div className="cart-preco">R${getPrecoItem(foto).toFixed(2).replace('.', ',')}</div>
                   <div className="cart-nome">
                     <div>#{foto.nome}</div>
                     {foto.coreografia && (
@@ -54,11 +129,64 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
             </div>
           </div>
         )}
+
+        {/* Seção de Cupom de Desconto */}
+        <div className="cart-coupon-section">
+          <h4 className="cart-coupon-title">🎟️ Cupom de Desconto</h4>
+          
+          {!cupomAplicado ? (
+            <div className="cart-coupon-input-group">
+              <input
+                type="text"
+                placeholder="Digite o código do cupom"
+                value={codigoCupom}
+                onChange={(e) => setCodigoCupom(e.target.value.toUpperCase())}
+                className="cart-coupon-input"
+                disabled={aplicandoCupom}
+              />
+              <button
+                onClick={aplicarCupom}
+                disabled={aplicandoCupom || !codigoCupom.trim()}
+                className="cart-coupon-btn"
+              >
+                {aplicandoCupom ? 'Aplicando...' : 'Aplicar'}
+              </button>
+            </div>
+          ) : (
+            <div className="cart-coupon-applied">
+              <span className="cart-coupon-applied-text">
+                {cupomAplicado.cupom.codigo} - {cupomAplicado.cupom.descricao}
+              </span>
+              <button
+                onClick={removerCupom}
+                className="cart-coupon-remove-btn"
+                title="Remover cupom"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          
+          {mensagemCupom && (
+            <div className={`cart-coupon-message ${mensagemCupom.includes('✅') ? 'success' : 'error'}`}>
+              {mensagemCupom}
+            </div>
+          )}
+        </div>
+
         <div className="cart-summary">
           <div className="cart-summary-row">
-            <span>Itens ({fotos.length})</span>
-            <span>R${(Number(total) || 0).toFixed(2).replace('.', ',')}</span>
+            <span>Subtotal ({fotos.length} itens)</span>
+            <span>R${(Number(subtotal) || 0).toFixed(2).replace('.', ',')}</span>
           </div>
+          
+          {cupomAplicado && (
+            <div className="cart-summary-row" style={{ color: '#28a745' }}>
+              <span>Desconto ({cupomAplicado.cupom.codigo})</span>
+              <span>-R${(Number(desconto) || 0).toFixed(2).replace('.', ',')}</span>
+            </div>
+          )}
+          
           <div className="cart-summary-row cart-summary-total">
             <span>Total</span>
             <span>R${(Number(total) || 0).toFixed(2).replace('.', ',')}</span>
@@ -120,7 +248,7 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
         )}
         <button
           className="cart-checkout-btn"
-          onClick={isLoggedIn ? onCheckout : onShowLogin}
+          onClick={isLoggedIn ? () => onCheckout(cupomAplicado) : onShowLogin}
           disabled={checkoutLoading || fotos.length === 0}
         >
           {checkoutLoading

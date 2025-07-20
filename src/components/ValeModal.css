@@ -1,0 +1,165 @@
+.vale-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.vale-modal-content {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: vale-modal-appear 0.3s ease-out;
+}
+
+@keyframes vale-modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.vale-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.vale-modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.vale-modal-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.vale-modal-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.vale-modal-body {
+  padding: 24px;
+}
+
+.vale-modal-text {
+  margin-bottom: 24px;
+}
+
+.vale-modal-text p {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.vale-modal-info {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid #e9ecef;
+}
+
+.vale-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.vale-info-item:last-child {
+  margin-bottom: 0;
+  padding-top: 12px;
+  border-top: 1px solid #dee2e6;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.vale-info-item strong {
+  color: #495057;
+}
+
+.vale-modal-footer {
+  padding: 0 24px 24px;
+}
+
+.vale-add-cart-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #FFE001 0%, #F0C90E 100%);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 224, 1, 0.3);
+}
+
+.vale-add-cart-btn:hover {
+  background: linear-gradient(135deg, #F0C90E 0%, #E6B800 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 224, 1, 0.4);
+}
+
+.vale-add-cart-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  .vale-modal-overlay {
+    padding: 10px;
+  }
+  
+  .vale-modal-content {
+    max-height: 95vh;
+  }
+  
+  .vale-modal-header,
+  .vale-modal-body,
+  .vale-modal-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .vale-modal-header h2 {
+    font-size: 1.3rem;
+  }
+} 

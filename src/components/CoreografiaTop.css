@@ -255,7 +255,6 @@
   padding: 4px 4px;
   font-size: clamp(0.8rem, 2.2vw, 1rem);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
   display: flex;
   align-items: center;
   flex-shrink: 0;

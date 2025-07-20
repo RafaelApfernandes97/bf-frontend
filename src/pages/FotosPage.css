@@ -151,6 +151,249 @@
   }
 }
 
+/* Banners Horizontais */
+.banners-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 12px;
+  margin-bottom: 24px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.banner-horizontal {
+  width: 100%;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 1px solid #333;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.banner-horizontal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #FFE001 0%, #FAF782 100%);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.banner-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #FFE001 0%, #FAF782 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.banner-icon img,
+.banner-icon svg {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.banner-text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.banner-text h3 {
+  color: #FFE001;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.banner-text p {
+  color: #bbb;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.banner-pricing {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pricing-item {
+  background: rgba(255, 224, 1, 0.1);
+  border: 1px solid rgba(255, 224, 1, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  text-align: center;
+  min-width: 100px;
+  transition: all 0.3s ease;
+}
+
+.pricing-item:hover {
+  background: rgba(255, 224, 1, 0.2);
+  border-color: #FFE001;
+  transform: translateY(-2px);
+}
+
+.pricing-highlight {
+  background: linear-gradient(135deg, #FFE001 0%, #FAF782 100%) !important;
+  border-color: #FFE001 !important;
+  box-shadow: 0 4px 12px rgba(255, 224, 1, 0.3);
+}
+
+.pricing-highlight .discount,
+.pricing-highlight .percentage,
+.pricing-highlight .condition {
+  color: #1a1a1a !important;
+  font-weight: 700 !important;
+}
+
+.discount {
+  display: block;
+  color: #FFE001;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.percentage {
+  display: block;
+  color: #FFE001;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.condition {
+  display: block;
+  color: #bbb;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.banner-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.banner-btn {
+  background: linear-gradient(135deg, #FFE001 0%, #FAF782 100%);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.banner-btn:hover {
+  background: linear-gradient(135deg, #FAF782 0%, #FFE001 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 224, 1, 0.4);
+}
+
+.cart-icon {
+  font-size: 1.2rem;
+}
+
+/* Banner 2 específico */
+.banner-2 {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border: 1px solid #444;
+}
+
+.banner-2::before {
+  background: linear-gradient(90deg, #FAF782 0%, #FFE001 100%);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .banners-container {
+    padding: 12px 8px;
+    gap: 12px;
+  }
+  
+  .banner-horizontal {
+    padding: 16px;
+  }
+  
+  .banner-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .banner-pricing {
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .pricing-item {
+    min-width: 80px;
+    padding: 10px 12px;
+  }
+  
+  .percentage {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .banners-container {
+    padding: 8px 6px;
+    gap: 10px;
+  }
+  
+  .banner-horizontal {
+    padding: 12px;
+  }
+  
+  .banner-pricing {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .pricing-item {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .banner-btn {
+    padding: 12px 20px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .fotos-footer {
   width: 100%;
   background: #181818;
@@ -257,4 +500,164 @@
 .no-photos-message p:last-child {
   font-size: 0.9rem;
   color: #777;
+}
+
+/* Estilos específicos para Desktop */
+@media (min-width: 1024px) {
+  .fotos-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 24px !important;
+    padding: 0 20px !important;
+    max-width: 100% !important;
+    margin: 0 auto 120px auto !important;
+  }
+  
+  .foto-card {
+    border-radius: 16px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    cursor: zoom-in !important;
+    height: 300px !important;
+  }
+  
+  .foto-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .foto-card img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 16px !important;
+  }
+  
+  .foto-nome-overlay {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent) !important;
+    padding: 12px 16px 24px 16px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+  
+  .foto-card-selected {
+    border: 3px solid #ffe001 !important;
+    box-shadow: 0 0 0 4px rgba(255, 224, 1, 0.2) !important;
+  }
+  
+  .foto-check {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 2.5rem !important;
+    border-radius: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+  }
+  
+  /* Banners melhorados para desktop */
+  .banners-container {
+    max-width: 100% !important;
+    margin: 0 auto 40px auto !important;
+    padding: 0 20px !important;
+  }
+  
+  .banner-horizontal {
+    border-radius: 20px !important;
+    padding: 32px !important;
+    margin-bottom: 32px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .banner-content {
+    gap: 24px !important;
+  }
+  
+  .banner-text h3 {
+    font-size: 2rem !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .banner-text p {
+    font-size: 1.1rem !important;
+  }
+  
+  .banner-pricing {
+    gap: 32px !important;
+  }
+  
+  .pricing-item {
+    padding: 20px 24px !important;
+    border-radius: 16px !important;
+  }
+  
+  .percentage {
+    font-size: 2.5rem !important;
+  }
+  
+  .banner-btn {
+    padding: 16px 32px !important;
+    font-size: 1.1rem !important;
+    border-radius: 25px !important;
+    gap: 12px !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  .fotos-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    gap: 20px !important;
+    padding: 0 20px !important;
+    margin-bottom: 100px !important;
+  }
+  
+  .foto-card {
+    border-radius: 14px !important;
+    cursor: zoom-in !important;
+    height: 250px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  }
+  
+  .foto-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
+  }
+  
+  .foto-card img {
+    border-radius: 14px !important;
+  }
+  
+  .banners-container {
+    padding: 0 20px !important;
+  }
+  
+  .banner-horizontal {
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-bottom: 24px !important;
+  }
+}
+
+/* Indicador visual de zoom para desktop */
+@media (min-width: 769px) {
+  .foto-card::before {
+    content: '🔍';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+  
+  .foto-card:hover::before {
+    opacity: 1;
+  }
 } 

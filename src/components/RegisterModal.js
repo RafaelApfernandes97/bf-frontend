@@ -50,6 +50,7 @@ export default function RegisterModal({ onClose, onLoginClick, onLoginSuccess })
   const [cep, setCep] = useState('');
   const [rua, setRua] = useState('');
   const [numero, setNumero] = useState('');
+  const [complemento, setComplemento] = useState('');
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
@@ -103,7 +104,7 @@ export default function RegisterModal({ onClose, onLoginClick, onLoginSuccess })
       const res = await fetch(`${BACKEND_URL}/api/usuarios/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha, nome, cpfCnpj: cpfCnpj.replace(/\D/g, ''), telefone: telefone.replace(/\D/g, ''), cep, rua, numero, bairro, cidade, estado })
+        body: JSON.stringify({ email, senha, nome, cpfCnpj: cpfCnpj.replace(/\D/g, ''), telefone: telefone.replace(/\D/g, ''), cep, rua, numero, complemento, bairro, cidade, estado })
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -218,6 +219,10 @@ export default function RegisterModal({ onClose, onLoginClick, onLoginSuccess })
                   <label>Número
                     <input type="text" value={numero} onChange={e => setNumero(e.target.value)} placeholder="Número" required />
                     {erros.numero && <div className="register-error-field">{erros.numero}</div>}
+                  </label>
+                  <label>Complemento (opcional)
+                    <input type="text" value={complemento} onChange={e => setComplemento(e.target.value)} placeholder="Ex: Apto 101, Bloco A" />
+                    {erros.complemento && <div className="register-error-field">{erros.complemento}</div>}
                   </label>
                   <label>Bairro
                     <input type="text" value={bairro} onChange={e => setBairro(e.target.value)} placeholder="Bairro" required />

@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// Configuração da API - sempre usa o backend de produção
+// Configuração da API - usa localhost em desenvolvimento
 // Em produção, prioriza a variável de ambiente REACT_APP_BACKEND_URL (definida em tempo de build)
-// Se não existir, usa o backend padrão informado: https://backend.rfsolutionbr.com.br
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://backend.rfsolutionbr.com.br';
+// Em desenvolvimento, usa localhost:3001
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
 // Criar instância do axios
 const api = axios.create({
@@ -69,7 +69,6 @@ export const API_ENDPOINTS = {
   // Eventos
   EVENTOS: `${BACKEND_URL}/api/photos/eventos`,
   COREOGRAFIAS_POR_EVENTO: (eventoId) => `${BACKEND_URL}/api/eventos/${eventoId}/coreografias`,
-  AQUECER_CACHE: (eventoId) => `${BACKEND_URL}/api/eventos/${eventoId}/aquecer-cache`,
   COREOGRAFIAS: (eventoId) => `${BACKEND_URL}/api/photos/eventos/${eventoId}/coreografias`,
 };
 

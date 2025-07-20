@@ -101,4 +101,97 @@
     min-width: 48px;
     padding: 4px 6px;
   }
+}
+
+/* Estilos específicos para Desktop - Banners e Layout */
+@media (min-width: 1024px) {
+  .banner-vale-container, .banner-video-container, .banner-poster-container {
+    max-width: 100% !important;
+    margin: 0 auto 40px auto !important;
+    padding: 0 20px !important;
+  }
+  
+  .banner-vale-container img, 
+  .banner-video-container img,
+  .banner-poster-container img {
+    border-radius: 20px !important;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    cursor: pointer !important;
+  }
+  
+  .banner-vale-container img:hover,
+  .banner-video-container img:hover,
+  .banner-poster-container img:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  /* Layout melhorado para container de coreografias */
+  .container-coreografias {
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+  }
+  
+  /* Navegação entre coreografias melhorada */
+  .coreografia-nav {
+    gap: 24px !important;
+    padding: 16px 24px !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(10px) !important;
+  }
+  
+  
+  
+  .coreografia-nav-nome {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+  }
+
+  /* Evento info bar melhorada */
+  .evento-info-bar {
+    max-width: 100% !important;
+    margin: 0 auto 20px auto !important;
+    padding: 16px 20px !important;
+    border-radius: 16px !important;
+    gap: 48px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  .banner-vale-container, .banner-video-container, .banner-poster-container {
+    padding: 0 20px !important;
+  }
+  
+  .banner-vale-container img, 
+  .banner-video-container img,
+  .banner-poster-container img {
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+    transition: transform 0.3s ease !important;
+  }
+  
+  .banner-vale-container img:hover,
+  .banner-video-container img:hover,
+  .banner-poster-container img:hover {
+    transform: translateY(-4px) !important;
+  }
+  
+  .container-coreografias {
+    padding: 0 20px !important;
+  }
+  
+  .coreografia-nav {
+    gap: 16px !important;
+    padding: 12px 20px !important;
+    border-radius: 12px !important;
+  }
+
+  .evento-info-bar {
+    padding: 14px 20px !important;
+    gap: 32px !important;
+    font-size: 13px !important;
+  }
 } 

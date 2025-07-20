@@ -49,6 +49,24 @@ function App() {
         return;
       }
 
+      // Verificar se há apenas itens de banner no carrinho
+      // Se todos os itens forem banners, não usar tabela de preços
+      const itensBanner = cart.filter(item => item.tipo === 'vale' || item.tipo === 'video' || item.tipo === 'poster');
+      const itensFotos = cart.filter(item => !item.tipo || (item.tipo !== 'vale' && item.tipo !== 'video' && item.tipo !== 'poster'));
+      
+      // Se só há banners no carrinho, usar valor 0 (cada item tem seu próprio preço)
+      if (itensBanner.length > 0 && itensFotos.length === 0) {
+        console.log('💰 Apenas banners no carrinho, valor unitário = 0 (cada item tem preço próprio)');
+        setValorUnitario(0);
+        return;
+      }
+      
+      // Se há mix de banners e fotos, usar tabela de preços apenas para as fotos
+      if (itensBanner.length > 0 && itensFotos.length > 0) {
+        console.log('💰 Mix de banners e fotos, calculando preço apenas para as fotos');
+        // Continua com a lógica normal usando a quantidade de fotos
+      }
+
       try {
         // Buscar todos os eventos cadastrados (usando rota pública)
         const resEventos = await fetch(API_ENDPOINTS.PUBLIC_EVENTOS);
@@ -148,16 +166,18 @@ function App() {
           tabela = tabelas.find(t => t._id === tabelaId);
           if (tabela && tabela.faixas) {
             const faixas = [...tabela.faixas].sort((a, b) => a.min - b.min);
+            // Usar apenas a quantidade de fotos para cálculo (excluir banners)
+            const quantidadeFotos = itensFotos.length;
             for (const faixa of faixas) {
               const min = Number(faixa.min);
               const max = faixa.max !== undefined && faixa.max !== null && faixa.max !== '' ? Number(faixa.max) : null;
               if (max === null) {
-                if (cart.length >= min) {
+                if (quantidadeFotos >= min) {
                   valor = Number(faixa.valor);
                   break;
                 }
               } else {
-                if (cart.length >= min && cart.length <= max) {
+                if (quantidadeFotos >= min && quantidadeFotos <= max) {
                   valor = Number(faixa.valor);
                   break;
                 }
@@ -169,16 +189,18 @@ function App() {
           tabelaDefault = tabelas.find(t => t.isDefault);
           if (tabelaDefault && tabelaDefault.faixas) {
             const faixas = [...tabelaDefault.faixas].sort((a, b) => a.min - b.min);
+            // Usar apenas a quantidade de fotos para cálculo (excluir banners)
+            const quantidadeFotos = itensFotos.length;
             for (const faixa of faixas) {
               const min = Number(faixa.min);
               const max = faixa.max !== undefined && faixa.max !== null && faixa.max !== '' ? Number(faixa.max) : null;
               if (max === null) {
-                if (cart.length >= min) {
+                if (quantidadeFotos >= min) {
                   valor = Number(faixa.valor);
                   break;
                 }
               } else {
-                if (cart.length >= min && cart.length <= max) {
+                if (quantidadeFotos >= min && quantidadeFotos <= max) {
                   valor = Number(faixa.valor);
                   break;
                 }
@@ -197,9 +219,10 @@ function App() {
     calcularValorUnitario();
   }, [cart]);
 
-  async function handleCheckout() {
+  async function handleCheckout(cupomAplicado = null) {
     setCheckoutLoading(true);
     setCheckoutMsg('');
+    console.log('🎟️ Cupom aplicado:', cupomAplicado);
     try {
       const token = localStorage.getItem('user_token');
       if (!token) {
@@ -223,7 +246,10 @@ function App() {
       const fotos = cart.map(f => ({
         nome: f.nome,
         url: f.url,
-        coreografia: f.coreografia || ''
+        coreografia: f.coreografia || '',
+        tipo: f.tipo,
+        valor: f.valor,
+        preco: f.preco
       }));
       if (!evento || fotos.length === 0) {
         setCheckoutMsg('Carrinho vazio ou evento não identificado.');
@@ -237,7 +263,7 @@ function App() {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ evento, fotos, valorUnitario })
+        body: JSON.stringify({ evento, fotos, valorUnitario, cupom: cupomAplicado })
       });
       const data = await res.json();
       if (res.ok && data.ok) {

@@ -13,16 +13,38 @@ export default function AdminPage() {
   const [eventos, setEventos] = useState([]);
   const [eventosMinio, setEventosMinio] = useState([]);
   const [tabelasPreco, setTabelasPreco] = useState([]);
-  const [novoEvento, setNovoEvento] = useState({ nome: '', data: '', tabelaPrecoId: '' });
+  const [cupons, setCupons] = useState([]);
+  const [novoEvento, setNovoEvento] = useState({ 
+    nome: '', 
+    data: '', 
+    tabelaPrecoId: '',
+    bannerVale: false,
+    bannerVideo: false,
+    bannerPoster: false,
+    valorVale: '',
+    valorVideo: '',
+    valorPoster: ''
+  });
   const [novaTabela, setNovaTabela] = useState({ nome: '', descricao: '', faixas: [{ min: '', max: '', valor: '' }], isDefault: false });
+  const [novoCupom, setNovoCupom] = useState({ 
+    codigo: '', 
+    descricao: '', 
+    tipoDesconto: 'porcentagem', 
+    valorDesconto: '', 
+    quantidadeTotal: '', 
+    limitarPorUsuario: false,
+    dataExpiracao: ''
+  });
   const [valorFixo, setValorFixo] = useState('');
   const [modoFixo, setModoFixo] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('eventos'); // 'eventos', 'tabelas' ou 'financeiro'
+  const [activeTab, setActiveTab] = useState('eventos'); // 'eventos', 'tabelas', 'cupons' ou 'financeiro'
   const [editEventoId, setEditEventoId] = useState(null);
   const [editEvento, setEditEvento] = useState({});
   const [editTabelaId, setEditTabelaId] = useState(null);
   const [editTabela, setEditTabela] = useState({});
+  const [editCupomId, setEditCupomId] = useState(null);
+  const [editCupom, setEditCupom] = useState({});
   const [indexando, setIndexando] = useState({}); // { [evento]: true/false }
   const [statusIndexacao, setStatusIndexacao] = useState({}); // { [evento]: mensagem }
   const [progressoIndexacao, setProgressoIndexacao] = useState({}); // { [evento]: progresso }
@@ -34,6 +56,7 @@ export default function AdminPage() {
       fetchEventos();
       fetchEventosMinio();
       fetchTabelasPreco();
+      fetchCupons();
       // O progresso será verificado automaticamente pelo próximo useEffect
     }
     // eslint-disable-next-line
@@ -97,6 +120,18 @@ export default function AdminPage() {
       setTabelasPreco(Array.isArray(data) ? data : []);
     } catch {
       setTabelasPreco([]);
+    }
+  }
+
+  async function fetchCupons() {
+    try {
+      const res = await fetch(`${API}/cupons`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setCupons(Array.isArray(data) ? data : []);
+    } catch {
+      setCupons([]);
     }
   }
 
@@ -180,7 +215,13 @@ export default function AdminPage() {
       nome: novoEvento.nome,
       data: novoEvento.data || undefined,
       valorFixo: modoFixo ? valorFixo : undefined,
-      tabelaPrecoId: modoFixo ? undefined : novoEvento.tabelaPrecoId
+      tabelaPrecoId: modoFixo ? undefined : novoEvento.tabelaPrecoId,
+      bannerVale: novoEvento.bannerVale,
+      bannerVideo: novoEvento.bannerVideo,
+      bannerPoster: novoEvento.bannerPoster,
+      valorVale: novoEvento.bannerVale ? parseFloat(novoEvento.valorVale) || 0 : 0,
+      valorVideo: novoEvento.bannerVideo ? parseFloat(novoEvento.valorVideo) || 0 : 0,
+      valorPoster: novoEvento.bannerPoster ? parseFloat(novoEvento.valorPoster) || 0 : 0
     };
     try {
       await fetch(`${API}/eventos`, {
@@ -191,7 +232,17 @@ export default function AdminPage() {
         },
         body: JSON.stringify(body)
       });
-      setNovoEvento({ nome: '', data: '', tabelaPrecoId: '' });
+      setNovoEvento({ 
+        nome: '', 
+        data: '', 
+        tabelaPrecoId: '',
+        bannerVale: false,
+        bannerVideo: false,
+        bannerPoster: false,
+        valorVale: '',
+        valorVideo: '',
+        valorPoster: ''
+      });
       setValorFixo('');
       fetchEventos();
     } catch {
@@ -254,6 +305,94 @@ export default function AdminPage() {
     setLoading(false);
   }
 
+  // =================== FUNÇÕES DE CUPONS ===================
+  
+  async function handleAddCupom(e) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await fetch(`${API}/cupons`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...novoCupom,
+          valorDesconto: parseFloat(novoCupom.valorDesconto) || 0,
+          quantidadeTotal: parseInt(novoCupom.quantidadeTotal) || 1
+        })
+      });
+      setNovoCupom({ 
+        codigo: '', 
+        descricao: '', 
+        tipoDesconto: 'porcentagem', 
+        valorDesconto: '', 
+        quantidadeTotal: '', 
+        limitarPorUsuario: false,
+        dataExpiracao: ''
+      });
+      fetchCupons();
+    } catch {
+      alert('Erro ao cadastrar cupom');
+    }
+    setLoading(false);
+  }
+
+  async function handleEditCupom(cupom) {
+    setEditCupomId(cupom._id);
+    setEditCupom({
+      codigo: cupom.codigo,
+      descricao: cupom.descricao,
+      tipoDesconto: cupom.tipoDesconto,
+      valorDesconto: cupom.valorDesconto,
+      quantidadeTotal: cupom.quantidadeTotal,
+      limitarPorUsuario: cupom.limitarPorUsuario,
+      dataExpiracao: cupom.dataExpiracao ? cupom.dataExpiracao.slice(0, 10) : '',
+      ativo: cupom.ativo
+    });
+  }
+
+  async function handleSaveEditCupom(e) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await fetch(`${API}/cupons/${editCupomId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...editCupom,
+          valorDesconto: parseFloat(editCupom.valorDesconto) || 0,
+          quantidadeTotal: parseInt(editCupom.quantidadeTotal) || 1
+        })
+      });
+      setEditCupomId(null);
+      setEditCupom({});
+      fetchCupons();
+    } catch {
+      alert('Erro ao editar cupom');
+    }
+    setLoading(false);
+  }
+
+  async function handleDeleteCupom(id) {
+    if (!window.confirm('Tem certeza que deseja remover este cupom?')) return;
+    setLoading(true);
+    try {
+      await fetch(`${API}/cupons/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchCupons();
+    } catch {
+      alert('Erro ao remover cupom');
+    }
+    setLoading(false);
+  }
+
   function handleTabelaChange(idx, field, value) {
     setNovaTabela(tp => ({
       ...tp,
@@ -290,6 +429,12 @@ export default function AdminPage() {
       data: ev.data ? ev.data.slice(0, 10) : '',
       valorFixo: ev.valorFixo || '',
       tabelaPrecoId: ev.tabelaPrecoId?._id || ev.tabelaPrecoId || '',
+      bannerVale: ev.bannerVale || false,
+      bannerVideo: ev.bannerVideo || false,
+      bannerPoster: ev.bannerPoster || false,
+      valorVale: ev.valorVale || '',
+      valorVideo: ev.valorVideo || '',
+      valorPoster: ev.valorPoster || ''
     });
   }
 
@@ -299,7 +444,13 @@ export default function AdminPage() {
     const body = {
       ...editEvento,
       valorFixo: editEvento.valorFixo || undefined,
-      tabelaPrecoId: editEvento.valorFixo ? undefined : editEvento.tabelaPrecoId
+      tabelaPrecoId: editEvento.valorFixo ? undefined : editEvento.tabelaPrecoId,
+      bannerVale: !!editEvento.bannerVale,
+      bannerVideo: !!editEvento.bannerVideo,
+      bannerPoster: !!editEvento.bannerPoster,
+      valorVale: editEvento.bannerVale ? parseFloat(editEvento.valorVale) || 0 : 0,
+      valorVideo: editEvento.bannerVideo ? parseFloat(editEvento.valorVideo) || 0 : 0,
+      valorPoster: editEvento.bannerPoster ? parseFloat(editEvento.valorPoster) || 0 : 0
     };
     try {
       await fetch(`${API}/eventos/${editEventoId}`, {
@@ -433,6 +584,12 @@ export default function AdminPage() {
           Tabelas de Preço
         </button>
         <button
+          onClick={() => setActiveTab('cupons')}
+          className={`admin-tab-btn ${activeTab === 'cupons' ? 'active' : ''}`}
+        >
+          Cupons de Desconto
+        </button>
+        <button
           onClick={() => setActiveTab('financeiro')}
           className={`admin-tab-btn ${activeTab === 'financeiro' ? 'active' : ''}`}
         >
@@ -471,6 +628,82 @@ export default function AdminPage() {
                 </select>
               </div>
             )}
+            
+            {/* Seção dos Banners */}
+            <div style={{ marginBottom: 12, padding: 16, background: '#f5f5f5', borderRadius: 8, border: '2px solid #ddd' }}>
+              <strong style={{ color: '#333' }}>🎯 Configuração dos Banners:</strong>
+              <div style={{ display: 'flex', gap: 24, marginTop: 12 }}>
+                {/* Banner Vale */}
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, color: '#333' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={novoEvento.bannerVale} 
+                      onChange={e => setNovoEvento(ev => ({ ...ev, bannerVale: e.target.checked }))} 
+                    />
+                    <strong>Vale Coreografia</strong>
+                  </label>
+                  {novoEvento.bannerVale && (
+                    <input 
+                      type="number" 
+                      placeholder="Valor do vale (R$)" 
+                      value={novoEvento.valorVale} 
+                      onChange={e => setNovoEvento(ev => ({ ...ev, valorVale: e.target.value }))} 
+                      style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} 
+                      step="0.01"
+                      min="0"
+                    />
+                  )}
+                </div>
+                
+                {/* Banner Vídeo */}
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, color: '#333' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={novoEvento.bannerVideo} 
+                      onChange={e => setNovoEvento(ev => ({ ...ev, bannerVideo: e.target.checked }))} 
+                    />
+                    <strong>Vídeo Coreografia</strong>
+                  </label>
+                  {novoEvento.bannerVideo && (
+                    <input 
+                      type="number" 
+                      placeholder="Valor do vídeo (R$)" 
+                      value={novoEvento.valorVideo} 
+                      onChange={e => setNovoEvento(ev => ({ ...ev, valorVideo: e.target.value }))} 
+                      style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} 
+                      step="0.01"
+                      min="0"
+                    />
+                  )}
+                </div>
+                
+                {/* Banner Pôster */}
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, color: '#333' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={novoEvento.bannerPoster} 
+                      onChange={e => setNovoEvento(ev => ({ ...ev, bannerPoster: e.target.checked }))} 
+                    />
+                    <strong>Placa Pôster</strong>
+                  </label>
+                  {novoEvento.bannerPoster && (
+                    <input 
+                      type="number" 
+                      placeholder="Valor do pôster (R$)" 
+                      value={novoEvento.valorPoster} 
+                      onChange={e => setNovoEvento(ev => ({ ...ev, valorPoster: e.target.value }))} 
+                      style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} 
+                      step="0.01"
+                      min="0"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            
             <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 8, padding: '10px 24px', marginTop: 8 }} disabled={loading}>{loading ? 'Salvando...' : 'Cadastrar evento'}</button>
           </form>
 
@@ -494,6 +727,82 @@ export default function AdminPage() {
                         ))}
                       </select>
                     )}
+                    
+                    {/* Seção dos Banners na Edição */}
+                    <div style={{ padding: 12, background: '#f5f5f5', borderRadius: 6, border: '1px solid #ddd' }}>
+                      <strong style={{ color: '#333', fontSize: '14px' }}>🎯 Banners:</strong>
+                      <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                        {/* Banner Vale */}
+                        <div style={{ flex: 1 }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, fontSize: '12px', color: '#333' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={!!editEvento.bannerVale} 
+                              onChange={e => setEditEvento(ev2 => ({ ...ev2, bannerVale: e.target.checked }))} 
+                            />
+                            <strong>Vale</strong>
+                          </label>
+                          {editEvento.bannerVale && (
+                            <input 
+                              type="number" 
+                              placeholder="Valor do vale (R$)" 
+                              value={editEvento.valorVale || ''} 
+                              onChange={e => setEditEvento(ev2 => ({ ...ev2, valorVale: e.target.value }))} 
+                              style={{ width: '100%', padding: 4, borderRadius: 3, border: '1px solid #ccc', fontSize: '12px' }} 
+                              step="0.01"
+                              min="0"
+                            />
+                          )}
+                        </div>
+                        
+                        {/* Banner Vídeo */}
+                        <div style={{ flex: 1 }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, fontSize: '12px', color: '#333' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={!!editEvento.bannerVideo} 
+                              onChange={e => setEditEvento(ev2 => ({ ...ev2, bannerVideo: e.target.checked }))} 
+                            />
+                            <strong>Vídeo</strong>
+                          </label>
+                          {editEvento.bannerVideo && (
+                            <input 
+                              type="number" 
+                              placeholder="Valor do vídeo (R$)" 
+                              value={editEvento.valorVideo || ''} 
+                              onChange={e => setEditEvento(ev2 => ({ ...ev2, valorVideo: e.target.value }))} 
+                              style={{ width: '100%', padding: 4, borderRadius: 3, border: '1px solid #ccc', fontSize: '12px' }} 
+                              step="0.01"
+                              min="0"
+                            />
+                          )}
+                        </div>
+                        
+                        {/* Banner Pôster */}
+                        <div style={{ flex: 1 }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, fontSize: '12px', color: '#333' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={!!editEvento.bannerPoster} 
+                              onChange={e => setEditEvento(ev2 => ({ ...ev2, bannerPoster: e.target.checked }))} 
+                            />
+                            <strong>Pôster</strong>
+                          </label>
+                          {editEvento.bannerPoster && (
+                            <input 
+                              type="number" 
+                              placeholder="Valor do pôster (R$)" 
+                              value={editEvento.valorPoster || ''} 
+                              onChange={e => setEditEvento(ev2 => ({ ...ev2, valorPoster: e.target.value }))} 
+                              style={{ width: '100%', padding: 4, borderRadius: 3, border: '1px solid #ccc', fontSize: '12px' }} 
+                              step="0.01"
+                              min="0"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 6, padding: '6px 18px' }}>Salvar</button>
                       <button type="button" onClick={() => setEditEventoId(null)} style={{ background: '#333', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 18px' }}>Cancelar</button>
@@ -517,6 +826,18 @@ export default function AdminPage() {
                               ))}
                             </ul>
                           )}
+                        </div>
+                      )}
+                      
+                      {/* Banners Configurados */}
+                      {(ev.bannerVale || ev.bannerVideo || ev.bannerPoster) && (
+                        <div style={{ marginTop: 8, padding: 8, backgroundColor: '#333', borderRadius: 4 }}>
+                          <strong style={{ color: '#ffe001', fontSize: '12px' }}>🎯 Banners:</strong>
+                          <div style={{ fontSize: '11px', color: '#ccc', marginTop: 4 }}>
+                            {ev.bannerVale && <span style={{ marginRight: 12 }}>📄 Vale: R${ev.valorVale}</span>}
+                            {ev.bannerVideo && <span style={{ marginRight: 12 }}>🎬 Vídeo: R${ev.valorVideo}</span>}
+                            {ev.bannerPoster && <span>🖼️ Poster: R${ev.valorPoster}</span>}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -632,6 +953,208 @@ export default function AdminPage() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {activeTab === 'cupons' && (
+        <>
+          <h3>🎟️ Cadastro de Cupom de Desconto</h3>
+          <form onSubmit={handleAddCupom} style={{ marginBottom: 32, background: '#f5f5f5', padding: 20, borderRadius: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <input 
+                type="text" 
+                placeholder="Código do cupom (ex: DESCONTO10)" 
+                value={novoCupom.codigo} 
+                onChange={e => setNovoCupom(c => ({ ...c, codigo: e.target.value.toUpperCase() }))} 
+                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} 
+                required 
+              />
+              <input 
+                type="text" 
+                placeholder="Descrição do cupom" 
+                value={novoCupom.descricao} 
+                onChange={e => setNovoCupom(c => ({ ...c, descricao: e.target.value }))} 
+                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} 
+                required 
+              />
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <select 
+                value={novoCupom.tipoDesconto} 
+                onChange={e => setNovoCupom(c => ({ ...c, tipoDesconto: e.target.value }))} 
+                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
+              >
+                <option value="porcentagem">Porcentagem (%)</option>
+                <option value="valor">Valor Fixo (R$)</option>
+              </select>
+              
+              <input 
+                type="number" 
+                placeholder={novoCupom.tipoDesconto === 'porcentagem' ? 'Desconto (%)' : 'Valor (R$)'} 
+                value={novoCupom.valorDesconto} 
+                onChange={e => setNovoCupom(c => ({ ...c, valorDesconto: e.target.value }))} 
+                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} 
+                step={novoCupom.tipoDesconto === 'porcentagem' ? '1' : '0.01'}
+                min="0"
+                max={novoCupom.tipoDesconto === 'porcentagem' ? '100' : undefined}
+                required 
+              />
+              
+              <input 
+                type="number" 
+                placeholder="Quantidade de cupons" 
+                value={novoCupom.quantidadeTotal} 
+                onChange={e => setNovoCupom(c => ({ ...c, quantidadeTotal: e.target.value }))} 
+                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} 
+                min="1"
+                required 
+              />
+            </div>
+            
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input 
+                  type="checkbox" 
+                  checked={novoCupom.limitarPorUsuario} 
+                  onChange={e => setNovoCupom(c => ({ ...c, limitarPorUsuario: e.target.checked }))} 
+                />
+                <span>Limitar uso por usuário (cada usuário pode usar apenas uma vez)</span>
+              </label>
+              
+              <input 
+                type="date" 
+                value={novoCupom.dataExpiracao} 
+                onChange={e => setNovoCupom(c => ({ ...c, dataExpiracao: e.target.value }))} 
+                style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
+                title="Data de expiração (opcional)"
+              />
+            </div>
+            
+            <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 8, padding: '10px 24px' }} disabled={loading}>
+              {loading ? 'Salvando...' : 'Cadastrar Cupom'}
+            </button>
+          </form>
+
+          <h3>📋 Cupons Cadastrados</h3>
+          {loading && <div>Carregando...</div>}
+          <ul>
+            {Array.isArray(cupons) && cupons.map((cupom, idx) => (
+              <li key={cupom._id || idx} style={{ marginBottom: 12, background: '#222', padding: 12, borderRadius: 8 }}>
+                {editCupomId === cupom._id ? (
+                  <form onSubmit={handleSaveEditCupom} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                      <input 
+                        type="text" 
+                        value={editCupom.codigo} 
+                        onChange={e => setEditCupom(c => ({ ...c, codigo: e.target.value.toUpperCase() }))} 
+                        placeholder="Código" 
+                        style={{ padding: 6 }} 
+                        required 
+                      />
+                      <input 
+                        type="text" 
+                        value={editCupom.descricao} 
+                        onChange={e => setEditCupom(c => ({ ...c, descricao: e.target.value }))} 
+                        placeholder="Descrição" 
+                        style={{ padding: 6 }} 
+                        required 
+                      />
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                      <select 
+                        value={editCupom.tipoDesconto} 
+                        onChange={e => setEditCupom(c => ({ ...c, tipoDesconto: e.target.value }))} 
+                        style={{ padding: 6 }}
+                      >
+                        <option value="porcentagem">Porcentagem (%)</option>
+                        <option value="valor">Valor Fixo (R$)</option>
+                      </select>
+                      
+                      <input 
+                        type="number" 
+                        value={editCupom.valorDesconto} 
+                        onChange={e => setEditCupom(c => ({ ...c, valorDesconto: e.target.value }))} 
+                        placeholder="Valor do desconto" 
+                        style={{ padding: 6 }} 
+                        step={editCupom.tipoDesconto === 'porcentagem' ? '1' : '0.01'}
+                        min="0"
+                        required 
+                      />
+                      
+                      <input 
+                        type="number" 
+                        value={editCupom.quantidadeTotal} 
+                        onChange={e => setEditCupom(c => ({ ...c, quantidadeTotal: e.target.value }))} 
+                        placeholder="Quantidade total" 
+                        style={{ padding: 6 }} 
+                        min="1"
+                        required 
+                      />
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#fff' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={!!editCupom.limitarPorUsuario} 
+                          onChange={e => setEditCupom(c => ({ ...c, limitarPorUsuario: e.target.checked }))} 
+                        />
+                        Limitar por usuário
+                      </label>
+                      
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#fff' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={!!editCupom.ativo} 
+                          onChange={e => setEditCupom(c => ({ ...c, ativo: e.target.checked }))} 
+                        />
+                        Ativo
+                      </label>
+                      
+                      <input 
+                        type="date" 
+                        value={editCupom.dataExpiracao || ''} 
+                        onChange={e => setEditCupom(c => ({ ...c, dataExpiracao: e.target.value }))} 
+                        style={{ padding: 6 }}
+                        title="Data de expiração"
+                      />
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 6, padding: '6px 18px' }}>Salvar</button>
+                      <button type="button" onClick={() => setEditCupomId(null)} style={{ background: '#333', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 18px' }}>Cancelar</button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <strong style={{ color: '#ffe001' }}>{cupom.codigo}</strong>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => handleEditCupom(cupom)} style={{ background: '#ffe001', color: '#222', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700 }}>Editar</button>
+                        <button onClick={() => handleDeleteCupom(cupom._id)} style={{ background: '#dc3545', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700 }}>Remover</button>
+                      </div>
+                    </div>
+                    
+                    <div style={{ color: '#ccc', fontSize: '14px', marginBottom: 8 }}>
+                      {cupom.descricao}
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, fontSize: '12px', color: '#999' }}>
+                      <div><strong>Tipo:</strong> {cupom.tipoDesconto === 'porcentagem' ? `${cupom.valorDesconto}%` : `R$ ${cupom.valorDesconto}`}</div>
+                      <div><strong>Quantidade:</strong> {cupom.quantidadeUsada}/{cupom.quantidadeTotal}</div>
+                      <div><strong>Limite por usuário:</strong> {cupom.limitarPorUsuario ? 'Sim' : 'Não'}</div>
+                      <div><strong>Status:</strong> <span style={{ color: cupom.ativo ? '#28a745' : '#dc3545' }}>{cupom.ativo ? 'Ativo' : 'Inativo'}</span></div>
+                      {cupom.dataExpiracao && (
+                        <div><strong>Expira em:</strong> {new Date(cupom.dataExpiracao).toLocaleDateString('pt-BR')}</div>
+                      )}
                     </div>
                   </>
                 )}
