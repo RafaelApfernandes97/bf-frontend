@@ -1489,6 +1489,7 @@ Obrigado! 😊`;
                     <div key={index} className="produto-item">
                       <strong>{produto.nome}</strong>
                       {produto.coreografia && <span> - {produto.coreografia}</span>}
+                      {produto.codigo && <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}> - Cód: {produto.codigo}</span>}
                       {produto.valor && <span className="produto-valor"> - {formatCurrency(produto.valor)}</span>}
                     </div>
                   ))}
@@ -1784,6 +1785,7 @@ Obrigado! 😊`;
                         <div className="item-conteudo">
                           <div className="item-nome">{produto.nome}</div>
                           {produto.coreografia && <div className="item-extra">{produto.coreografia}</div>}
+                          {produto.codigo && <div className="item-extra" style={{ color: '#ff6b6b', fontWeight: 'bold' }}>Cód: {produto.codigo}</div>}
                         </div>
                         <div className="item-valor">{formatCurrency(produto.valor || 0)}</div>
                         <button 

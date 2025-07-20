@@ -106,6 +106,12 @@ export default function CartModal({ fotos, onClose, onRemove, onCheckout, valorU
                     {foto.evento && (
                       <div style={{ color: '#faf782', fontStyle: 'italic' }}>{foto.evento}</div>
                     )}
+                    {/* Exibir código para banners (vale/vídeo/poster) */}
+                    {(foto.tipo === 'vale' || foto.tipo === 'video' || foto.tipo === 'poster') && foto.codigo && (
+                      <div style={{ color: '#ff6b6b', fontSize: '0.9em', fontWeight: 'bold' }}>
+                        Cód: {foto.codigo}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <button className="cart-remove-btn" onClick={() => onRemove(foto)} title="Remover foto" disabled={checkoutLoading}>×</button>

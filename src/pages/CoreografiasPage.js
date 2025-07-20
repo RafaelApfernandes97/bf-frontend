@@ -68,14 +68,28 @@ function CoreografiasPage({ setShowCart }) {
   const navigate = useNavigate();
 
   // Função para adicionar vale/vídeo ao carrinho
-  const handleAddBannerToCart = (bannerData) => {
+  const handleAddBannerToCart = async (bannerData) => {
     console.log('🛒 [HANDLE ADD BANNER] Dados recebidos:', bannerData);
     console.log('🛒 [HANDLE ADD BANNER] Dados do evento atual:', dadosEvento);
+
+    // Obter uma imagem aleatória da coreografia atual para usar como código
+    let codigoImagem = 'N/A';
+    try {
+      if (fotos && fotos.length > 0) {
+        // Selecionar uma imagem aleatória da coreografia atual
+        const imagemAleatoria = fotos[Math.floor(Math.random() * fotos.length)];
+        codigoImagem = imagemAleatoria.nome;
+        console.log('🛒 [HANDLE ADD BANNER] Imagem aleatória selecionada:', codigoImagem);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao selecionar imagem aleatória:', error);
+    }
 
     const item = {
       ...bannerData,
       evento: eventoId,
       coreografia: obterCoreografiaAtual(),
+      codigo: codigoImagem, // Código da imagem aleatória
       quantidade: 1 // Banner sempre tem quantidade 1
     };
 

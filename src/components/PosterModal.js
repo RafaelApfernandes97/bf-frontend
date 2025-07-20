@@ -1,6 +1,6 @@
 import React from 'react';
 import './ValeModal.css';
-// import IconPoster from '../assets/img/iconposter.png';
+import IconPoster from '../assets/img/carrinhoposter.png';
 
 export default function PosterModal({ onClose, onAddToCart, evento, valorPoster }) {
 
@@ -9,7 +9,7 @@ export default function PosterModal({ onClose, onAddToCart, evento, valorPoster 
       nome: 'Placa Pôster',
       tipo: 'poster',
       evento: evento,
-      url: '/assets/img/bannerposter.png',
+      url: IconPoster, // Ícone do poster para o carrinho
       coreografia: 'Pôster',
       valor: valorPoster
     };
@@ -29,7 +29,7 @@ export default function PosterModal({ onClose, onAddToCart, evento, valorPoster 
         <div className="vale-modal-body">
           <div className="vale-modal-text">
             <p>
-              <strong>Placa Pôster personalizada para o seu evento!</strong>
+              <strong>Placa Pôster personalizada com a sua foto!</strong>
             </p>
             <ul>
               <li>Material personalizado de alta qualidade</li>

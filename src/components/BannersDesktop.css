@@ -51,8 +51,8 @@
   
   .banner-item img {
     border-radius: 16px;
-    object-fit: cover;
-    height: 200px; /* Altura similar aos cards de coreografia */
+    height: 100%; /* Altura similar aos cards de coreografia */
+    width: 100%;
   }
 }
 
@@ -79,8 +79,10 @@
   
   .banner-item img {
     border-radius: 14px;
-    object-fit: cover;
+    object-fit: contain;
     height: 160px;
+    width: 100%;
+    background-color: #f5f5f5; /* Fundo para imagens transparentes */
   }
 }
 
@@ -101,5 +103,6 @@
   .banner-item img {
     border-radius: 12px;
     height: auto;
-  }
+    width: 100%;
+    object-fit: contain;  }
 } 

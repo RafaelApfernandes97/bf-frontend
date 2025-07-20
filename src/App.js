@@ -248,6 +248,7 @@ function App() {
         nome: f.nome,
         url: f.url,
         coreografia: f.coreografia || '',
+        codigo: f.codigo || '', // Incluir código da imagem
         tipo: f.tipo,
         valor: f.valor,
         preco: f.preco
