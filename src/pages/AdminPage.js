@@ -23,7 +23,8 @@ export default function AdminPage() {
     bannerPoster: false,
     valorVale: '',
     valorVideo: '',
-    valorPoster: ''
+    valorPoster: '',
+    diasSelecionados: []
   });
   const [novaTabela, setNovaTabela] = useState({ nome: '', descricao: '', faixas: [{ min: '', max: '', valor: '' }], isDefault: false });
   const [novoCupom, setNovoCupom] = useState({ 
@@ -45,7 +46,9 @@ export default function AdminPage() {
   const [editTabela, setEditTabela] = useState({});
   const [editCupomId, setEditCupomId] = useState(null);
   const [editCupom, setEditCupom] = useState({});
-  const [indexando, setIndexando] = useState({}); // { [evento]: true/false }
+  const [indexando, setIndexando] = useState({});
+  const [pastasDisponiveis, setPastasDisponiveis] = useState([]);
+  const [carregandoPastas, setCarregandoPastas] = useState(false); // { [evento]: true/false }
   const [statusIndexacao, setStatusIndexacao] = useState({}); // { [evento]: mensagem }
   const [progressoIndexacao, setProgressoIndexacao] = useState({}); // { [evento]: progresso }
   const [progressoCarregado, setProgressoCarregado] = useState(false); // Flag para saber se já carregou o progresso inicial
@@ -135,6 +138,27 @@ export default function AdminPage() {
     }
   }
 
+  async function fetchPastasEvento(eventoNome) {
+    if (!eventoNome) {
+      setPastasDisponiveis([]);
+      return;
+    }
+
+    setCarregandoPastas(true);
+    try {
+      const res = await fetch(`${API}/eventos-minio/${encodeURIComponent(eventoNome)}/pastas`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPastasDisponiveis(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Erro ao buscar pastas do evento:', error);
+      setPastasDisponiveis([]);
+    } finally {
+      setCarregandoPastas(false);
+    }
+  }
+
   async function verificarProgressoIndexacao() {
     try {
       const novosProgressos = { ...progressoIndexacao };
@@ -221,7 +245,8 @@ export default function AdminPage() {
       bannerPoster: novoEvento.bannerPoster,
       valorVale: novoEvento.bannerVale ? parseFloat(novoEvento.valorVale) || 0 : 0,
       valorVideo: novoEvento.bannerVideo ? parseFloat(novoEvento.valorVideo) || 0 : 0,
-      valorPoster: novoEvento.bannerPoster ? parseFloat(novoEvento.valorPoster) || 0 : 0
+      valorPoster: novoEvento.bannerPoster ? parseFloat(novoEvento.valorPoster) || 0 : 0,
+      diasSelecionados: novoEvento.diasSelecionados
     };
     try {
       await fetch(`${API}/eventos`, {
@@ -241,8 +266,10 @@ export default function AdminPage() {
         bannerPoster: false,
         valorVale: '',
         valorVideo: '',
-        valorPoster: ''
+        valorPoster: '',
+        diasSelecionados: []
       });
+      setPastasDisponiveis([]);
       setValorFixo('');
       fetchEventos();
     } catch {
@@ -434,8 +461,14 @@ export default function AdminPage() {
       bannerPoster: ev.bannerPoster || false,
       valorVale: ev.valorVale || '',
       valorVideo: ev.valorVideo || '',
-      valorPoster: ev.valorPoster || ''
+      valorPoster: ev.valorPoster || '',
+      diasSelecionados: ev.diasSelecionados || []
     });
+    
+    // Buscar pastas do evento para edição
+    if (ev.nome) {
+      fetchPastasEvento(ev.nome);
+    }
   }
 
   async function handleSaveEditEvento(e) {
@@ -450,7 +483,8 @@ export default function AdminPage() {
       bannerPoster: !!editEvento.bannerPoster,
       valorVale: editEvento.bannerVale ? parseFloat(editEvento.valorVale) || 0 : 0,
       valorVideo: editEvento.bannerVideo ? parseFloat(editEvento.valorVideo) || 0 : 0,
-      valorPoster: editEvento.bannerPoster ? parseFloat(editEvento.valorPoster) || 0 : 0
+      valorPoster: editEvento.bannerPoster ? parseFloat(editEvento.valorPoster) || 0 : 0,
+      diasSelecionados: editEvento.diasSelecionados
     };
     try {
       await fetch(`${API}/eventos/${editEventoId}`, {
@@ -602,7 +636,11 @@ export default function AdminPage() {
           <h3>Cadastro de Evento</h3>
           <form onSubmit={handleAddEvento} style={{ marginBottom: 32 }}>
             <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-              <select value={novoEvento.nome} onChange={e => setNovoEvento(ev => ({ ...ev, nome: e.target.value }))} style={{ flex: 2, padding: 8 }} required>
+              <select value={novoEvento.nome} onChange={e => {
+                const eventoSelecionado = e.target.value;
+                setNovoEvento(ev => ({ ...ev, nome: eventoSelecionado, diasSelecionados: [] }));
+                fetchPastasEvento(eventoSelecionado);
+              }} style={{ flex: 2, padding: 8 }} required>
                 <option value="">Selecione um evento do MinIO</option>
                 {eventosMinio.map(ev => (
                   <option key={ev} value={ev}>{ev}</option>
@@ -703,6 +741,52 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            {/* Seção de Seleção de Pastas para Dias */}
+            {novoEvento.nome && (
+              <div style={{ marginBottom: 12, padding: 16, background: '#f0f0f0', borderRadius: 8, border: '2px solid #ccc' }}>
+                <strong style={{ color: '#333', marginBottom: 12, display: 'block' }}>📁 Seleção de Pastas para Navegação por Dias:</strong>
+                <p style={{ fontSize: '12px', color: '#666', marginBottom: 12 }}>
+                  Selecione quais pastas do evento serão exibidas como "dias" na barra de navegação. Se nenhuma pasta for selecionada, todas serão exibidas.
+                </p>
+                
+                {carregandoPastas ? (
+                  <div style={{ color: '#666', fontStyle: 'italic' }}>Carregando pastas...</div>
+                ) : pastasDisponiveis.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8, maxHeight: 200, overflowY: 'auto' }}>
+                    {pastasDisponiveis.map((pasta, index) => (
+                      <label key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 8, background: '#fff', borderRadius: 4, border: '1px solid #ddd', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={novoEvento.diasSelecionados.includes(pasta.nome)}
+                          onChange={e => {
+                            const isChecked = e.target.checked;
+                            setNovoEvento(ev => ({
+                              ...ev,
+                              diasSelecionados: isChecked 
+                                ? [...ev.diasSelecionados, pasta.nome]
+                                : ev.diasSelecionados.filter(d => d !== pasta.nome)
+                            }));
+                          }}
+                        />
+                        <span style={{ fontSize: '13px', color: '#333' }}>{pasta.nome}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: '#999', fontStyle: 'italic' }}>Nenhuma pasta encontrada neste evento.</div>
+                )}
+                
+                {novoEvento.diasSelecionados.length > 0 && (
+                  <div style={{ marginTop: 8, padding: 8, background: '#e8f5e8', borderRadius: 4, border: '1px solid #c3e6c3' }}>
+                    <strong style={{ fontSize: '12px', color: '#2d5a2d' }}>Selecionadas ({novoEvento.diasSelecionados.length}):</strong>
+                    <div style={{ fontSize: '11px', color: '#2d5a2d', marginTop: 4 }}>
+                      {novoEvento.diasSelecionados.join(', ')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             
             <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 8, padding: '10px 24px', marginTop: 8 }} disabled={loading}>{loading ? 'Salvando...' : 'Cadastrar evento'}</button>
           </form>
@@ -802,6 +886,48 @@ export default function AdminPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Seção de Seleção de Pastas para Dias na Edição */}
+                    {editEvento.nome && (
+                      <div style={{ padding: 12, background: '#f0f0f0', borderRadius: 6, border: '1px solid #ccc' }}>
+                        <strong style={{ color: '#333', fontSize: '14px', marginBottom: 8, display: 'block' }}>📁 Pastas Selecionadas como Dias:</strong>
+                        
+                        {carregandoPastas ? (
+                          <div style={{ color: '#666', fontStyle: 'italic', fontSize: '12px' }}>Carregando pastas...</div>
+                        ) : pastasDisponiveis.length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6, maxHeight: 150, overflowY: 'auto' }}>
+                            {pastasDisponiveis.map((pasta, index) => (
+                              <label key={index} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: 6, background: '#fff', borderRadius: 3, border: '1px solid #ddd', cursor: 'pointer', fontSize: '11px' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={editEvento.diasSelecionados.includes(pasta.nome)}
+                                  onChange={e => {
+                                    const isChecked = e.target.checked;
+                                    setEditEvento(ev => ({
+                                      ...ev,
+                                      diasSelecionados: isChecked 
+                                        ? [...ev.diasSelecionados, pasta.nome]
+                                        : ev.diasSelecionados.filter(d => d !== pasta.nome)
+                                    }));
+                                  }}
+                                />
+                                <span style={{ color: '#333' }}>{pasta.nome}</span>
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          <div style={{ color: '#999', fontStyle: 'italic', fontSize: '12px' }}>Nenhuma pasta encontrada.</div>
+                        )}
+                        
+                        {editEvento.diasSelecionados.length > 0 && (
+                          <div style={{ marginTop: 6, padding: 6, background: '#e8f5e8', borderRadius: 3, border: '1px solid #c3e6c3' }}>
+                            <div style={{ fontSize: '10px', color: '#2d5a2d' }}>
+                              <strong>Selecionadas ({editEvento.diasSelecionados.length}):</strong> {editEvento.diasSelecionados.join(', ')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button type="submit" style={{ background: '#ffe001', color: '#222', fontWeight: 700, border: 'none', borderRadius: 6, padding: '6px 18px' }}>Salvar</button>
@@ -837,6 +963,16 @@ export default function AdminPage() {
                             {ev.bannerVale && <span style={{ marginRight: 12 }}>📄 Vale: R${ev.valorVale}</span>}
                             {ev.bannerVideo && <span style={{ marginRight: 12 }}>🎬 Vídeo: R${ev.valorVideo}</span>}
                             {ev.bannerPoster && <span>🖼️ Poster: R${ev.valorPoster}</span>}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Exibir Pastas Selecionadas como Dias */}
+                      {ev.diasSelecionados && ev.diasSelecionados.length > 0 && (
+                        <div style={{ marginTop: 8, padding: 8, backgroundColor: '#2a2a2a', borderRadius: 4 }}>
+                          <strong style={{ color: '#ffe001', fontSize: '12px' }}>📁 Dias Configurados:</strong>
+                          <div style={{ fontSize: '11px', color: '#ccc', marginTop: 4 }}>
+                            {ev.diasSelecionados.join(', ')}
                           </div>
                         </div>
                       )}

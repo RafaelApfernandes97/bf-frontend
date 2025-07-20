@@ -240,17 +240,41 @@ function CoreografiasPage({ setShowCart }) {
   useEffect(() => {
     setLoading(true);
 
-    // Buscar dados do evento (configurações de banners)
+    // Buscar dados do evento (configurações de banners e dias selecionados)
     buscarDadosEvento(eventoId);
 
-    // Primeiro verifica se tem dias
-    api.get(`/eventos/${encodeURIComponent(eventoId)}/coreografias`)
+    // Buscar configurações do evento do banco de dados primeiro
+    api.get(`/admin/eventos/nome/${encodeURIComponent(eventoId)}`)
       .then(res => {
+        const eventoConfig = res.data;
+        
+        // Se o evento tem dias selecionados configurados, usar apenas esses
+        if (eventoConfig && eventoConfig.diasSelecionados && eventoConfig.diasSelecionados.length > 0) {
+          // Criar estrutura de dias baseada nas pastas selecionadas
+          const diasSelecionados = eventoConfig.diasSelecionados.map(nomePasta => ({
+            nome: nomePasta,
+            quantidade: 0 // Será calculado depois se necessário
+          }));
+          
+          setDias(diasSelecionados);
+          setDiaSelecionado(diasSelecionados[0].nome); // Seleciona o primeiro dia configurado
+          setCoreografias([]);
+          setFotos([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Fallback: usar lógica antiga se não há dias configurados
+        return api.get(`/eventos/${encodeURIComponent(eventoId)}/coreografias`);
+      })
+      .then(res => {
+        if (!res) return; // Já processou dias selecionados acima
+        
         const data = res.data;
         if (data.coreografias && data.coreografias.length > 0 && isDiaFolder(data.coreografias[0].nome)) {
-          // Evento com múltiplos dias
+          // Evento com múltiplos dias (lógica antiga)
           setDias(data.coreografias);
-          setDiaSelecionado(data.coreografias[0].nome); // Seleciona o primeiro dia automaticamente
+          setDiaSelecionado(data.coreografias[0].nome);
           setCoreografias([]);
           setFotos([]);
         } else {
@@ -261,8 +285,26 @@ function CoreografiasPage({ setShowCart }) {
         setLoading(false);
       })
       .catch(err => {
-        setError('Erro ao carregar coreografias');
-        setLoading(false);
+        console.error('Erro ao carregar configurações do evento:', err);
+        // Fallback para lógica antiga em caso de erro
+        api.get(`/eventos/${encodeURIComponent(eventoId)}/coreografias`)
+          .then(res => {
+            const data = res.data;
+            if (data.coreografias && data.coreografias.length > 0 && isDiaFolder(data.coreografias[0].nome)) {
+              setDias(data.coreografias);
+              setDiaSelecionado(data.coreografias[0].nome);
+              setCoreografias([]);
+              setFotos([]);
+            } else {
+              setDias([]);
+              buscarPastasEFotos(eventoId);
+            }
+            setLoading(false);
+          })
+          .catch(err2 => {
+            setError('Erro ao carregar coreografias');
+            setLoading(false);
+          });
       });
   }, [eventoId]);
 
