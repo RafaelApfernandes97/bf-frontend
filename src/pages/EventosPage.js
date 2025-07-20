@@ -45,7 +45,25 @@ function EventosPage() {
           <div
             key={evento}
             className="evento-card"
-            onClick={() => navigate(`/eventos/${encodeURIComponent(evento)}`)}
+            onClick={async () => {
+              try {
+                // Verificar se o evento tem dias selecionados
+                const response = await api.get(`/public/eventos/nome/${encodeURIComponent(evento)}`);
+                const eventoData = response.data;
+                
+                if (eventoData.diasSelecionados && eventoData.diasSelecionados.length > 0) {
+                  // Se tem dias selecionados, vai para a home do evento
+                  navigate(`/eventos/${encodeURIComponent(evento)}`);
+                } else {
+                  // Se não tem dias selecionados, vai direto para as coreografias
+                  navigate(`/eventos/${encodeURIComponent(evento)}/coreografias`);
+                }
+              } catch (error) {
+                console.error('Erro ao verificar evento:', error);
+                // Em caso de erro, vai para a home do evento (que redirecionará se necessário)
+                navigate(`/eventos/${encodeURIComponent(evento)}`);
+              }
+            }}
             style={{cursor: 'pointer'}}>
             <div className="evento-capa">Capa do Evento</div>
             <div className="evento-nome">{evento}</div>

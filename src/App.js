@@ -4,6 +4,7 @@ import EventosPage from './pages/EventosPage';
 import CoreografiasPage from './pages/CoreografiasPage';
 import FotosPage from './pages/FotosPage';
 import AdminPage from './pages/AdminPage';
+import EventoHomePage from './pages/EventoHomePage';
 import Header from './components/Header';
 import CartModal from './components/CartModal';
 import LoginModal from './components/LoginModal';
@@ -294,7 +295,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/eventos" />} />
             <Route path="/eventos" element={<EventosPage />} />
-            <Route path="/eventos/:eventoId" element={<CoreografiasPage setShowCart={setShowCart} />} />
+            <Route path="/eventos/:eventoId" element={<EventoHomePage />} />
+            <Route path="/eventos/:eventoId/coreografias" element={<CoreografiasPage setShowCart={setShowCart} />} />
             <Route path="/eventos/:eventoId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
             <Route path="/eventos/:eventoId/:diaId/:coreografiaId/fotos" element={<FotosPage setShowCart={setShowCart} />} />
             <Route path="/eventos/pasta/*" element={<NavegadorPastasFotosPage setShowCart={setShowCart} />} />

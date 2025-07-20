@@ -243,6 +243,10 @@ function CoreografiasPage({ setShowCart }) {
     // Buscar dados do evento (configurações de banners e dias selecionados)
     buscarDadosEvento(eventoId);
 
+    // Verificar se há parâmetro de dia na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const diaParam = urlParams.get('dia');
+
     // Buscar configurações do evento do banco de dados primeiro
     api.get(`/admin/eventos/nome/${encodeURIComponent(eventoId)}`)
       .then(res => {
@@ -257,7 +261,14 @@ function CoreografiasPage({ setShowCart }) {
           }));
           
           setDias(diasSelecionados);
-          setDiaSelecionado(diasSelecionados[0].nome); // Seleciona o primeiro dia configurado
+          
+          // Se há parâmetro de dia na URL e ele está na lista de dias selecionados, usar ele
+          if (diaParam && diasSelecionados.some(d => d.nome === diaParam)) {
+            setDiaSelecionado(diaParam);
+          } else {
+            setDiaSelecionado(diasSelecionados[0].nome); // Seleciona o primeiro dia configurado
+          }
+          
           setCoreografias([]);
           setFotos([]);
           setLoading(false);

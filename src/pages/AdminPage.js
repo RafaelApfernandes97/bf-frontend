@@ -48,7 +48,9 @@ export default function AdminPage() {
   const [editCupom, setEditCupom] = useState({});
   const [indexando, setIndexando] = useState({});
   const [pastasDisponiveis, setPastasDisponiveis] = useState([]);
-  const [carregandoPastas, setCarregandoPastas] = useState(false); // { [evento]: true/false }
+  const [carregandoPastas, setCarregandoPastas] = useState(false);
+  const [uploadingCapa, setUploadingCapa] = useState({});
+  const [removendoCapa, setRemovendoCapa] = useState({}); // { [evento]: true/false }
   const [statusIndexacao, setStatusIndexacao] = useState({}); // { [evento]: mensagem }
   const [progressoIndexacao, setProgressoIndexacao] = useState({}); // { [evento]: progresso }
   const [progressoCarregado, setProgressoCarregado] = useState(false); // Flag para saber se já carregou o progresso inicial
@@ -156,6 +158,66 @@ export default function AdminPage() {
       setPastasDisponiveis([]);
     } finally {
       setCarregandoPastas(false);
+    }
+  }
+
+  async function uploadCapaDia(eventoId, diaNome, file) {
+    if (!file) return;
+
+    setUploadingCapa(prev => ({ ...prev, [diaNome]: true }));
+    
+    try {
+      const formData = new FormData();
+      formData.append('capa', file);
+
+      const res = await fetch(`${API}/eventos/${eventoId}/dias/${encodeURIComponent(diaNome)}/capa`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+
+      const data = await res.json();
+      
+      if (data.success) {
+        alert(data.message);
+        // Recarregar eventos para atualizar as capas
+        fetchEventos();
+      } else {
+        alert('Erro ao fazer upload da capa: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      alert('Erro ao fazer upload da capa');
+    } finally {
+      setUploadingCapa(prev => ({ ...prev, [diaNome]: false }));
+    }
+  }
+
+  async function removerCapaDia(eventoId, diaNome) {
+    if (!confirm(`Tem certeza que deseja remover a capa do dia "${diaNome}"?`)) return;
+
+    setRemovendoCapa(prev => ({ ...prev, [diaNome]: true }));
+    
+    try {
+      const res = await fetch(`${API}/eventos/${eventoId}/dias/${encodeURIComponent(diaNome)}/capa`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      
+      if (data.success) {
+        alert(data.message);
+        // Recarregar eventos para atualizar as capas
+        fetchEventos();
+      } else {
+        alert('Erro ao remover capa: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      console.error('Erro ao remover capa:', error);
+      alert('Erro ao remover capa');
+    } finally {
+      setRemovendoCapa(prev => ({ ...prev, [diaNome]: false }));
     }
   }
 
@@ -783,6 +845,12 @@ export default function AdminPage() {
                     <div style={{ fontSize: '11px', color: '#2d5a2d', marginTop: 4 }}>
                       {novoEvento.diasSelecionados.join(', ')}
                     </div>
+                    <div style={{ marginTop: 8, padding: 8, background: '#fff', borderRadius: 4, border: '1px solid #ddd' }}>
+                      <strong style={{ fontSize: '11px', color: '#333', display: 'block', marginBottom: 6 }}>📸 Upload de Capas:</strong>
+                      <p style={{ fontSize: '10px', color: '#666', marginBottom: 8 }}>
+                        Após criar o evento, você poderá fazer upload das capas para cada dia na seção de edição.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -926,6 +994,89 @@ export default function AdminPage() {
                             </div>
                           </div>
                         )}
+
+                        {/* Seção de Upload de Capas */}
+                        {editEvento.diasSelecionados.length > 0 && (
+                          <div style={{ marginTop: 8, padding: 8, background: '#fff', borderRadius: 4, border: '1px solid #ddd' }}>
+                            <strong style={{ fontSize: '12px', color: '#333', display: 'block', marginBottom: 8 }}>📸 Gerenciar Capas dos Dias:</strong>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                              {editEvento.diasSelecionados.map((dia, index) => {
+                                const eventoAtual = eventos.find(e => e._id === editEventoId);
+                                const temCapa = eventoAtual?.capasDias && eventoAtual.capasDias[dia];
+                                const urlCapa = eventoAtual?.capasDias?.[dia];
+                                
+                                return (
+                                  <div key={index} style={{ padding: 6, background: '#f9f9f9', borderRadius: 3, border: '1px solid #eee' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                                      <span style={{ fontSize: '11px', color: '#333', fontWeight: 'bold' }}>{dia}</span>
+                                      {temCapa && (
+                                        <span style={{ fontSize: '10px', color: '#28a745', background: '#d4edda', padding: '2px 6px', borderRadius: 3 }}>
+                                          ✓ Capa definida
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    {temCapa && urlCapa && (
+                                      <div style={{ marginBottom: 6 }}>
+                                        <img 
+                                          src={urlCapa} 
+                                          alt={`Capa ${dia}`}
+                                          style={{ 
+                                            width: '100%', 
+                                            maxWidth: 120, 
+                                            height: 60, 
+                                            objectFit: 'cover', 
+                                            borderRadius: 3,
+                                            border: '1px solid #ddd'
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                    
+                                    <div style={{ display: 'flex', gap: 4 }}>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                          const file = e.target.files[0];
+                                          if (file) {
+                                            uploadCapaDia(editEventoId, dia, file);
+                                          }
+                                        }}
+                                        style={{ fontSize: '10px' }}
+                                        disabled={uploadingCapa[dia]}
+                                      />
+                                      {temCapa && (
+                                        <button
+                                          type="button"
+                                          onClick={() => removerCapaDia(editEventoId, dia)}
+                                          disabled={removendoCapa[dia]}
+                                          style={{ 
+                                            background: '#dc3545', 
+                                            color: '#fff', 
+                                            border: 'none', 
+                                            borderRadius: 3, 
+                                            padding: '2px 6px', 
+                                            fontSize: '10px',
+                                            cursor: 'pointer'
+                                          }}
+                                        >
+                                          {removendoCapa[dia] ? 'Removendo...' : 'Remover'}
+                                        </button>
+                                      )}
+                                    </div>
+                                    
+                                    {uploadingCapa[dia] && (
+                                      <div style={{ fontSize: '10px', color: '#007bff', marginTop: 4 }}>
+                                        Fazendo upload...
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     
@@ -974,6 +1125,31 @@ export default function AdminPage() {
                           <div style={{ fontSize: '11px', color: '#ccc', marginTop: 4 }}>
                             {ev.diasSelecionados.join(', ')}
                           </div>
+                          
+                          {/* Exibir Capas dos Dias */}
+                          {ev.capasDias && Object.keys(ev.capasDias).length > 0 && (
+                            <div style={{ marginTop: 6, padding: 6, backgroundColor: '#333', borderRadius: 3 }}>
+                              <strong style={{ color: '#ffe001', fontSize: '10px' }}>📸 Capas:</strong>
+                              <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                                {Object.entries(ev.capasDias).map(([dia, urlCapa]) => (
+                                  <div key={dia} style={{ textAlign: 'center' }}>
+                                    <img 
+                                      src={urlCapa} 
+                                      alt={`Capa ${dia}`}
+                                      style={{ 
+                                        width: 40, 
+                                        height: 25, 
+                                        objectFit: 'cover', 
+                                        borderRadius: 2,
+                                        border: '1px solid #555'
+                                      }}
+                                    />
+                                    <div style={{ fontSize: '9px', color: '#ccc', marginTop: 2 }}>{dia}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
