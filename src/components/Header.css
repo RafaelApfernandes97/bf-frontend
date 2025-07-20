@@ -21,20 +21,6 @@
   min-width: 0;
   overflow: hidden;
 }
-
-/* Suporte para iOS - Safe Area */
-.ios-device .header {
-  padding-top: calc(12px + env(safe-area-inset-top, 0px));
-  height: calc(72px + env(safe-area-inset-top, 0px));
-}
-
-/* Fallback para navegadores que não suportam env() */
-@supports not (padding-top: env(safe-area-inset-top)) {
-  .ios-device .header {
-    padding-top: calc(12px + var(--ios-safe-area-top, 0px));
-    height: calc(72px + var(--ios-safe-area-top, 0px));
-  }
-}
 .header-logo {
   display: flex;
   align-items: center;
@@ -175,20 +161,6 @@
     padding: 8px 3vw;
     gap: 12px;
   }
-  
-  /* Suporte para iOS - Safe Area no mobile */
-  .ios-device .header {
-    padding-top: calc(8px + env(safe-area-inset-top, 0px));
-    height: calc(60px + env(safe-area-inset-top, 0px));
-  }
-  
-  /* Fallback para navegadores que não suportam env() */
-  @supports not (padding-top: env(safe-area-inset-top)) {
-    .ios-device .header {
-      padding-top: calc(8px + var(--ios-safe-area-top, 0px));
-      height: calc(60px + var(--ios-safe-area-top, 0px));
-    }
-  }
   .header-logo {
     height: 40px;
   }
@@ -232,38 +204,12 @@
   .main-content {
     margin-top: 60px;
   }
-  
-  /* Ajuste do main-content para iOS no mobile */
-  .ios-device .main-content {
-    margin-top: calc(60px + env(safe-area-inset-top, 0px));
-  }
-  
-  /* Fallback para navegadores que não suportam env() */
-  @supports not (margin-top: env(safe-area-inset-top)) {
-    .ios-device .main-content {
-      margin-top: calc(60px + var(--ios-safe-area-top, 0px));
-    }
-  }
 }
 @media (max-width: 480px) {
   .header {
     height: 56px;
     padding: 8px 2vw;
     gap: 8px;
-  }
-  
-  /* Suporte para iOS - Safe Area em telas pequenas */
-  .ios-device .header {
-    padding-top: calc(8px + env(safe-area-inset-top, 0px));
-    height: calc(56px + env(safe-area-inset-top, 0px));
-  }
-  
-  /* Fallback para navegadores que não suportam env() */
-  @supports not (padding-top: env(safe-area-inset-top)) {
-    .ios-device .header {
-      padding-top: calc(8px + var(--ios-safe-area-top, 0px));
-      height: calc(56px + var(--ios-safe-area-top, 0px));
-    }
   }
   .header-logo {
     height: 36px;
@@ -311,18 +257,6 @@
   .main-content {
     margin-top: 56px;
   }
-  
-  /* Ajuste do main-content para iOS em telas pequenas */
-  .ios-device .main-content {
-    margin-top: calc(56px + env(safe-area-inset-top, 0px));
-  }
-  
-  /* Fallback para navegadores que não suportam env() */
-  @supports not (margin-top: env(safe-area-inset-top)) {
-    .ios-device .main-content {
-      margin-top: calc(56px + var(--ios-safe-area-top, 0px));
-    }
-  }
 }
 
 @media (max-width: 360px) {
@@ -330,20 +264,6 @@
     height: 52px;
     padding: 6px 1.5vw;
     gap: 6px;
-  }
-  
-  /* Suporte para iOS - Safe Area em telas muito pequenas */
-  .ios-device .header {
-    padding-top: calc(6px + env(safe-area-inset-top, 0px));
-    height: calc(52px + env(safe-area-inset-top, 0px));
-  }
-  
-  /* Fallback para navegadores que não suportam env() */
-  @supports not (padding-top: env(safe-area-inset-top)) {
-    .ios-device .header {
-      padding-top: calc(6px + var(--ios-safe-area-top, 0px));
-      height: calc(52px + var(--ios-safe-area-top, 0px));
-    }
   }
   .header-logo {
     height: 32px;
@@ -376,33 +296,9 @@
   .main-content {
     margin-top: 52px;
   }
-  
-  /* Ajuste do main-content para iOS em telas muito pequenas */
-  .ios-device .main-content {
-    margin-top: calc(52px + env(safe-area-inset-top, 0px));
-  }
-  
-  /* Fallback para navegadores que não suportam env() */
-  @supports not (margin-top: env(safe-area-inset-top)) {
-    .ios-device .main-content {
-      margin-top: calc(52px + var(--ios-safe-area-top, 0px));
-    }
-  }
 }
 .main-content {
   margin-top: 72px;
-}
-
-/* Ajuste do main-content para iOS */
-.ios-device .main-content {
-  margin-top: calc(72px + env(safe-area-inset-top, 0px));
-}
-
-/* Fallback para navegadores que não suportam env() */
-@supports not (margin-top: env(safe-area-inset-top)) {
-  .ios-device .main-content {
-    margin-top: calc(72px + var(--ios-safe-area-top, 0px));
-  }
 }
 .header-user-btn {
   background: none;

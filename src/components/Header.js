@@ -9,7 +9,6 @@ import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 import EditUserModal from './EditUserModal';
 import PedidosModal from './PedidosModal';
-import { useIOSDetection } from '../hooks/useIOSDetection';
 
 
 function UserDropdownMenu({ anchorRef, onLogout, onClose, onEditUser, onVerPedidos }) {
@@ -94,7 +93,6 @@ function Header({ onCartClick }) {
   const { cart } = useCart();
   const { executeBackButtonHandler, isViewingPhotos } = useNavigation();
   const location = useLocation();
-  const { isIOS, safeAreaTop } = useIOSDetection();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [userNome, setUserNome] = useState('');
