@@ -5,7 +5,7 @@ function OrderSuccessModal({ isOpen, onClose, pedidoId }) {
   if (!isOpen) return null;
 
   const handleWhatsAppClick = () => {
-    window.open('https://wa.me/5511959069080', '_blank');
+    window.open('https://wa.me/5511986879746', '_blank');
   };
 
   return (
